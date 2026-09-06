@@ -1,0 +1,688 @@
+<title>Strongroom</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#E4E7EA; --surface:#FFFFFF; --surface-2:#F1F3F5; --line:#CFD5DA; --text:#171A1F; --muted:#5A636D; --faint:#98A1AA;
+  --accent:#1E6B52; --accent-soft:#D8ECE2; --accent-ink:#FFFFFF; --accent-deep:#144B3A;
+  --brass:#A9841A; --brass-soft:#F5EBC9;
+  --good:#2E7D4F; --good-soft:#DDF3E4; --warn:#9A6212; --warn-soft:#FBEBCB; --danger:#B42318; --danger-soft:#FBE0DC;
+  --a0:#1E6B52; --a1:#1D5FA8; --a2:#8A3FB8; --a3:#B8541C; --a4:#0E7C7B; --a5:#A9841A; --a6:#B0246B; --a7:#4B5563;
+  --shadow:0 14px 34px rgba(23,26,31,.09);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121518; --surface:#1A1E23; --surface-2:#23282E; --line:#333A42; --text:#E9ECEF; --muted:#9AA4AE; --faint:#6B7580;
+    --accent:#3FB088; --accent-soft:#16352A; --accent-ink:#06150F; --accent-deep:#8FE0BE;
+    --brass:#E2B93B; --brass-soft:#3A2F12;
+    --good:#6BCF8B; --good-soft:#173826; --warn:#E2A33B; --warn-soft:#3B2E14; --danger:#F27A6B; --danger-soft:#43211D;
+    --a0:#3FB088; --a1:#60A5FA; --a2:#C084FC; --a3:#FB923C; --a4:#34C4BE; --a5:#E2B93B; --a6:#F472B6; --a7:#9AA4AE;
+    --shadow:0 14px 34px rgba(0,0,0,.45);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121518; --surface:#1A1E23; --surface-2:#23282E; --line:#333A42; --text:#E9ECEF; --muted:#9AA4AE; --faint:#6B7580;
+  --accent:#3FB088; --accent-soft:#16352A; --accent-ink:#06150F; --accent-deep:#8FE0BE;
+  --brass:#E2B93B; --brass-soft:#3A2F12;
+  --good:#6BCF8B; --good-soft:#173826; --warn:#E2A33B; --warn-soft:#3B2E14; --danger:#F27A6B; --danger-soft:#43211D;
+  --a0:#3FB088; --a1:#60A5FA; --a2:#C084FC; --a3:#FB923C; --a4:#34C4BE; --a5:#E2B93B; --a6:#F472B6; --a7:#9AA4AE;
+  --shadow:0 14px 34px rgba(0,0,0,.45);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 "Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer;border:0;border-radius:9px;color:inherit;background:none;padding:0}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+input,select,textarea{font:inherit;padding:9px 11px;border-radius:9px;border:1.5px solid var(--line);background:var(--surface);color:var(--text);width:100%}
+textarea{min-height:80px;resize:vertical}
+input[type="range"]{padding:0;border:0;background:transparent}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+.display{font-family:"Fraunces","Public Sans",serif;font-weight:600;letter-spacing:-.015em}
+.btn{padding:8px 13px;border-radius:9px;background:var(--surface-2);font-weight:600;font-size:14px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;justify-content:center}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.sm{padding:5px 9px;font-size:13px}
+.btn.icon{width:32px;height:32px;padding:0;border-radius:8px;color:var(--muted)}
+.btn.icon svg{width:16px;height:16px}
+.btn.quiet{background:transparent;color:var(--muted)}
+.btn.danger{color:var(--danger)}
+.btn.dangerfill{background:var(--danger);color:#fff}
+.btn[disabled]{opacity:.5;cursor:default}
+.pill{font:500 11.5px "IBM Plex Mono",monospace;padding:2px 8px;border-radius:999px;background:var(--surface-2);color:var(--muted);white-space:nowrap}
+.pill.weak{background:var(--danger-soft);color:var(--danger)}.pill.reused{background:var(--warn-soft);color:var(--warn)}.pill.old{background:var(--brass-soft);color:var(--brass)}.pill.cat{background:var(--accent-soft);color:var(--accent-deep)}
+.hint{color:var(--muted);font-size:13px;margin:0;line-height:1.5}
+.err{color:var(--danger);font-size:13.5px;margin:0;min-height:1.2em}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--bg);padding:9px 14px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:all .2s;z-index:60;max-width:90vw}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* lock screen */
+.lock{min-height:100vh;display:grid;place-items:center;padding:24px 16px}
+.lock .panel{width:min(420px,100%);text-align:center;display:grid;gap:14px;justify-items:center}
+.door{width:132px;height:132px;color:var(--accent)}
+.door .wheel{transform-origin:66px 66px;transition:transform 1.2s cubic-bezier(.2,.8,.2,1)}
+.door.open .wheel{transform:rotate(200deg)}
+.door .bolt{transition:transform .8s cubic-bezier(.2,.8,.2,1)}
+.door.open .bolt{transform:translateX(-22px)}
+.lock h1{font-family:"Fraunces",serif;font-weight:600;font-size:40px;letter-spacing:-.02em;margin:0;line-height:1.05}
+.lock .sub{color:var(--muted);margin:0;max-width:40ch;text-wrap:balance}
+.lock form{display:grid;gap:10px;width:100%}
+.lock .pw{position:relative}
+.lock .pw input{padding-right:44px;font-family:"IBM Plex Mono",monospace;letter-spacing:.06em}
+.lock .pw .eye{position:absolute;right:6px;top:50%;transform:translateY(-50%)}
+.shake{animation:shake .4s}
+@keyframes shake{20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.state{display:flex;align-items:center;gap:7px;font:12px "IBM Plex Mono",monospace;color:var(--muted)}
+.state i{width:8px;height:8px;border-radius:50%;background:var(--faint);display:inline-block}
+.state[data-state="ok"] i{background:var(--good)}.state[data-state="saving"] i{background:var(--warn)}.state[data-state="err"] i,.state[data-state="offline"] i{background:var(--danger)}
+.meter{height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+.meter i{display:block;height:100%;width:0;transition:width .2s;background:var(--danger)}
+.meter[data-s="1"] i{background:var(--danger)}.meter[data-s="2"] i{background:var(--warn)}.meter[data-s="3"] i{background:var(--good)}.meter[data-s="4"] i{background:var(--accent)}
+.meterline{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:4px}
+
+/* app */
+#app{max-width:1240px;margin:0 auto;padding:14px 16px 50px}
+.top{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;margin-bottom:14px}
+.brand{font-family:"Fraunces",serif;font-weight:600;font-size:26px;letter-spacing:-.02em;display:flex;align-items:center;gap:9px;white-space:nowrap}
+.brand svg{width:26px;height:26px;color:var(--accent)}
+.search{flex:1 1 220px;min-width:180px;position:relative}
+.search input{padding-left:36px}
+.search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--faint);pointer-events:none}
+.tools{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.countdown{font:12px "IBM Plex Mono",monospace;color:var(--muted)}
+.body{display:grid;grid-template-columns:1fr;gap:14px;align-items:start}
+@media (min-width:760px){.body{grid-template-columns:210px 1fr}}
+@media (min-width:1040px){.body{grid-template-columns:210px minmax(0,1fr) 380px}}
+.rail{display:flex;flex-direction:column;gap:14px;position:sticky;top:12px}
+@media (max-width:759px){.rail{position:static}}
+.rail h3{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--faint);margin:0 0 6px 6px;font-weight:600}
+.rail .list{display:flex;flex-direction:column;gap:2px}
+@media (max-width:759px){.rail .list{flex-direction:row;flex-wrap:wrap;gap:6px}}
+.rail .item{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:9px;text-align:left;width:100%;font-weight:500;color:var(--muted)}
+@media (max-width:759px){.rail .item{width:auto;background:var(--surface);border:1px solid var(--line);padding:5px 10px}}
+.rail .item[aria-pressed="true"]{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.rail .item .n{margin-left:auto;font:12px "IBM Plex Mono",monospace;color:var(--faint)}
+.rail .item.h .n{color:var(--warn)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+.list-card{padding:6px;min-width:0}
+.row{display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 10px;border-radius:11px;cursor:pointer;text-align:left;width:100%}
+.row:hover{background:var(--surface-2)}
+.row[aria-current="true"]{background:var(--accent-soft)}
+.mg{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font:600 13px "Fraunces",serif;color:#fff;flex:none;background:var(--a7)}
+.mg.sm{width:24px;height:24px;font-size:10px;border-radius:6px}
+.row .t b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .t span{display:block;font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:"IBM Plex Mono",monospace}
+.row .side{display:flex;align-items:center;gap:5px}
+.row .side .btn.icon{opacity:0}
+.row:hover .side .btn.icon,.row:focus-within .side .btn.icon,.row[aria-current="true"] .side .btn.icon{opacity:1}
+@media (hover:none){.row .side .btn.icon{opacity:1}}
+.star{color:var(--faint)}.star[aria-pressed="true"]{color:var(--brass)}
+.empty{color:var(--muted);font-size:14px;margin:0;padding:18px 14px}
+
+/* detail */
+.detail{padding:18px 20px 20px;position:sticky;top:12px;display:grid;gap:14px;min-width:0}
+@media (max-width:1039px){.detail{position:fixed;inset:0;z-index:40;border-radius:0;overflow:auto;max-height:100vh}.detail[hidden]{display:none}}
+.detail .hd{display:flex;align-items:center;gap:12px}
+.detail .hd h2{font-family:"Fraunces",serif;font-weight:600;font-size:22px;letter-spacing:-.01em;margin:0;line-height:1.15;overflow-wrap:anywhere}
+.detail .hd .sub{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.field{display:grid;gap:3px}
+.field label{font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--faint);font-weight:600}
+.field .v{display:flex;align-items:center;gap:6px;min-height:36px}
+.field .v .val{flex:1;min-width:0;font-family:"IBM Plex Mono",monospace;font-size:14px;overflow-wrap:anywhere;padding:6px 10px;background:var(--surface-2);border-radius:8px}
+.field .v .val.masked{letter-spacing:.18em}
+.field .v .val.plain{font-family:"Public Sans",sans-serif;white-space:pre-wrap}
+.field .v .val a{color:var(--accent-deep);text-decoration:none;overflow-wrap:anywhere}
+.field .v .val a:hover{text-decoration:underline}
+.meta{font-size:12.5px;color:var(--muted);display:grid;gap:2px}
+.detail details summary{cursor:pointer;font-size:13px;color:var(--muted);font-weight:500}
+.hist{display:grid;gap:6px;margin-top:8px}
+.hist div{display:flex;gap:8px;align-items:center;font-size:13px}
+.hist .val{font-family:"IBM Plex Mono",monospace;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.acts .spacer{flex:1}
+.confirm{display:inline-flex;gap:6px;align-items:center;font-size:13px;color:var(--danger)}
+
+/* dialogs */
+dialog{border:0;border-radius:18px;padding:0;background:var(--surface);color:var(--text);box-shadow:0 30px 80px rgba(0,0,0,.4);width:min(560px,calc(100vw - 24px));max-height:calc(100vh - 32px)}
+dialog::backdrop{background:rgba(8,10,12,.6);backdrop-filter:blur(2px)}
+.dlg{padding:20px 22px 22px;display:grid;gap:12px}
+.dlg h2{font-family:"Fraunces",serif;font-weight:600;font-size:23px;letter-spacing:-.01em;margin:0;display:flex;align-items:center;gap:10px}
+.dlg h2 .x{margin-left:auto}
+.dlg h3{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--faint);margin:6px 0 0;font-weight:600}
+.dlg label{font-size:12.5px;color:var(--muted);display:block;margin-bottom:4px;font-weight:500}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:480px){.two{grid-template-columns:1fr}}
+.pwrow{display:flex;gap:6px;align-items:center}
+.pwrow input{flex:1;font-family:"IBM Plex Mono",monospace}
+.gen{background:var(--surface-2);border-radius:12px;padding:12px;display:grid;gap:10px}
+.gen .out{display:flex;gap:6px;align-items:center}
+.gen .out .val{flex:1;min-width:0;font-family:"IBM Plex Mono",monospace;font-size:14px;overflow-wrap:anywhere;padding:8px 10px;background:var(--surface);border-radius:8px;border:1px solid var(--line)}
+.gen .opts{display:flex;gap:6px 14px;flex-wrap:wrap;font-size:13px;align-items:center}
+.gen .opts label{display:inline-flex;align-items:center;gap:5px;margin:0;color:var(--text)}
+.gen .opts input[type="checkbox"],.gen .opts input[type="radio"]{width:auto;margin:0}
+.gen .len{display:flex;align-items:center;gap:10px;font-size:13px}
+.gen .len input{flex:1}
+.gen .len b{font-family:"IBM Plex Mono",monospace;min-width:2.5ch;text-align:right}
+.split{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}
+.fields{display:grid;gap:6px}
+.frow{display:grid;grid-template-columns:minmax(90px,1fr) minmax(110px,1.5fr) auto auto;gap:6px;align-items:center}
+.frow input{padding:7px 9px;font-size:14px}
+.frow .val{font-family:"IBM Plex Mono",monospace}
+.frow .lock[aria-pressed="true"]{color:var(--brass)}
+.ptable{display:grid;gap:4px;max-height:52vh;overflow:auto;padding:2px}
+.prow{display:grid;grid-template-columns:auto minmax(110px,1.3fr) minmax(90px,1fr) minmax(80px,1fr) auto;gap:6px;align-items:center;font-size:13px;padding:6px 8px;border-radius:9px;background:var(--surface-2)}
+.prow.off{opacity:.45}
+.prow input[type="checkbox"]{width:auto;margin:0}
+.prow input[type="text"],.prow select{padding:5px 8px;font-size:13px}
+.prow .m{font-family:"IBM Plex Mono",monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.prow .x{grid-column:2 / -1;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:560px){.prow{grid-template-columns:auto 1fr auto}.prow .m{grid-column:2}.prow select{grid-column:2 / -1}}
+footer{margin-top:24px;color:var(--muted);font-size:13px;max-width:72ch;line-height:1.55}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="lock" id="lock">
+  <div class="panel">
+    <svg class="door" id="door" viewBox="0 0 132 132" fill="none" aria-hidden="true">
+      <circle cx="66" cy="66" r="62" stroke="currentColor" stroke-width="5" opacity=".35"/>
+      <circle cx="66" cy="66" r="50" stroke="currentColor" stroke-width="3" opacity=".5"/>
+      <g class="wheel" stroke="currentColor" stroke-width="6" stroke-linecap="round">
+        <circle cx="66" cy="66" r="14" fill="var(--surface)"/>
+        <path d="M66 52V30M66 80v22M52 66H30M80 66h22M56 56 40 40M76 76l16 16M76 56l16-16M56 76 40 92"/>
+      </g>
+      <rect class="bolt" x="100" y="60" width="32" height="12" rx="6" fill="currentColor"/>
+    </svg>
+    <h1>Strongroom</h1>
+    <p class="sub" id="lockSub">Connecting to your vault…</p>
+    <form id="unlockForm" hidden autocomplete="off">
+      <div class="pw"><input id="masterPw" type="password" placeholder="Master password" autocomplete="current-password" aria-label="Master password"><button class="btn icon eye" type="button" id="eye1" aria-label="Show password">👁</button></div>
+      <button class="btn primary" type="submit" id="unlockBtn">Unlock</button>
+      <p class="err" id="unlockErr"></p>
+    </form>
+    <form id="createForm" hidden autocomplete="off">
+      <div class="pw"><input id="newPw" type="password" placeholder="Choose a master password" autocomplete="new-password" aria-label="New master password"><button class="btn icon eye" type="button" id="eye2" aria-label="Show password">👁</button></div>
+      <div><div class="meter" id="newMeter"><i></i></div><div class="meterline"><span id="newMeterText">Use a long passphrase you can remember.</span><span id="newMeterBits"></span></div></div>
+      <input id="newPw2" type="password" placeholder="Type it again" autocomplete="new-password" aria-label="Confirm master password" class="mono">
+      <button class="btn primary" type="submit" id="createBtn">Create vault</button>
+      <p class="err" id="createErr"></p>
+      <p class="hint">There is no reset. If you forget this password, nothing in the vault can be recovered, by you or by anyone else.</p>
+    </form>
+    <div class="state" id="lockState" data-state="boot"><i></i><span id="lockStateText">Connecting…</span></div>
+  </div>
+</div>
+
+<div id="app" hidden>
+  <header class="top">
+    <div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="12" r="4"/><path d="M12 10v2l1.5 1.5M20 8h1M20 16h1"/></svg>Strongroom</div>
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Search titles, usernames, sites, tags… ( / )" autocomplete="off">
+    </div>
+    <div class="tools">
+      <button class="btn primary" id="newBtn" type="button">+ New entry</button>
+      <button class="btn" id="settingsBtn" type="button">Settings</button>
+      <button class="btn" id="lockBtn" type="button">Lock</button>
+      <span class="countdown" id="countdown"></span>
+    </div>
+    <div class="state" id="sync" data-state="boot"><i></i><span id="syncText">Connecting…</span></div>
+  </header>
+  <div class="body">
+    <aside class="rail">
+      <div><h3>Vault</h3><div class="list" id="cats"></div></div>
+      <div><h3>Health</h3><div class="list" id="health"></div></div>
+    </aside>
+    <main class="card list-card" id="list"></main>
+    <aside class="card detail" id="detail" hidden></aside>
+  </div>
+  <footer><p>Every entry is encrypted in this browser with a key derived from your master password before it is saved. The cloud copy that syncs between your devices is ciphertext only. Keep this artifact private and keep an encrypted backup from Settings somewhere safe.</p></footer>
+</div>
+
+<dialog id="editor">
+  <form class="dlg" id="editForm" method="dialog" autocomplete="off">
+    <h2><span id="editTitle">New entry</span><button class="btn quiet x" type="button" id="editClose" aria-label="Close">✕</button></h2>
+    <div class="two">
+      <div><label for="fTitle">Title</label><input id="fTitle" placeholder="GitHub, HDFC NetBanking, Home Wi-Fi…" maxlength="80" required></div>
+      <div><label for="fCat">Type</label><select id="fCat"><option value="login">Login</option><option value="bank">Bank account</option><option value="card">Card</option><option value="wifi">Wi-Fi</option><option value="note">Secure note</option><option value="id">Identity / document</option><option value="other">Other</option></select></div>
+    </div>
+    <div><label for="fUser" id="fUserLabel">Username or email</label><input id="fUser" class="mono" maxlength="200" autocomplete="off"></div>
+    <div>
+      <label for="fPass" id="fPassLabel">Password</label>
+      <div class="pwrow"><input id="fPass" type="password" maxlength="500" autocomplete="new-password"><button class="btn icon" type="button" id="fPassEye" aria-label="Show password">👁</button><button class="btn sm" type="button" id="genToggle" aria-expanded="false">Generate</button></div>
+      <div class="meter" id="fMeter" style="margin-top:6px"><i></i></div><div class="meterline"><span id="fMeterText"></span><span id="fMeterBits"></span></div>
+    </div>
+    <div class="gen" id="gen" hidden>
+      <div class="out"><span class="val" id="genOut"></span><button class="btn icon" type="button" id="genAgain" aria-label="Regenerate" title="Regenerate">↻</button></div>
+      <div class="opts">
+        <label><input type="radio" name="genMode" value="chars" checked>Characters</label>
+        <label><input type="radio" name="genMode" value="words">Passphrase</label>
+      </div>
+      <div class="len"><span id="genLenLabel">Length</span><input type="range" id="genLen" min="8" max="64" value="20"><b id="genLenVal">20</b></div>
+      <div class="opts" id="genCharOpts">
+        <label><input type="checkbox" id="gUpper" checked>A–Z</label>
+        <label><input type="checkbox" id="gLower" checked>a–z</label>
+        <label><input type="checkbox" id="gDigits" checked>0–9</label>
+        <label><input type="checkbox" id="gSymbols" checked>!@#$</label>
+        <label><input type="checkbox" id="gNoAmbig" checked>Skip l 1 I O 0</label>
+      </div>
+      <div class="opts" id="genWordOpts" hidden>
+        <label><input type="checkbox" id="gCap" checked>Capitalise words</label>
+        <label><input type="checkbox" id="gNum" checked>Add a number</label>
+        <label>Separator <select id="gSep" style="width:auto;padding:3px 8px"><option value="-">-</option><option value=".">.</option><option value="_">_</option><option value=" ">space</option></select></label>
+      </div>
+      <div class="acts"><span class="hint" id="genHint"></span><span class="spacer"></span><button class="btn primary sm" type="button" id="genUse">Use this password</button></div>
+    </div>
+    <div><label for="fUrl">Website or address</label><input id="fUrl" class="mono" placeholder="https://" maxlength="500" inputmode="url"></div>
+    <div><label for="fTags">Tags <span style="color:var(--faint)">(comma separated)</span></label><input id="fTags" placeholder="work, banking" maxlength="120"></div>
+    <div>
+      <label>Extra fields <span style="color:var(--faint)">(account numbers, PINs, expiry, anything else)</span></label>
+      <div class="fields" id="fFields"></div>
+      <div class="acts" style="margin-top:6px"><button class="btn sm" type="button" id="fAddField">+ Field</button><button class="btn sm quiet" type="button" id="fTemplate" hidden></button></div>
+    </div>
+    <div><label for="fNotes">Notes</label><textarea id="fNotes" maxlength="4000" placeholder="Recovery codes, security answers, PIN hints…"></textarea></div>
+    <div class="acts"><span id="editDel"></span><span class="spacer"></span><button class="btn quiet" type="button" id="editCancel">Cancel</button><button class="btn primary" type="submit" id="editSave">Save</button></div>
+  </form>
+</dialog>
+
+<dialog id="pasteDlg">
+  <div class="dlg">
+    <h2>Check before importing<button class="btn quiet x" type="button" id="pasteClose" aria-label="Close">✕</button></h2>
+    <p class="hint" id="pasteSum"></p>
+    <div class="ptable" id="ptable"></div>
+    <div class="acts"><span class="hint">Untick anything that was read wrongly, fix titles inline, then import. Nothing is saved until you press Import.</span></div>
+    <div class="acts"><span class="spacer"></span><button class="btn quiet" type="button" id="pasteBack">Back</button><button class="btn primary" type="button" id="pasteGo">Import</button></div>
+  </div>
+</dialog>
+
+<dialog id="settings">
+  <div class="dlg">
+    <h2>Settings<button class="btn quiet x" type="button" id="setClose" aria-label="Close">✕</button></h2>
+    <div class="split"><div><label for="autolock">Lock automatically after</label><select id="autolock"><option value="1">1 minute</option><option value="5">5 minutes</option><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="0">Never (until the tab closes)</option></select></div><span class="hint">Locking wipes the key from memory.</span></div>
+
+    <h3>Backup</h3>
+    <div class="acts"><button class="btn" type="button" id="expEnc">Download encrypted backup</button><button class="btn" type="button" id="expCsv">Download plain CSV…</button></div>
+    <p class="hint">The encrypted backup needs your master password to open and is safe to keep in OneDrive or Google Drive. The CSV is readable by anyone who finds it: use it only to move to another manager, then delete it.</p>
+    <div id="csvConfirm" hidden class="acts"><span class="confirm">Export every password in plain text?</span><button class="btn sm dangerfill" type="button" id="expCsvYes">Yes, download</button><button class="btn sm quiet" type="button" id="expCsvNo">No</button></div>
+
+    <h3>Paste a list</h3>
+    <div><label for="pasteText">Paste accounts in whatever shape you have them. One per line, blocks of “Label: value” lines separated by a blank line, or rows copied from Excel all work.</label><textarea id="pasteText" class="mono" style="min-height:120px" placeholder="Netflix - ravi@example.com - Winter!2024&#10;&#10;HDFC Bank&#10;Customer ID: 12345678&#10;Password: ••••••&#10;Transaction password: ••••••&#10;UPI PIN: 1234&#10;IFSC: HDFC0001234&#10;&#10;Home Wi-Fi | MyNetwork | wifipassword"></textarea></div>
+    <div class="acts"><span class="hint" id="pasteMsg"></span><span class="spacer"></span><button class="btn primary" type="button" id="pastePreview">Preview</button></div>
+
+    <h3>Import a file</h3>
+    <div><label for="impFile">Encrypted backup (.json), or a CSV from Chrome, Edge, Bitwarden, 1Password, Excel, or this vault</label><input id="impFile" type="file" accept=".csv,.json,text/csv,application/json"></div>
+    <div id="impPwWrap" hidden><label for="impPw">That backup was made with a different master password. Enter it to decrypt the entries.</label><input id="impPw" type="password" class="mono" autocomplete="off"></div>
+    <div class="acts"><span class="hint" id="impMsg"></span><span class="spacer"></span><button class="btn primary" type="button" id="impBtn">Import</button></div>
+
+    <h3>Master password</h3>
+    <div class="two"><div><label for="cpCur">Current</label><input id="cpCur" type="password" class="mono" autocomplete="current-password"></div><div><label for="cpNew">New</label><input id="cpNew" type="password" class="mono" autocomplete="new-password"></div></div>
+    <div class="meter" id="cpMeter"><i></i></div>
+    <div class="acts"><span class="hint" id="cpMsg"></span><span class="spacer"></span><button class="btn" type="button" id="cpBtn">Re-encrypt everything</button></div>
+
+    <h3>Danger</h3>
+    <div class="acts"><input id="delConfirm" placeholder="Type DELETE to enable" style="max-width:220px"><button class="btn dangerfill" type="button" id="delVault" disabled>Delete the whole vault</button></div>
+    <p class="hint">Removes every entry from the cloud and from this browser. Take an encrypted backup first.</p>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  'use strict';
+  var $=function(s,r){return (r||document).querySelector(s);};
+  var LS={meta:'sr.meta',entries:'sr.entries',pending:'sr.pending',autolock:'sr.autolock',cat:'sr.cat'};
+  var CATS={login:'Login',bank:'Bank',card:'Card',wifi:'Wi-Fi',note:'Secure note',id:'Identity',other:'Other'};
+  var TEMPLATES={bank:[['Account number',false],['IFSC',false],['Transaction password',true],['UPI PIN',true],['Registered mobile',false]],card:[['Card holder',false],['Expiry (MM/YY)',false],['CVV',true],['ATM PIN',true],['Issuing bank',false]],wifi:[['Router address',false],['Router admin password',true]],id:[['Number',false],['Issued on',false],['Expires on',false]],login:[['Recovery email',false],['Security answer',true],['Backup codes',true]]};
+  var SECRET_RE=/pin|cvv|otp|secret|answer|backup|code|passphrase|private|token|password|pwd|tpin|mpin/i;
+  var ITER=600000,YEAR=365*86400000;
+
+  /* ---------- helpers ---------- */
+  function h(tag,attrs,kids){var e=document.createElement(tag);if(attrs)Object.keys(attrs).forEach(function(k){var v=attrs[k];if(v==null||v===false)return;if(k==='class')e.className=v;else if(k==='text')e.textContent=v;else if(k.slice(0,2)==='on')e.addEventListener(k.slice(2),v);else if(k==='style')e.style.cssText=v;else e.setAttribute(k,v===true?'':v);});(kids||[]).forEach(function(c){if(c==null||c===false)return;e.appendChild(typeof c==='string'?document.createTextNode(c):c);});return e;}
+  function clear(el){while(el.firstChild)el.removeChild(el.firstChild);}
+  function load(k,d){try{var v=JSON.parse(localStorage.getItem(k));return v==null?d:v;}catch(e){return d;}}
+  function save(k,v){try{if(v==null)localStorage.removeItem(k);else localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+  function uid(){var a=new Uint8Array(8);crypto.getRandomValues(a);return 'e-'+Array.prototype.map.call(a,function(b){return ('0'+b.toString(16)).slice(-2);}).join('');}
+  function clone(o){return JSON.parse(JSON.stringify(o));}
+  function hashColor(s){var n=0;for(var i=0;i<s.length;i++)n=(n*31+s.charCodeAt(i))>>>0;return 'var(--a'+(n%8)+')';}
+  function mono(name){var w=String(name||'?').trim().split(/\s+/);return (w.length>1?w[0][0]+w[1][0]:String(name||'?').slice(0,2)).toUpperCase();}
+  function domain(u){try{return new URL(/^[a-z]+:\/\//i.test(u)?u:'https://'+u).hostname.replace(/^www\./,'');}catch(e){return u;}}
+  function fmtDate(t){if(!t)return '—';var d=new Date(t);return d.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});}
+  function ago(t){if(!t)return '';var d=Math.round((Date.now()-t)/86400000);return d<=0?'today':d===1?'yesterday':d<30?d+' days ago':d<365?Math.round(d/30)+' months ago':Math.round(d/365*10)/10+' years ago';}
+  var toastT=null;function toast(msg){var t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('on');},2400);}
+  function confirmBtn(label,question,onYes){var wrap=h('span');var b=h('button',{class:'btn sm danger',type:'button',text:label,onclick:function(){clear(wrap);wrap.appendChild(h('span',{class:'confirm'},[question,h('button',{class:'btn sm dangerfill',type:'button',text:'Yes',onclick:onYes}),h('button',{class:'btn sm quiet',type:'button',text:'No',onclick:function(){clear(wrap);wrap.appendChild(b);}})]));}});wrap.appendChild(b);return wrap;}
+  function copyText(text,what){var done=function(ok){toast(ok?'Copied '+what:'Copy is blocked here — reveal it and select instead');};
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(function(){done(true);},function(){done(legacyCopy(text));});}else done(legacyCopy(text));}
+  function legacyCopy(text){try{var ta=document.createElement('textarea');ta.value=text;ta.setAttribute('readonly','');ta.style.cssText='position:fixed;opacity:0;top:0;left:0';document.body.appendChild(ta);ta.select();var ok=document.execCommand('copy');ta.remove();return ok;}catch(e){return false;}}
+  function svgIcon(d){var s=document.createElementNS('http://www.w3.org/2000/svg','svg');s.setAttribute('viewBox','0 0 24 24');s.setAttribute('fill','none');s.setAttribute('stroke','currentColor');s.setAttribute('stroke-width','2');s.setAttribute('stroke-linecap','round');s.setAttribute('stroke-linejoin','round');var p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('d',d);s.appendChild(p);return s;}
+  var IC={copy:'M20 9h-9a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2zM5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1',eye:'M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',open:'M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3',star:'M12 2.5l2.9 6.1 6.7.8-4.9 4.6 1.3 6.6L12 17.3 6 20.6l1.3-6.6L2.4 9.4l6.7-.8z',key:'M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4'};
+  function iconBtn(name,label,onclick,cls){var b=h('button',{class:'btn icon '+(cls||''),type:'button','aria-label':label,title:label,onclick:onclick});b.appendChild(svgIcon(IC[name]));return b;}
+
+  /* ---------- crypto ---------- */
+  var enc=new TextEncoder(),dec=new TextDecoder();
+  var SUBTLE=!!(window.crypto&&crypto.subtle&&crypto.getRandomValues);
+  function b64(buf){var a=new Uint8Array(buf),s='';for(var i=0;i<a.length;i+=8192)s+=String.fromCharCode.apply(null,a.subarray(i,i+8192));return btoa(s);}
+  function unb64(s){var b=atob(s),a=new Uint8Array(b.length);for(var i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a;}
+  function deriveKey(pw,saltB64,iter){return crypto.subtle.importKey('raw',enc.encode(String(pw).normalize('NFKC')),'PBKDF2',false,['deriveKey']).then(function(base){return crypto.subtle.deriveKey({name:'PBKDF2',salt:unb64(saltB64),iterations:iter||ITER,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);});}
+  function encryptJSON(key,obj,aad){var iv=crypto.getRandomValues(new Uint8Array(12));return crypto.subtle.encrypt({name:'AES-GCM',iv:iv,additionalData:enc.encode('sr:'+aad)},key,enc.encode(JSON.stringify(obj))).then(function(ct){return {iv:b64(iv),ct:b64(ct)};});}
+  function decryptJSON(key,blob,aad){return crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(blob.iv),additionalData:enc.encode('sr:'+aad)},key,unb64(blob.ct)).then(function(pt){return JSON.parse(dec.decode(pt));});}
+  function makeMeta(pw){var salt=b64(crypto.getRandomValues(new Uint8Array(16))),vid=uid().slice(2);return deriveKey(pw,salt,ITER).then(function(key){return encryptJSON(key,{ok:true,vid:vid},'meta').then(function(check){return {key:key,meta:{v:1,vid:vid,kdf:'PBKDF2-SHA256',iter:ITER,salt:salt,check:check,createdAt:Date.now(),updatedAt:Date.now()}};});});}
+  function openWith(pw,meta){return deriveKey(pw,meta.salt,meta.iter).then(function(key){return decryptJSON(key,meta.check,'meta').then(function(c){if(!c||!c.ok)throw new Error('bad');return key;});});}
+
+  /* ---------- password strength & generator ---------- */
+  var COMMON=['password','123456','12345678','qwerty','abc123','111111','123123','letmein','welcome','admin','iloveyou','monkey','dragon','sunshine','princess','football','shadow','master','666666','qwerty123','password1','123456789','1234567890','000000','1q2w3e4r','india123','pass123','admin123'];
+  function strength(pw){pw=String(pw||'');if(!pw)return {score:0,bits:0,label:'Empty'};
+    var pool=0;if(/[a-z]/.test(pw))pool+=26;if(/[A-Z]/.test(pw))pool+=26;if(/\d/.test(pw))pool+=10;if(/[^A-Za-z0-9]/.test(pw))pool+=33;
+    var bits=pw.length*Math.log2(pool||2),low=pw.toLowerCase();
+    if(COMMON.indexOf(low)>=0||COMMON.indexOf(low.replace(/[!@#$%^&*.\d]+$/,''))>=0)bits=Math.min(bits,8);
+    if(/^(.)\1+$/.test(pw))bits=Math.min(bits,6);
+    if(/(0123|1234|2345|3456|4567|5678|6789|abcd|bcde|qwer|wert|asdf|sdfg|zxcv|xcvb)/i.test(low))bits*=0.6;
+    if(/^[A-Z]?[a-z]{3,12}[\d]{1,4}[!@#$%.]?$/.test(pw))bits*=0.55;
+    if(/(19|20)\d\d/.test(pw))bits-=6;
+    var uniq={};for(var i=0;i<pw.length;i++)uniq[pw[i]]=1;if(Object.keys(uniq).length<=pw.length/2.5)bits*=0.6;
+    var words=pw.split(/[\s\-_.]+/).filter(Boolean);if(words.length>=3&&words.every(function(w){return /^[A-Za-z]{2,}$|^\d{1,4}$/.test(w);})){var wc=words.filter(function(w){return /[A-Za-z]/.test(w);}).length,dc=words.length-wc;bits=Math.min(bits,wc*13+dc*7);}
+    bits=Math.max(0,Math.round(bits));
+    var score=bits<28?1:bits<40?2:bits<60?3:4,label=bits<28?'Very weak':bits<40?'Weak':bits<60?'Good':'Strong';
+    return {score:score,bits:bits,label:label};}
+  function setMeter(el,txt,bitsEl,pw){var s=strength(pw);el.dataset.s=String(pw?s.score:0);el.querySelector('i').style.width=(pw?[0,25,50,75,100][s.score]:0)+'%';if(txt)txt.textContent=pw?s.label:'';if(bitsEl)bitsEl.textContent=pw?'~'+s.bits+' bits':'';return s;}
+  function rnd(n){var max=Math.floor(65536/n)*n,b=new Uint16Array(1);do{crypto.getRandomValues(b);}while(b[0]>=max);return b[0]%n;}
+  function pick(s){return s[rnd(s.length)];}
+  function shuffle(a){for(var i=a.length-1;i>0;i--){var j=rnd(i+1),t=a[i];a[i]=a[j];a[j]=t;}return a;}
+  var WORDS=('acorn amber anchor apple arrow aspen atlas autumn badge bagel bamboo banjo barley basil beacon berry birch bison blaze bloom bolt bonus breeze brick bridge bronze brook bucket butter cabin cactus camel candle canoe canyon carbon cargo carrot castle cedar chalk cherry cider cinder citrus clay cliff clock cloud clover cobalt cocoa comet copper coral cotton crane crater cricket crystal cumin cypress daisy delta denim desert dew diesel dome dragon drift dune eagle ember engine falcon feather fennel fern fig flame flint forest fossil fox frost galaxy garden garlic ginger glacier glove goose granite grape gravel grove guitar hammer harbor harvest hazel heron hickory honey horizon iceberg indigo iron island ivory jade jasmine jelly jigsaw jungle kayak kettle kiwi koala lagoon lantern laser lava lemon lentil lilac linen lion lizard lotus lumber magnet mango maple marble meadow melon meteor mint mirror moss mustard nectar nickel noodle north nutmeg oasis ocean olive onion orbit orchid otter oyster paddle panda paper parrot pebble pecan pepper piano pickle pillow pine pirate pixel planet plum pocket polar pollen poppy prism pumpkin puzzle quartz quill quilt rabbit radar radish raven reef ribbon river robin rocket rubber ruby saddle saffron sage salmon sandal satin scarf shadow shell silver sketch slate smoke socket sparrow spice spider spruce squash stone storm sugar summit sunset tango teapot tiger timber toast tomato topaz torch tulip tundra turtle umbrella valley velvet violet volcano waffle walnut walrus wander wasabi willow wind winter yogurt zebra zephyr zinc '+
+    'admiral alpine amulet anvil apricot archer argon armor aurora avocado bakery ballad bandit banner barn basket beetle bell biscuit blanket blossom boulder bramble brass broom bubble buffalo bugle burrow cabbage cable cactus caliper camera canvas caravan carnival cashew cellar chapel cheetah chess chimney chisel cigar circus clarinet cobra coconut coffee collar compass condor cookie cosmos cougar cradle crayon crescent crow crumb cucumber cushion dagger dahlia dancer dawn diamond dinghy dolphin donkey dove drum dumpling dust echo eclipse elbow elm emerald envelope falcon farm feast ferry fiddle finch fjord flannel flask fleece flute fog forge fountain freckle fudge furnace gadget gale garnet gazelle geyser giraffe glider goblet gorilla gourd grain grotto guava gull gust hamlet hare hatch hawk helmet hemlock herb hive hollow hoop hornet hound hummus husk igloo ink jaguar jar jetty jewel jockey juniper kelp kernel kestrel kingdom kitten knight ladder lark lattice ledger leopard lever lichen lime lobster locket loom lynx macaw mallet mammoth manor mantis marina marsh mason meadow medal mesa mineral mocha monsoon moose mural muffin nebula needle nest noble nomad oak oat octopus opal orange origami osprey oven paddock pagoda palm pansy parcel pasture peach peacock pearl pelican pencil penguin peony petal pigeon pinecone plaza plaza pony porch potato prairie puffin quail quarry quiver raccoon raft rain ranch raspberry reed relic rhino ridge ripple roost rose rudder rye saddle sailor salsa sapphire scarab scooter seal sequoia shark sheep shrimp sierra sled slipper snail sofa sorbet sphinx spinach spool squirrel stallion starling steam stork strand stump sundial swallow swan tabby tadpole talon tassel tavern teak tempo thistle thorn thunder ticket toucan trail trout truffle trumpet tuna turnip tusk tweed twig vanilla vault velcro vessel vine vinyl wagon walnut warbler wax weasel wharf whale wheat whisk wicker wombat wren yak yarn yew yucca zipper zither').split(' ').filter(function(w,i,a){return a.indexOf(w)===i;});
+  function genChars(o){var U='ABCDEFGHJKLMNPQRSTUVWXYZ',L='abcdefghijkmnopqrstuvwxyz',D='23456789',S='!@#$%^&*-_=+?';if(!o.noAmbig){U+='IO';L+='l';D+='01';}
+    var pools=[];if(o.upper)pools.push(U);if(o.lower)pools.push(L);if(o.digits)pools.push(D);if(o.symbols)pools.push(S);if(!pools.length)pools.push(L);
+    var all=pools.join(''),out=[];pools.forEach(function(p){out.push(pick(p));});while(out.length<o.len)out.push(pick(all));return shuffle(out).join('');}
+  function genWords(o){var ws=[];for(var i=0;i<o.len;i++){var w=pick(WORDS);ws.push(o.cap?w[0].toUpperCase()+w.slice(1):w);}if(o.num)ws.splice(rnd(ws.length+1),0,String(rnd(90)+10));return ws.join(o.sep);}
+
+  /* ---------- cloud-first store (ciphertext only) ---------- */
+  var META=load(LS.meta,null),DOCS=load(LS.entries,{}),PENDING=load(LS.pending,{}),DB=null,definitive=false,metaDefinitive=false;
+  var KEY=null,PLAIN={},undecryptable=0;
+  function setSync(state,text){['#sync','#lockState'].forEach(function(s){var el=$(s);el.dataset.state=state;});$('#syncText').textContent=text;$('#lockStateText').textContent=text;}
+  function cache(){save(LS.meta,META);save(LS.entries,DOCS);save(LS.pending,PENDING);}
+  function retry(fn){return fn().catch(function(e){if(e&&e.code==='unavailable')return new Promise(function(r){setTimeout(r,600+Math.random()*900);}).then(fn);throw e;});}
+  function failMsg(e){return 'Not saved ('+((e&&e.code)||'error')+') — will retry';}
+  function pushMeta(){if(!DB||!META)return Promise.resolve();setSync('saving','Saving…');var m=META;return retry(function(){return DB.doc('vault/meta').set(m);}).then(function(){if(PENDING.__meta&&META===m){delete PENDING.__meta;cache();}setSync('ok','Encrypted · saved to cloud');}).catch(function(e){setSync('err',failMsg(e));throw e;});}
+  function pushDoc(d){if(!DB)return Promise.resolve();setSync('saving','Saving…');return retry(function(){return DB.doc('entries/'+d.id).set(d);}).then(function(){if(PENDING[d.id]==='set'&&DOCS[d.id]&&DOCS[d.id].updatedAt===d.updatedAt){delete PENDING[d.id];cache();}setSync('ok','Encrypted · saved to cloud');}).catch(function(e){setSync('err',failMsg(e));throw e;});}
+  function pushDel(id){if(!DB)return Promise.resolve();setSync('saving','Saving…');return retry(function(){return DB.doc('entries/'+id).delete();}).then(function(){if(PENDING[id]==='del'){delete PENDING[id];cache();}setSync('ok','Encrypted · saved to cloud');}).catch(function(e){setSync('err',failMsg(e));throw e;});}
+  function flushPending(){var ps=[];if(PENDING.__meta&&META)ps.push(pushMeta().catch(function(){}));Object.keys(PENDING).forEach(function(id){if(id==='__meta')return;if(PENDING[id]==='del')ps.push(pushDel(id).catch(function(){}));else if(DOCS[id])ps.push(pushDoc(DOCS[id]).catch(function(){}));else delete PENDING[id];});cache();return Promise.all(ps);}
+  function localOnlyMsg(){return definitive?'Offline · will sync when connected':'Saved on this device';}
+  function storeMeta(meta){META=meta;PENDING.__meta=true;cache();if(DB)pushMeta().catch(function(){});else setSync('offline',localOnlyMsg());}
+  function storeDoc(d){DOCS[d.id]=d;PENDING[d.id]='set';cache();if(DB)pushDoc(d).catch(function(){});else setSync('offline',localOnlyMsg());}
+  function storeDel(id){delete DOCS[id];delete PLAIN[id];PENDING[id]='del';cache();if(DB)pushDel(id).catch(function(){});}
+  function initCloud(){
+    if(!(window.claude&&typeof window.claude.use==='function')){definitive=metaDefinitive=true;setSync('offline','Local only on this device');lockScreen();return;}
+    window.claude.use('db').then(function(db){
+      if(!db){definitive=metaDefinitive=true;setSync('offline','Local only on this device');lockScreen();return;}
+      DB=db;
+      db.doc('vault/meta').onSnapshot(function(snap){
+        var fromCache=!!(snap.metadata&&snap.metadata.fromCache);
+        if(snap.exists){var r=snap.data();
+          if(r&&r.salt&&r.check&&r.vid&&(!META||META.vid!==r.vid||(+r.updatedAt||0)>(+META.updatedAt||0))){
+            var switching=!!(META&&META.vid!==r.vid);META=clone(r);delete PENDING.__meta;
+            if(switching){Object.keys(DOCS).forEach(function(id){if(DOCS[id].vid&&DOCS[id].vid!==META.vid){delete DOCS[id];delete PENDING[id];}});PLAIN={};if(KEY){lock();toast('The vault was replaced from another device. Unlock again.');}}
+            cache();}}
+        else if(!fromCache&&!PENDING.__meta&&META){META=null;DOCS={};PLAIN={};PENDING={};cache();if(KEY)lock();}
+        if(!fromCache&&!metaDefinitive){metaDefinitive=true;if(PENDING.__meta&&META)pushMeta().catch(function(){});}
+        lockScreen();
+      },function(e){metaDefinitive=definitive=true;setSync('err','Cloud unavailable ('+((e&&e.code)||'error')+')');lockScreen();});
+      db.collection('entries').onSnapshot(function(snap){
+        var remote={};snap.docs.forEach(function(d){if(!d.exists)return;var r=d.data();if(!r||!r.id||!r.ct||!r.iv)return;remote[r.id]=r;});
+        var fromCache=!!(snap.metadata&&snap.metadata.fromCache),next={};
+        if(fromCache){Object.keys(DOCS).forEach(function(id){next[id]=DOCS[id];});Object.keys(remote).forEach(function(id){var l=next[id];if(!l||(+remote[id].updatedAt||0)>=(+l.updatedAt||0))next[id]=clone(remote[id]);});}
+        else{Object.keys(remote).forEach(function(id){next[id]=clone(remote[id]);});
+          Object.keys(PENDING).forEach(function(id){if(id==='__meta')return;if(PENDING[id]==='del'){delete next[id];}else if(DOCS[id]&&(!remote[id]||(+DOCS[id].updatedAt||0)>(+remote[id].updatedAt||0)))next[id]=DOCS[id];else delete PENDING[id];});}
+        var changed=Object.keys(next).filter(function(id){return !DOCS[id]||DOCS[id].ct!==next[id].ct;});
+        Object.keys(DOCS).forEach(function(id){if(!next[id])delete PLAIN[id];});
+        DOCS=next;cache();
+        if(!fromCache&&!definitive){definitive=true;flushPending();}
+        setSync(fromCache?'saving':'ok',fromCache?'Syncing…':'Encrypted · saved to cloud');
+        if(KEY)decryptMany(changed).then(renderAll);
+      },function(e){definitive=true;setSync('err','Cloud unavailable ('+((e&&e.code)||'error')+')');});
+    }).catch(function(){definitive=metaDefinitive=true;setSync('offline','Local only on this device');lockScreen();});
+  }
+
+  /* ---------- session ---------- */
+  function decryptMany(ids){if(!KEY)return Promise.resolve();var key=KEY;return Promise.all(ids.map(function(id){var d=DOCS[id];if(!d)return null;if(META&&d.vid&&d.vid!==META.vid){undecryptable++;return null;}return decryptJSON(key,d,id).then(function(p){if(KEY===key){p.id=id;p.updatedAt=d.updatedAt;PLAIN[id]=p;}},function(){undecryptable++;});}));}
+  function unlock(key){KEY=key;PLAIN={};undecryptable=0;return decryptMany(Object.keys(DOCS)).then(function(){$('#lock').hidden=true;$('#app').hidden=false;$('#masterPw').value='';selected=null;renderAll();armAutolock();if(undecryptable)toast(undecryptable+' entr'+(undecryptable===1?'y':'ies')+' could not be decrypted with this password');});}
+  function lock(){KEY=null;PLAIN={};selected=null;PASTE=[];clearTimeout(alT);clearInterval(cdT);$('#countdown').textContent='';['#q','#fTitle','#fUser','#fPass','#fUrl','#fTags','#fNotes','#cpCur','#cpNew','#impPw','#genOut','#pasteText'].forEach(function(s){var el=$(s);if(el)el.value='';});$('#genOut').textContent='';clear($('#fFields'));clear($('#ptable'));
+    clear($('#list'));clear($('#detail'));$('#detail').hidden=true;document.querySelectorAll('dialog[open]').forEach(function(d){d.close();});$('#app').hidden=true;$('#lock').hidden=false;$('#door').classList.remove('open');lockScreen();setTimeout(function(){$('#masterPw').focus();},50);}
+  function lockScreen(){var sub=$('#lockSub'),uf=$('#unlockForm'),cf=$('#createForm');
+    if(!SUBTLE){sub.textContent='This browser cannot run the vault\'s encryption. Open the link over HTTPS in a current browser.';uf.hidden=cf.hidden=true;return;}
+    if(!metaDefinitive&&!META){sub.textContent='Connecting to your vault…';uf.hidden=cf.hidden=true;return;}
+    if(META){sub.textContent=DB?'Enter your master password. It never leaves this device.':'Working from this device\'s encrypted copy. Enter your master password.';uf.hidden=false;cf.hidden=true;}
+    else{sub.textContent=DB?'No vault yet. Choose a master password: it encrypts everything here before it is stored.':'No cloud connection here. A vault you create now will live only in this browser until the link is opened inside Claude.';uf.hidden=true;cf.hidden=false;}}
+  $('#unlockForm').addEventListener('submit',function(e){e.preventDefault();var pw=$('#masterPw').value;if(!pw||!META)return;var btn=$('#unlockBtn');btn.disabled=true;btn.textContent='Unlocking…';$('#unlockErr').textContent='';
+    openWith(pw,META).then(function(key){$('#door').classList.add('open');return new Promise(function(r){setTimeout(r,650);}).then(function(){return unlock(key);});}).catch(function(){$('#unlockErr').textContent='That is not the master password.';$('#unlockForm').classList.remove('shake');void $('#unlockForm').offsetWidth;$('#unlockForm').classList.add('shake');$('#masterPw').select();}).then(function(){btn.disabled=false;btn.textContent='Unlock';});});
+  $('#newPw').addEventListener('input',function(){setMeter($('#newMeter'),$('#newMeterText'),$('#newMeterBits'),this.value);});
+  $('#createForm').addEventListener('submit',function(e){e.preventDefault();var a=$('#newPw').value,b=$('#newPw2').value,err=$('#createErr');err.textContent='';
+    if(a.length<10){err.textContent='Use at least 10 characters. A few unrelated words work well.';return;}if(a!==b){err.textContent='The two passwords do not match.';return;}if(strength(a).score<2){err.textContent='That password is too guessable to protect everything else.';return;}
+    var btn=$('#createBtn');btn.disabled=true;btn.textContent='Creating…';
+    makeMeta(a).then(function(r){storeMeta(r.meta);$('#newPw').value=$('#newPw2').value='';$('#door').classList.add('open');return new Promise(function(x){setTimeout(x,650);}).then(function(){return unlock(r.key);});}).catch(function(){err.textContent='Could not create the vault in this browser.';}).then(function(){btn.disabled=false;btn.textContent='Create vault';});});
+  function eye(btnSel,inpSel){$(btnSel).addEventListener('click',function(){var i=$(inpSel);i.type=i.type==='password'?'text':'password';this.setAttribute('aria-label',i.type==='password'?'Show password':'Hide password');});}
+  eye('#eye1','#masterPw');eye('#eye2','#newPw');eye('#fPassEye','#fPass');
+  $('#lockBtn').addEventListener('click',lock);
+
+  /* auto-lock */
+  var alT=null,cdT=null,alUntil=0,AUTOLOCK=+load(LS.autolock,5);if(isNaN(AUTOLOCK))AUTOLOCK=5;
+  function armAutolock(){clearTimeout(alT);clearInterval(cdT);if(!KEY)return;if(!AUTOLOCK){$('#countdown').textContent='';return;}alUntil=Date.now()+AUTOLOCK*60000;alT=setTimeout(function(){if(KEY){lock();toast('Locked after '+AUTOLOCK+' min without activity');}},AUTOLOCK*60000);
+    var tick=function(){var s=Math.max(0,Math.round((alUntil-Date.now())/1000));$('#countdown').textContent='locks in '+Math.floor(s/60)+':'+('0'+s%60).slice(-2);};tick();cdT=setInterval(tick,1000);}
+  ['pointerdown','keydown','input','scroll'].forEach(function(ev){document.addEventListener(ev,function(){if(KEY)armAutolock();},{passive:true});});
+  $('#autolock').value=String(AUTOLOCK);$('#autolock').addEventListener('change',function(){AUTOLOCK=+this.value;save(LS.autolock,AUTOLOCK);armAutolock();});
+
+  /* ---------- health ---------- */
+  function health(){var byPw={},out={weak:{},reused:{},old:{}};Object.keys(PLAIN).forEach(function(id){var p=PLAIN[id];if(!p.password)return;(byPw[p.password]=byPw[p.password]||[]).push(id);if(p.category!=='note'&&strength(p.password).score<=2)out.weak[id]=1;if((p.pwChangedAt||p.createdAt||0)<Date.now()-YEAR)out.old[id]=1;});
+    Object.keys(byPw).forEach(function(pw){if(byPw[pw].length>1)byPw[pw].forEach(function(id){out.reused[id]=1;});});return out;}
+
+  /* ---------- render ---------- */
+  var catSel=load(LS.cat,'all'),query='',selected=null;
+  function entries(){return Object.keys(PLAIN).map(function(k){return PLAIN[k];});}
+  function match(p,H){if(catSel==='fav'&&!p.fav)return false;if(catSel==='weak'&&!H.weak[p.id])return false;if(catSel==='reused'&&!H.reused[p.id])return false;if(catSel==='old'&&!H.old[p.id])return false;if(CATS[catSel]&&p.category!==catSel)return false;
+    if(!query)return true;var hay=[p.title,p.username,p.url,(p.tags||[]).join(' '),CATS[p.category]||'',(p.fields||[]).map(function(f){return f.label+' '+(f.secret?'':f.value);}).join(' ')].join(' ').toLowerCase();return query.toLowerCase().split(/\s+/).every(function(w){return hay.indexOf(w)>=0;});}
+  function renderRail(H){var all=entries(),box=$('#cats');clear(box);
+    function item(key,label,n,cls){box.appendChild(h('button',{class:'item'+(cls||''),type:'button','aria-pressed':String(catSel===key),onclick:function(){catSel=key;save(LS.cat,catSel);renderAll();}},[label,h('span',{class:'n',text:String(n)})]));}
+    item('all','Everything',all.length);item('fav','Favourites',all.filter(function(p){return p.fav;}).length);
+    Object.keys(CATS).forEach(function(c){var n=all.filter(function(p){return p.category===c;}).length;if(n)item(c,CATS[c],n);});
+    var hb=$('#health');clear(hb);[['weak','Weak passwords'],['reused','Reused passwords'],['old','Older than a year']].forEach(function(x){var n=Object.keys(H[x[0]]).length;hb.appendChild(h('button',{class:'item'+(n?' h':''),type:'button','aria-pressed':String(catSel===x[0]),onclick:function(){catSel=x[0];save(LS.cat,catSel);renderAll();}},[x[1],h('span',{class:'n',text:String(n)})]));});}
+  function renderList(H){var box=$('#list');clear(box);var list=entries().filter(function(p){return match(p,H);}).sort(function(a,b){return (b.fav?1:0)-(a.fav?1:0)||a.title.localeCompare(b.title);});
+    if(!list.length){box.appendChild(h('p',{class:'empty',text:entries().length?'Nothing matches.':'The vault is empty. Add your first entry, or import a CSV from your browser or another password manager in Settings.'}));return;}
+    list.forEach(function(p){var r=h('div',{class:'row',role:'button',tabindex:'0','aria-current':String(selected===p.id),onclick:function(e){if(e.target.closest('button'))return;selected=p.id;renderAll();},onkeydown:function(e){if(e.key==='Enter'&&!e.target.closest('button')){selected=p.id;renderAll();}}});
+      r.appendChild(h('span',{class:'mg',text:mono(p.title),style:'background:'+hashColor(p.title)}));
+      r.appendChild(h('span',{class:'t'},[h('b',{text:p.title}),h('span',{text:p.username||domain(p.url||'')||CATS[p.category]||''})]));
+      var side=h('span',{class:'side'});if(H.weak[p.id])side.appendChild(h('span',{class:'pill weak',text:'weak'}));if(H.reused[p.id])side.appendChild(h('span',{class:'pill reused',text:'reused'}));
+      if(p.password)side.appendChild(iconBtn('key','Copy password',function(e){e.stopPropagation();copyText(p.password,'password');}));
+      var star=iconBtn('star',p.fav?'Remove from favourites':'Add to favourites',function(e){e.stopPropagation();p.fav=!p.fav;saveEntry(p);},'star');star.setAttribute('aria-pressed',String(!!p.fav));star.querySelector('path').setAttribute('fill',p.fav?'currentColor':'none');side.appendChild(star);
+      r.appendChild(side);box.appendChild(r);});}
+  function field(label,value,opts){opts=opts||{};if(!value&&!opts.always)return null;var val;
+    if(opts.link){val=h('span',{class:'val'});val.appendChild(h('a',{href:/^[a-z]+:\/\//i.test(value)?value:'https://'+value,target:'_blank',rel:'noopener noreferrer',text:value}));}
+    else if(opts.secret){val=h('span',{class:'val masked',text:'••••••••••••'});}
+    else val=h('span',{class:'val'+(opts.plain?' plain':''),text:value});
+    var v=h('div',{class:'v'},[val]);
+    if(opts.secret){var shown=false;v.appendChild(iconBtn('eye','Reveal',function(){shown=!shown;val.textContent=shown?value:'••••••••••••';val.classList.toggle('masked',!shown);}));}
+    if(opts.link)v.appendChild(iconBtn('open','Open site',function(){window.open(/^[a-z]+:\/\//i.test(value)?value:'https://'+value,'_blank','noopener');}));
+    if(value)v.appendChild(iconBtn('copy','Copy '+label.toLowerCase(),function(){copyText(value,label.toLowerCase());}));
+    return h('div',{class:'field'},[h('label',{text:label}),v]);}
+  function renderDetail(H){var box=$('#detail');clear(box);var p=selected&&PLAIN[selected];if(!p){box.hidden=true;return;}box.hidden=false;
+    var hd=h('div',{class:'hd'},[h('span',{class:'mg',text:mono(p.title),style:'background:'+hashColor(p.title)})]);
+    var sub=h('div',{class:'sub'},[h('span',{class:'pill cat',text:CATS[p.category]||'Other'})]);(p.tags||[]).forEach(function(t){sub.appendChild(h('span',{class:'pill',text:t}));});if(H.weak[p.id])sub.appendChild(h('span',{class:'pill weak',text:'weak password'}));if(H.reused[p.id])sub.appendChild(h('span',{class:'pill reused',text:'reused password'}));if(H.old[p.id])sub.appendChild(h('span',{class:'pill old',text:'over a year old'}));
+    hd.appendChild(h('div',{style:'flex:1;min-width:0'},[h('h2',{text:p.title}),sub]));hd.appendChild(iconBtn('star',p.fav?'Remove from favourites':'Add to favourites',function(){p.fav=!p.fav;saveEntry(p);},'star'));hd.lastChild.setAttribute('aria-pressed',String(!!p.fav));hd.lastChild.querySelector('path').setAttribute('fill',p.fav?'currentColor':'none');
+    hd.appendChild(h('button',{class:'btn quiet',type:'button',text:'✕','aria-label':'Close',onclick:function(){selected=null;renderAll();}}));box.appendChild(hd);
+    var uLabel=p.category==='wifi'?'Network name':p.category==='card'?'Card number':p.category==='bank'?'Customer ID / User ID':p.category==='id'?'Number / ID':'Username',pLabel=p.category==='wifi'?'Wi-Fi password':p.category==='card'?'Card PIN':p.category==='bank'?'Login password':'Password';
+    var fl=[field(uLabel,p.username),field(pLabel,p.password,{secret:true}),field('Website',p.url,{link:true})];
+    (p.fields||[]).forEach(function(f){if(f&&f.label&&f.value)fl.push(field(f.label,f.value,{secret:!!f.secret}));});
+    fl.push(field('Notes',p.notes,{plain:true}));fl.forEach(function(f){if(f)box.appendChild(f);});
+    if(p.password){var s=strength(p.password),m=h('div',{class:'meter','data-s':String(s.score)});m.appendChild(h('i',{style:'width:'+[0,25,50,75,100][s.score]+'%'}));box.appendChild(h('div',{},[m,h('div',{class:'meterline'},[h('span',{text:s.label+' password'}),h('span',{text:'changed '+ago(p.pwChangedAt||p.createdAt)})])]));}
+    box.appendChild(h('div',{class:'meta'},[h('span',{text:'Created '+fmtDate(p.createdAt)}),h('span',{text:'Updated '+fmtDate(p.updatedAt)})]));
+    if(p.history&&p.history.length){var d=h('details');d.appendChild(h('summary',{text:'Previous passwords ('+p.history.length+')'}));var hl=h('div',{class:'hist'});p.history.slice().reverse().forEach(function(x){var shown=false,val=h('span',{class:'val',text:'••••••••'});hl.appendChild(h('div',{},[val,h('span',{class:'hint',text:'until '+fmtDate(x.until)}),iconBtn('eye','Reveal',function(){shown=!shown;val.textContent=shown?x.password:'••••••••';}),iconBtn('copy','Copy',function(){copyText(x.password,'old password');})]));});d.appendChild(hl);box.appendChild(d);}
+    box.appendChild(h('div',{class:'acts'},[h('button',{class:'btn primary',type:'button',text:'Edit',onclick:function(){openEditor(p);}}),h('span',{class:'spacer'}),confirmBtn('Delete','Delete this entry?',function(){storeDel(p.id);selected=null;renderAll();toast('Deleted');})]));}
+  function renderAll(){if(!KEY)return;var H=health();renderRail(H);renderList(H);renderDetail(H);}
+
+  /* ---------- editor ---------- */
+  var editing=null;
+  function saveEntry(p){if(!KEY)return;p.updatedAt=Date.now();var id=p.id,payload=clone(p);delete payload.id;PLAIN[id]=p;renderAll();
+    encryptJSON(KEY,payload,id).then(function(blob){storeDoc({id:id,vid:META.vid,iv:blob.iv,ct:blob.ct,updatedAt:p.updatedAt});}).catch(function(){toast('Could not encrypt this entry');});}
+  function openEditor(p){editing=p||null;$('#editTitle').textContent=p?'Edit entry':'New entry';
+    $('#fTitle').value=p?p.title:'';$('#fCat').value=p&&CATS[p.category]?p.category:'login';$('#fUser').value=p?(p.username||''):'';$('#fPass').value=p?(p.password||''):'';$('#fPass').type='password';$('#fUrl').value=p?(p.url||''):'';$('#fTags').value=p?(p.tags||[]).join(', '):'';$('#fNotes').value=p?(p.notes||''):'';
+    setFields(p?(p.fields||[]):[]);
+    $('#gen').hidden=true;$('#genToggle').setAttribute('aria-expanded','false');catLabels();setMeter($('#fMeter'),$('#fMeterText'),$('#fMeterBits'),$('#fPass').value);
+    var d=$('#editDel');clear(d);if(p)d.appendChild(confirmBtn('Delete','Delete this entry?',function(){$('#editor').close();storeDel(p.id);selected=null;renderAll();toast('Deleted');}));
+    $('#editor').showModal();setTimeout(function(){$('#fTitle').focus();},30);}
+  function catLabels(){var c=$('#fCat').value;$('#fUserLabel').textContent=c==='wifi'?'Network name (SSID)':c==='card'?'Card number':c==='bank'?'Customer ID / User ID':c==='id'?'Number / ID':'Username or email';$('#fPassLabel').textContent=c==='wifi'?'Wi-Fi password':c==='card'?'Card PIN':c==='bank'?'Login password':c==='note'?'Secret (optional)':'Password';
+    var t=$('#fTemplate'),tpl=TEMPLATES[c];t.hidden=!tpl;if(tpl)t.textContent='Add the usual '+CATS[c].toLowerCase()+' fields';}
+  $('#fCat').addEventListener('change',catLabels);
+  /* extra fields */
+  function fieldRow(f){var row=h('div',{class:'frow'});var lab=h('input',{type:'text',placeholder:'Label',maxlength:'40',value:f.label||'','aria-label':'Field label'});var val=h('input',{type:f.secret?'password':'text',class:'val',placeholder:'Value',maxlength:'500',value:f.value||'','aria-label':'Field value',autocomplete:'off'});
+    var lock=h('button',{class:'btn icon lock',type:'button','aria-pressed':String(!!f.secret),title:'Hide this value until revealed','aria-label':'Secret',onclick:function(){var on=lock.getAttribute('aria-pressed')!=='true';lock.setAttribute('aria-pressed',String(on));val.type=on?'password':'text';}});lock.textContent='🔒';
+    var rm=h('button',{class:'btn icon',type:'button','aria-label':'Remove field',title:'Remove',text:'✕',onclick:function(){row.remove();}});
+    row.appendChild(lab);row.appendChild(val);row.appendChild(lock);row.appendChild(rm);return row;}
+  function setFields(list){var box=$('#fFields');clear(box);list.forEach(function(f){box.appendChild(fieldRow(f));});}
+  function readFields(){var out=[];document.querySelectorAll('#fFields .frow').forEach(function(r){var ins=r.querySelectorAll('input'),label=ins[0].value.trim(),value=ins[1].value;if(!label&&!value)return;out.push({label:label||'Field',value:value,secret:r.querySelector('.lock').getAttribute('aria-pressed')==='true'});});return out;}
+  $('#fAddField').addEventListener('click',function(){var r=fieldRow({label:'',value:'',secret:false});$('#fFields').appendChild(r);r.querySelector('input').focus();});
+  $('#fTemplate').addEventListener('click',function(){var tpl=TEMPLATES[$('#fCat').value]||[],have={};readFields().forEach(function(f){have[f.label.toLowerCase()]=1;});tpl.forEach(function(t){if(!have[t[0].toLowerCase()])$('#fFields').appendChild(fieldRow({label:t[0],value:'',secret:t[1]}));});});
+  $('#fPass').addEventListener('input',function(){setMeter($('#fMeter'),$('#fMeterText'),$('#fMeterBits'),this.value);});
+  $('#editClose').addEventListener('click',function(){$('#editor').close();});$('#editCancel').addEventListener('click',function(){$('#editor').close();});
+  $('#editForm').addEventListener('submit',function(e){e.preventDefault();if(!KEY)return;var title=$('#fTitle').value.trim();if(!title){$('#fTitle').focus();return;}
+    var pw=$('#fPass').value,tags=$('#fTags').value.split(',').map(function(t){return t.trim();}).filter(Boolean),now=Date.now();
+    var p=editing||{id:uid(),createdAt:now,fav:false,history:[],pwChangedAt:now};
+    if(editing&&editing.password&&pw!==editing.password){p.history=(p.history||[]).concat([{password:editing.password,until:now}]).slice(-5);p.pwChangedAt=now;}
+    if(!editing)p.pwChangedAt=now;
+    p.title=title;p.category=$('#fCat').value;p.username=$('#fUser').value.trim();p.password=pw;p.url=$('#fUrl').value.trim();p.tags=tags;p.notes=$('#fNotes').value;p.fields=readFields();
+    selected=p.id;saveEntry(p);$('#editor').close();toast(editing?'Saved':'Added '+title);editing=null;});
+  $('#newBtn').addEventListener('click',function(){openEditor(null);});
+  /* generator */
+  function genOpts(){var mode=document.querySelector('input[name="genMode"]:checked').value;return {mode:mode,len:+$('#genLen').value,upper:$('#gUpper').checked,lower:$('#gLower').checked,digits:$('#gDigits').checked,symbols:$('#gSymbols').checked,noAmbig:$('#gNoAmbig').checked,cap:$('#gCap').checked,num:$('#gNum').checked,sep:$('#gSep').value};}
+  function regen(){var o=genOpts(),pw=o.mode==='words'?genWords(o):genChars(o);$('#genOut').textContent=pw;var bits,label;
+    if(o.mode==='words'){bits=Math.round(o.len*Math.log2(WORDS.length)+(o.num?Math.log2(90*(o.len+1)):0));}else{bits=strength(pw).bits;}
+    label=bits<28?'Very weak':bits<40?'Weak':bits<60?'Good':'Strong';$('#genHint').textContent=label+' · ~'+bits+' bits';}
+  function genModeUI(){var words=genOpts().mode==='words';$('#genCharOpts').hidden=words;$('#genWordOpts').hidden=!words;var r=$('#genLen');if(words){r.min=4;r.max=10;if(+r.value>10||+r.value<4)r.value=6;$('#genLenLabel').textContent='Words';}else{r.min=8;r.max=64;if(+r.value<8)r.value=20;$('#genLenLabel').textContent='Length';}$('#genLenVal').textContent=r.value;regen();}
+  document.querySelectorAll('input[name="genMode"]').forEach(function(r){r.addEventListener('change',genModeUI);});
+  ['#gUpper','#gLower','#gDigits','#gSymbols','#gNoAmbig','#gCap','#gNum','#gSep'].forEach(function(s){$(s).addEventListener('change',regen);});
+  $('#genLen').addEventListener('input',function(){$('#genLenVal').textContent=this.value;regen();});
+  $('#genAgain').addEventListener('click',regen);
+  $('#genToggle').addEventListener('click',function(){var g=$('#gen');g.hidden=!g.hidden;this.setAttribute('aria-expanded',String(!g.hidden));if(!g.hidden)genModeUI();});
+  $('#genUse').addEventListener('click',function(){$('#fPass').value=$('#genOut').textContent;$('#fPass').type='text';setMeter($('#fMeter'),$('#fMeterText'),$('#fMeterBits'),$('#fPass').value);$('#gen').hidden=true;$('#genToggle').setAttribute('aria-expanded','false');});
+
+  /* ---------- settings: export / import / change / delete ---------- */
+  var DL=null;if(window.claude&&window.claude.use){window.claude.use('downloads').then(function(d){DL=d;}).catch(function(){});}
+  function deliver(name,data){if(DL){DL.save({filename:name,data:data}).then(function(){toast('Saved '+name);}).catch(function(e){if(e&&e.code==='declined')return;var ok=legacyCopy(data);toast(ok?'Download not available here — copied to the clipboard instead':'Download not available in this view');});}else{var ok=legacyCopy(data);toast(ok?'Download not available here — copied to the clipboard instead':'Download not available in this view');}}
+  function csvEsc(v){v=String(v==null?'':v);return /[",\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}
+  function parseCsv(text){var rows=[],row=[],cell='',q=false;for(var i=0;i<text.length;i++){var c=text[i];if(q){if(c==='"'){if(text[i+1]==='"'){cell+='"';i++;}else q=false;}else cell+=c;}else if(c==='"')q=true;else if(c===','){row.push(cell);cell='';}else if(c==='\n'||c==='\r'){if(c==='\r'&&text[i+1]==='\n')i++;row.push(cell);rows.push(row);row=[];cell='';}else cell+=c;}if(cell!==''||row.length){row.push(cell);rows.push(row);}return rows.filter(function(r){return r.some(function(x){return x.trim();});});}
+  $('#settingsBtn').addEventListener('click',function(){$('#csvConfirm').hidden=true;$('#impMsg').textContent='';$('#cpMsg').textContent='';$('#impPwWrap').hidden=true;$('#delConfirm').value='';$('#delVault').disabled=true;$('#settings').showModal();});
+  $('#setClose').addEventListener('click',function(){$('#settings').close();});
+  $('#expEnc').addEventListener('click',function(){if(!META)return;var docs=Object.keys(DOCS).map(function(id){return DOCS[id];});deliver('strongroom-backup-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify({format:'strongroom-backup',v:1,exportedAt:new Date().toISOString(),meta:META,entries:docs},null,2));});
+  $('#expCsv').addEventListener('click',function(){$('#csvConfirm').hidden=false;});$('#expCsvNo').addEventListener('click',function(){$('#csvConfirm').hidden=true;});
+  $('#expCsvYes').addEventListener('click',function(){$('#csvConfirm').hidden=true;var head='name,url,username,password,notes,type,tags,fields\n';var body=entries().sort(function(a,b){return a.title.localeCompare(b.title);}).map(function(p){return [p.title,p.url||'',p.username||'',p.password||'',p.notes||'',p.category||'login',(p.tags||[]).join('; '),(p.fields||[]).map(function(f){return f.label+(f.secret?' [hidden]':'')+': '+f.value;}).join('\n')].map(csvEsc).join(',');}).join('\n');deliver('strongroom-plain-'+new Date().toISOString().slice(0,10)+'.csv',head+body+'\n');});
+  var pendingBackup=null;
+  function readFile(f){return new Promise(function(res,rej){var rd=new FileReader();rd.onload=function(){res(rd.result);};rd.onerror=rej;rd.readAsText(f);});}
+  function cleanFields(list){return (list||[]).map(function(f){return f&&f.label&&String(f.value||'').trim()?{label:String(f.label).trim().slice(0,40),value:String(f.value).trim(),secret:!!f.secret}:null;}).filter(Boolean);}
+  function importRecords(recs){var added=0,updated=0,byKey={};entries().forEach(function(p){byKey[(p.title+'|'+(p.username||'')).toLowerCase()]=p;});
+    recs.forEach(function(r){var title=String(r.title||'').trim();if(!title)return;var k=(title+'|'+(r.username||'')).toLowerCase(),ex=byKey[k],now=Date.now(),fields=cleanFields(r.fields);
+      if(ex){var ch=false;['username','password','url','notes'].forEach(function(f){if(r[f]&&r[f]!==ex[f]){if(f==='password'&&ex.password){ex.history=(ex.history||[]).concat([{password:ex.password,until:now}]).slice(-5);ex.pwChangedAt=now;}ex[f]=r[f];ch=true;}});if(r.tags&&r.tags.length){ex.tags=r.tags;ch=true;}
+        if(fields.length){var have={};(ex.fields||[]).forEach(function(f){have[f.label.toLowerCase()]=f;});fields.forEach(function(f){var o=have[f.label.toLowerCase()];if(o){if(o.value!==f.value){o.value=f.value;ch=true;}}else{ex.fields=(ex.fields||[]).concat([f]);ch=true;}});}
+        if(r.category&&CATS[r.category]&&r.category!==ex.category&&ex.category==='login'){ex.category=r.category;ch=true;}
+        if(ch){saveEntry(ex);updated++;}}
+      else{var p={id:uid(),title:title,category:CATS[r.category]?r.category:'login',username:r.username||'',password:r.password||'',url:r.url||'',notes:r.notes||'',tags:r.tags||[],fields:fields,fav:!!r.fav,createdAt:r.createdAt||now,pwChangedAt:r.pwChangedAt||now,history:[]};byKey[k]=p;saveEntry(p);added++;}});
+    return 'Imported '+added+' new, updated '+updated+'.';}
+  function normCat(s){s=String(s||'').toLowerCase();return /card|credit|debit/.test(s)?'card':/bank|netbank|upi|account/.test(s)?'bank':/note/.test(s)?'note':/wifi|wi-fi|network|router/.test(s)?'wifi':/ident|aadhaar|passport|licen|pan\b|document/.test(s)?'id':CATS[s]?s:'';}
+  function parseFieldLines(text){return String(text||'').split(/\n/).map(function(l){var m=/^\s*([^:]{1,40}?)\s*(\[hidden\])?\s*:\s*(.+)$/.exec(l);return m?{label:m[1].trim(),value:m[3].trim(),secret:!!m[2]||SECRET_RE.test(m[1])}:null;}).filter(Boolean);}
+  function csvToRecords(text){var rows=parseCsv(text);if(rows.length<2)return null;var head=rows[0].map(function(x){return x.trim().toLowerCase();}),used={};
+    function col(names){for(var i=0;i<names.length;i++){var k=head.indexOf(names[i]);if(k>=0){used[k]=1;return k;}}return -1;}
+    var cT=col(['name','title','account','site','app','service']),cU=col(['url','login_uri','website','web site','uri','link']),cN=col(['username','login_username','user','email','user name','login','user id','userid','customer id']),cP=col(['password','login_password','pass','pwd']),cX=col(['notes','note','extra','comments','remarks']),cC=col(['type','category','folder']),cG=col(['tags','tag']),cF=col(['favorite','favourite','fav']),cFl=col(['fields','custom fields']);
+    if(cT<0||cP<0)return null;
+    return rows.slice(1).map(function(r){var cat=cC>=0?normCat(r[cC]):'';var fields=cFl>=0?parseFieldLines(r[cFl]):[];
+      head.forEach(function(hd,i){if(used[i]||!hd||!String(r[i]||'').trim())return;fields.push({label:rows[0][i].trim(),value:String(r[i]).trim(),secret:SECRET_RE.test(hd)});});
+      if(!cat)cat=inferCat(r[cT],fields);
+      return {title:r[cT],url:cU>=0?r[cU]:'',username:cN>=0?r[cN]:'',password:r[cP],notes:cX>=0?r[cX]:'',category:cat||'login',tags:cG>=0?String(r[cG]||'').split(/[;,]/).map(function(t){return t.trim();}).filter(Boolean):[],fields:fields,fav:cF>=0&&/^(1|true|yes)/i.test(r[cF]||'')};});}
+  function inferCat(title,fields){var s=String(title||'')+' '+(fields||[]).map(function(f){return f.label;}).join(' ');return normCat(/wifi|wi-fi|router|ssid/i.test(s)?'wifi':/cvv|expiry|card/i.test(s)?'card':/ifsc|upi|bank|account number|customer id|netbanking/i.test(s)?'bank':/aadhaar|passport|licen|\bpan\b|voter/i.test(s)?'id':'')||'';}
+
+  /* ---------- paste a list ---------- */
+  var KEYS={title:/^(name|title|site|app|account|service|platform|company|website name|for|bank name)$/,user:/^(user|username|user name|userid|user id|login|login id|loginid|email|e-mail|mail|id|customer id|customerid|cust id|cif|net ?banking id|mobile number as id)$/,pass:/^(pass|password|pwd|passcode|login password|net ?banking password|account password)$/,url:/^(url|link|website|web|site url|address|web address)$/,notes:/^(note|notes|remark|remarks|comment|comments|hint|info)$/};
+  function isEmail(s){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);}
+  function isUrl(s){return /^(https?:\/\/|www\.)\S+$/i.test(s)||/^[a-z0-9.-]+\.(com|in|org|net|io|co|app|dev|gov|edu|me)(\/\S*)?$/i.test(s);}
+  function assign(rec,key,val){var k=key.trim().toLowerCase().replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ');val=val.trim();if(!val)return;
+    if(KEYS.title.test(k)&&!rec.title)rec.title=val;
+    else if(KEYS.user.test(k)&&!rec.username)rec.username=val;
+    else if(KEYS.pass.test(k)&&!rec.password)rec.password=val;
+    else if(KEYS.url.test(k)&&!rec.url&&isUrl(val))rec.url=val;
+    else if(KEYS.notes.test(k))rec.notes+=(rec.notes?'\n':'')+val;
+    else rec.fields.push({label:key.trim(),value:val,secret:SECRET_RE.test(k)});}
+  function hasSep(line){return /[|\t;]|\s[-–—]\s|\s\/\s|,\s/.test(line);}
+  function splitLine(line){var seps=[/\s*\|\s*/,/\t+/,/\s+[-–—]\s+/,/\s+\/\s+/,/,\s+/,/;\s*/];for(var i=0;i<seps.length;i++){var parts=line.split(seps[i]).map(function(s){return s.trim();}).filter(Boolean);if(parts.length>=2)return parts;}var ws=line.split(/\s+/).filter(Boolean);return (ws.length===3||(ws.length>=2&&ws.length<=5&&ws.some(function(w){return isEmail(w)||isUrl(w);})))?ws:[line];}
+  function parseLine(line){var rec={title:'',username:'',password:'',url:'',notes:'',fields:[],category:''};var m=/^([^:]{1,40}):\s*(.+)$/.exec(line);var rest=line;
+    if(m&&!/^[a-z]+:\/\//i.test(line)&&!isEmail(m[1].trim())){rec.title=m[1].trim();rest=m[2];}
+    var parts=splitLine(rest);if(!rec.title&&parts.length>=2&&!isEmail(parts[0])&&!isUrl(parts[0])){rec.title=parts.shift();}
+    var left=[];parts.forEach(function(p){if(!rec.url&&isUrl(p))rec.url=p;else if(!rec.username&&isEmail(p))rec.username=p;else left.push(p);});
+    if(!rec.username&&left.length>=2)rec.username=left.shift();if(!rec.password&&left.length)rec.password=left.shift();if(left.length)rec.notes=left.join(' ');
+    if(rec.username&&!rec.password&&isEmail(rec.username)&&/^([^\s@]+@[^\s@]+):(.+)$/.test(line)){var mm=/^([^\s@]+@[^\s@]+):(.+)$/.exec(line);rec.username=mm[1];rec.password=mm[2];rec.title=mm[1].split('@')[1];}
+    if(!rec.title)rec.title=rec.url?domain(rec.url):(rec.username?(isEmail(rec.username)?rec.username.split('@')[1]:rec.username):'');
+    return rec.title||rec.password?rec:null;}
+  function parseBlock(block){var lines=block.split('\n').map(function(l){return l.trim();}).filter(Boolean);if(!lines.length)return null;if(lines.length===1)return parseLine(lines[0]);
+    var rec={title:'',username:'',password:'',url:'',notes:'',fields:[],category:''},free=[];
+    lines.forEach(function(l,i){var m=/^([^:=]{1,40}?)\s*[:=]\s*(.+)$/.exec(l);if(m&&!isUrl(l)){assign(rec,m[1],m[2]);return;}
+      var m2=/^([A-Za-z][A-Za-z ]{0,30}?)\s+-\s+(.+)$/.exec(l);if(m2&&(KEYS.title.test(m2[1].toLowerCase())||KEYS.user.test(m2[1].toLowerCase())||KEYS.pass.test(m2[1].toLowerCase())||KEYS.url.test(m2[1].toLowerCase()))){assign(rec,m2[1],m2[2]);return;}
+      if(i===0&&!isEmail(l)&&!isUrl(l)&&!hasSep(l)){rec.title=l;return;}free.push(l);});
+    free.forEach(function(l){if(!rec.url&&isUrl(l)){rec.url=l;return;}if(!rec.username&&isEmail(l)){rec.username=l;return;}
+      var parts=splitLine(l);if(parts.length>=2&&!rec.password){var r2=parseLine(l);if(r2){if(!rec.title)rec.title=r2.title;if(!rec.username)rec.username=r2.username;if(!rec.password)rec.password=r2.password;if(!rec.url)rec.url=r2.url;return;}}
+      if(!rec.password&&rec.username&&!/\s/.test(l))rec.password=l;else rec.notes+=(rec.notes?'\n':'')+l;});
+    if(!rec.title)rec.title=rec.url?domain(rec.url):(rec.username||'');
+    return rec.title||rec.password||rec.fields.length?rec:null;}
+  function parseLoose(text){text=String(text||'').replace(/\r\n?/g,'\n').replace(/[ \t]+$/gm,'');var lines=text.split('\n').filter(function(l){return l.trim();});if(!lines.length)return [];
+    var tabRows=lines.map(function(l){return l.split('\t');});
+    if(tabRows.length>=2&&tabRows.every(function(r){return r.length>=2;})){var hd=tabRows[0].join(' ').toLowerCase();
+      if(/pass|user|name|site|login/.test(hd)){var recs=csvToRecords(tabRows.map(function(r){return r.map(csvEsc).join(',');}).join('\n'));if(recs)return recs.map(function(r){if(!r.category)r.category=inferCat(r.title,r.fields);return r;});}
+      return tabRows.map(function(r){return {title:r[0].trim(),username:(r[1]||'').trim(),password:(r[2]||'').trim(),url:(r[3]||'').trim(),notes:r.slice(4).join(' ').trim(),fields:[],category:''};}).filter(function(r){return r.title;});}
+    var blocks=text.split(/\n\s*\n/).map(function(b){return b.trim();}).filter(Boolean),out=[];
+    var kv=lines.filter(function(l){var m=/^([^:=|\/,\t]{1,40}?)\s*[:=]\s*(\S.*)$/.exec(l);return m&&!/^[a-z]+:\/\//i.test(l)&&!hasSep(m[2]);}).length;
+    var sepLines=lines.filter(function(l){return splitLine(l).length>=2;}).length;
+    if(blocks.length===1&&lines.length>1&&kv<lines.length*0.3&&sepLines>=lines.length*0.7){lines.forEach(function(l){var r=parseLine(l);if(r)out.push(r);});}
+    else blocks.forEach(function(b){var r=parseBlock(b);if(r)out.push(r);});
+    out.forEach(function(r){if(!r.category)r.category=inferCat(r.title,r.fields);promote(r);if(!r.category&&!r.password&&r.fields.length&&!r.username)r.category='note';});
+    return out;}
+  function promote(r){var take=function(re){for(var i=0;i<r.fields.length;i++){if(re.test(r.fields[i].label.trim())){var v=r.fields[i].value;r.fields.splice(i,1);return v;}}return '';};
+    if(r.category==='card'){if(!r.username)r.username=take(/^card ?(number|no\.?|num)$/i);if(!r.password)r.password=take(/^(atm |card )?pin$/i);}
+    else if(r.category==='id'){if(!r.username)r.username=take(/^(number|no\.?|id( number)?|(aadhaar|pan|passport|licen[cs]e) ?(number|no\.?)?)$/i);}
+    else if(r.category==='bank'){if(!r.username)r.username=take(/^(customer id|user ?id|login id|cif|cust id)$/i);if(!r.password)r.password=take(/^(login |net ?banking )?password$/i);}
+    else if(r.category==='wifi'){if(!r.username)r.username=take(/^(ssid|network( name)?|wifi name)$/i);if(!r.password)r.password=take(/^(wifi |network )?(password|key|passphrase)$/i);}}
+  var PASTE=[];
+  function renderPreview(){var box=$('#ptable');clear(box);
+    PASTE.forEach(function(r,i){var row=h('div',{class:'prow'+(r.skip?' off':'')});
+      var cb=h('input',{type:'checkbox','aria-label':'Import this entry'});cb.checked=!r.skip;cb.addEventListener('change',function(){r.skip=!cb.checked;row.classList.toggle('off',r.skip);});row.appendChild(cb);
+      var t=h('input',{type:'text',value:r.title||'','aria-label':'Title',placeholder:'Title'});t.addEventListener('input',function(){r.title=t.value;});row.appendChild(t);
+      row.appendChild(h('span',{class:'m',text:r.username||'—',title:r.username||''}));
+      row.appendChild(h('span',{class:'m',text:r.password?'•'.repeat(Math.min(12,r.password.length)):'no password',style:r.password?'':'color:var(--warn)'}));
+      var sel=h('select',{'aria-label':'Type'});Object.keys(CATS).forEach(function(c){sel.appendChild(h('option',{value:c,text:CATS[c]}));});sel.value=CATS[r.category]?r.category:'login';sel.addEventListener('change',function(){r.category=sel.value;});row.appendChild(sel);
+      var extras=[];if(r.url)extras.push(r.url);(r.fields||[]).forEach(function(f){extras.push(f.label+': '+(f.secret?'•••':f.value));});if(r.notes)extras.push('note: '+r.notes.split('\n')[0]);
+      if(extras.length)row.appendChild(h('span',{class:'x',text:extras.join('  ·  '),title:extras.join('\n')}));
+      box.appendChild(row);});
+    var n=PASTE.filter(function(r){return !r.skip;}).length;$('#pasteSum').textContent=PASTE.length+' entr'+(PASTE.length===1?'y':'ies')+' found, '+n+' selected. Passwords are shown as dots here; open an entry after importing to check it.';$('#pasteGo').textContent='Import '+n;}
+  $('#pastePreview').addEventListener('click',function(){if(!KEY)return;PASTE=parseLoose($('#pasteText').value);if(!PASTE.length){$('#pasteMsg').textContent='Nothing recognisable in that text. Try one account per line: Site - username - password.';return;}$('#pasteMsg').textContent='';renderPreview();$('#pasteDlg').showModal();});
+  $('#pasteClose').addEventListener('click',function(){$('#pasteDlg').close();});$('#pasteBack').addEventListener('click',function(){$('#pasteDlg').close();});
+  $('#pasteGo').addEventListener('click',function(){if(!KEY)return;var recs=PASTE.filter(function(r){return !r.skip&&String(r.title||'').trim();});if(!recs.length){$('#pasteDlg').close();return;}var msg=importRecords(recs);$('#pasteDlg').close();$('#pasteText').value='';$('#pasteMsg').textContent=msg;toast(msg);PASTE=[];});
+  $('#impBtn').addEventListener('click',function(){if(!KEY)return;var msg=$('#impMsg');var f=$('#impFile').files&&$('#impFile').files[0];
+    var go=function(text){text=String(text||'').trim();if(!text){msg.textContent='Choose a file first.';return;}
+      if(text[0]==='{'){var j;try{j=JSON.parse(text);}catch(e){msg.textContent='That file is not valid JSON.';return;}if(j.format!=='strongroom-backup'||!j.meta||!Array.isArray(j.entries)){msg.textContent='Not a Strongroom backup.';return;}
+        if(j.meta.vid===META.vid){var n=0;j.entries.forEach(function(d){if(!d||!d.id||!d.ct)return;var cur=DOCS[d.id];if(!cur||(+d.updatedAt||0)>(+cur.updatedAt||0)){storeDoc(clone(d));n++;}});decryptMany(Object.keys(DOCS)).then(renderAll);msg.textContent='Restored '+n+' entr'+(n===1?'y':'ies')+' from the backup.';$('#impFile').value='';return;}
+        var pw=$('#impPw').value;if(!pw){pendingBackup=j;$('#impPwWrap').hidden=false;$('#impPw').focus();msg.textContent='';return;}
+        msg.textContent='Decrypting…';openWith(pw,j.meta).then(function(k){return Promise.all(j.entries.map(function(d){return decryptJSON(k,d,d.id).then(function(p){p.id=d.id;return p;},function(){return null;});}));}).then(function(list){var recs=list.filter(Boolean);msg.textContent=importRecords(recs)+(recs.length<j.entries.length?' '+(j.entries.length-recs.length)+' could not be decrypted.':'');$('#impPwWrap').hidden=true;$('#impPw').value='';$('#impFile').value='';}).catch(function(){msg.textContent='That is not the password for this backup.';});return;}
+      var recs=csvToRecords(text);if(!recs){msg.textContent='Could not find name and password columns in that CSV.';return;}msg.textContent=importRecords(recs);$('#impFile').value='';};
+    if(f)readFile(f).then(go,function(){msg.textContent='Could not read that file.';});else if(pendingBackup&&$('#impPw').value)go(JSON.stringify(pendingBackup));else msg.textContent='Choose a file first.';});
+  $('#cpNew').addEventListener('input',function(){setMeter($('#cpMeter'),null,null,this.value);});
+  $('#cpBtn').addEventListener('click',function(){if(!KEY||!META)return;var cur=$('#cpCur').value,nw=$('#cpNew').value,msg=$('#cpMsg'),btn=$('#cpBtn');
+    if(nw.length<10||strength(nw).score<2){msg.textContent='The new password needs to be longer and less guessable.';return;}
+    btn.disabled=true;msg.textContent='Checking…';
+    openWith(cur,META).then(function(){msg.textContent='Re-encrypting…';return makeMeta(nw);}).then(function(r){var ids=Object.keys(PLAIN),i=0;
+      function next(){if(i>=ids.length)return Promise.resolve();var id=ids[i++],p=PLAIN[id],payload=clone(p);delete payload.id;return encryptJSON(r.key,payload,id).then(function(blob){var d={id:id,vid:r.meta.vid,iv:blob.iv,ct:blob.ct,updatedAt:p.updatedAt||Date.now()};DOCS[id]=d;PENDING[id]='set';cache();return DB?pushDoc(d):Promise.resolve();}).then(next);}
+      return next().then(function(){KEY=r.key;META=r.meta;PENDING.__meta=true;cache();return DB?pushMeta():Promise.resolve();});}).then(function(){msg.textContent='Done. Use the new password from now on, on every device.';$('#cpCur').value=$('#cpNew').value='';setMeter($('#cpMeter'),null,null,'');toast('Master password changed');}).catch(function(e){msg.textContent=e&&e.code?'Some entries were not saved to the cloud yet ('+e.code+'). They will retry; do not lock until the status shows saved.':'The current password is wrong.';}).then(function(){btn.disabled=false;});});
+  $('#delConfirm').addEventListener('input',function(){$('#delVault').disabled=this.value!=='DELETE';});
+  $('#delVault').addEventListener('click',function(){if($('#delConfirm').value!=='DELETE')return;var ids=Object.keys(DOCS);ids.forEach(function(id){storeDel(id);});
+    var finish=function(){META=null;DOCS={};PLAIN={};PENDING={};cache();try{localStorage.removeItem(LS.meta);localStorage.removeItem(LS.entries);localStorage.removeItem(LS.pending);}catch(e){}$('#settings').close();KEY=null;lock();toast('Vault deleted');};
+    if(DB){retry(function(){return DB.doc('vault/meta').delete();}).then(finish,finish);}else finish();});
+
+  /* ---------- search & keys ---------- */
+  var qT=null;$('#q').addEventListener('input',function(){clearTimeout(qT);var v=this.value;qT=setTimeout(function(){query=v.trim();renderAll();},120);});
+  document.addEventListener('keydown',function(e){if(!KEY)return;if(e.key==='/'&&!e.ctrlKey&&!e.metaKey&&!/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)&&!document.querySelector('dialog[open]')){e.preventDefault();$('#q').focus();$('#q').select();}
+    if(e.key==='Escape'&&selected&&!document.querySelector('dialog[open]')){selected=null;renderAll();}});
+  window.addEventListener('pagehide',function(){KEY=null;PLAIN={};});
+
+  lockScreen();initCloud();
+  setInterval(function(){if(DB&&definitive&&Object.keys(PENDING).length)flushPending();},30000);
+})();
+</script>

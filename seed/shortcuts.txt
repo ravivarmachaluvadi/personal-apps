@@ -1,0 +1,260 @@
+# Starter shortcuts for Keycap Atlas. One per line:  app | os | keys | action | note | tags
+# os: win, mac, linux, any.  Keys: join simultaneous keys with +, separate steps with a space.
+
+Windows 11 | win | Win+E | Open File Explorer | | system
+Windows 11 | win | Win+D | Show or hide the desktop | | system, windows
+Windows 11 | win | Win+L | Lock the PC | | system
+Windows 11 | win | Win+V | Clipboard history | Turn it on the first time it asks | editing
+Windows 11 | win | Win+Shift+S | Snip a screenshot | Opens the Snipping Tool overlay | screenshot
+Windows 11 | win | Win+. | Emoji, GIF and symbol picker | | editing
+Windows 11 | win | Win+Tab | Task View: desktops and open windows | | windows
+Windows 11 | win | Alt+Tab | Switch between open apps | Hold Alt and keep tapping Tab | windows
+Windows 11 | win | Win+Left | Snap the window to the left half | Win+Right for the right half; then Win+Up or Down for quarters | windows
+Windows 11 | win | Win+Z | Snap layouts menu | | windows
+Windows 11 | win | Win+I | Open Settings | | system
+Windows 11 | win | Ctrl+Shift+Esc | Task Manager, directly | | system
+Windows 11 | win | Win+X | Quick Link menu: Terminal, Device Manager, Disk Management | | system
+Windows 11 | win | Win+1 | Open the first pinned taskbar app | Win+2, Win+3 … for the rest | apps
+Windows 11 | win | Win+Ctrl+D | New virtual desktop | | desktops
+Windows 11 | win | Win+Ctrl+Right | Switch to the next virtual desktop | Win+Ctrl+Left goes back | desktops
+Windows 11 | win | Win+A | Quick Settings: Wi-Fi, volume, brightness | | system
+Windows 11 | win | Win+N | Notification centre and calendar | | system
+Windows 11 | win | Win+H | Voice typing | | editing
+Windows 11 | win | Win+K | Cast to a wireless display | | display
+Windows 11 | win | Win+P | Choose a display mode: duplicate, extend | | display
+Windows 11 | win | Alt+F4 | Close the active window | From the desktop it opens the Shut Down dialog | windows
+Windows 11 | win | Win+R | Run dialog | | system
+Windows 11 | win | Win+M | Minimise all windows | Win+Shift+M restores them | windows
+Windows 11 | win | Win+G | Game Bar: screen recording, performance overlay | | screenshot
+Windows 11 | win | Win+Space | Switch keyboard layout or input language | | system
+Windows 11 | win | Win+PrtScn | Screenshot straight to Pictures\Screenshots | | screenshot
+Windows 11 | win | Ctrl+Shift+N | New folder in File Explorer | | files
+Windows 11 | win | Alt+Enter | Properties of the selected file | In File Explorer | files
+Windows 11 | win | Win+Ctrl+Shift+B | Restart the graphics driver | Fixes a black or frozen screen without rebooting | system
+
+macOS | mac | Cmd+Space | Spotlight search | | system
+macOS | mac | Cmd+Tab | Switch between apps | | windows
+macOS | mac | Cmd+` | Switch between windows of the same app | | windows
+macOS | mac | Cmd+Shift+3 | Screenshot of the whole screen | | screenshot
+macOS | mac | Cmd+Shift+4 | Screenshot of a selected area | Press Space afterwards to capture a whole window | screenshot
+macOS | mac | Cmd+Shift+5 | Screenshot and screen-recording toolbar | | screenshot
+macOS | mac | Cmd+Ctrl+Q | Lock the screen | | system
+macOS | mac | Cmd+Q | Quit the app | | windows
+macOS | mac | Cmd+W | Close the window or tab | | windows
+macOS | mac | Cmd+H | Hide the app | Cmd+Opt+H hides every other app | windows
+macOS | mac | Cmd+, | App settings | | system
+macOS | mac | Cmd+Opt+Esc | Force Quit | | system
+macOS | mac | Ctrl+Up | Mission Control | | windows
+macOS | mac | Ctrl+Cmd+Space | Emoji and symbols | | editing
+macOS | mac | Cmd+Shift+. | Show hidden files in Finder | | files
+macOS | mac | Ctrl+Cmd+F | Toggle full screen | | windows
+macOS | mac | Cmd+Delete | Move the selected file to the Trash | Cmd+Shift+Delete empties the Trash | files
+macOS | mac | Cmd+Opt+D | Show or hide the Dock | | system
+macOS | mac | Cmd+Shift+N | New folder in Finder | | files
+macOS | mac | Cmd+Opt+V | Move the copied files here | Cut-and-paste for Finder, after Cmd+C | files
+
+VS Code | win | Ctrl+Shift+P | Command Palette | F1 works too. On a Mac use ⌘ wherever these say Ctrl | navigation
+VS Code | win | Ctrl+P | Quick Open a file by name | | navigation
+VS Code | win | Ctrl+` | Toggle the integrated terminal | Ctrl+Shift+` opens a new one | terminal
+VS Code | win | Ctrl+B | Toggle the sidebar | | layout
+VS Code | win | Ctrl+Shift+E | Explorer view | | navigation
+VS Code | win | Ctrl+Shift+F | Find in all files | | search
+VS Code | win | Ctrl+Shift+G | Source Control view | | git
+VS Code | win | Ctrl+D | Add the next occurrence to the selection | | editing, multicursor
+VS Code | win | Ctrl+Shift+L | Select every occurrence of the selection | | editing, multicursor
+VS Code | win | Ctrl+Alt+Down | Add a cursor on the line below | Alt+Click adds one anywhere | editing, multicursor
+VS Code | win | Alt+Up | Move the line up | Alt+Down moves it down | editing
+VS Code | win | Shift+Alt+Down | Copy the line down | | editing
+VS Code | win | Ctrl+/ | Toggle line comment | | editing
+VS Code | win | Ctrl+Shift+K | Delete the line | | editing
+VS Code | win | Ctrl+Shift+Enter | Insert a line above | Ctrl+Enter inserts below | editing
+VS Code | win | F2 | Rename the symbol everywhere | | refactor
+VS Code | win | F12 | Go to definition | Alt+F12 peeks it inline | navigation
+VS Code | win | Ctrl+Shift+O | Go to a symbol in this file | | navigation
+VS Code | win | Ctrl+T | Go to a symbol in the workspace | | navigation
+VS Code | win | Ctrl+G | Go to line | | navigation
+VS Code | win | Shift+Alt+F | Format the document | | editing
+VS Code | win | Ctrl+. | Quick Fix and code actions | | refactor
+VS Code | win | Ctrl+Space | Trigger suggestions | | editing
+VS Code | win | Ctrl+\ | Split the editor | | layout
+VS Code | win | Ctrl+1 | Focus editor group 1 | Ctrl+2, Ctrl+3 for the others | layout
+VS Code | win | Ctrl+Tab | Cycle through open editors | | navigation
+VS Code | win | Ctrl+Shift+T | Reopen the closed editor | | navigation
+VS Code | win | Ctrl+K Ctrl+S | Keyboard Shortcuts editor | | settings
+VS Code | win | Ctrl+K Z | Zen mode | Esc Esc leaves it | layout
+VS Code | win | Ctrl+Shift+M | Problems panel | | debug
+VS Code | win | Ctrl+Shift+[ | Fold the region | Ctrl+Shift+] unfolds | editing
+VS Code | win | Ctrl+Shift+V | Markdown preview | Ctrl+K V opens it to the side | markdown
+VS Code | win | Ctrl+K Ctrl+T | Choose a colour theme | | settings
+
+Chrome | win | Ctrl+T | New tab | | tabs
+Chrome | win | Ctrl+W | Close the tab | | tabs
+Chrome | win | Ctrl+Shift+T | Reopen the last closed tab | Keep pressing for older ones | tabs
+Chrome | win | Ctrl+L | Jump to the address bar | Alt+D does the same | navigation
+Chrome | win | Ctrl+Tab | Next tab | Ctrl+Shift+Tab goes back | tabs
+Chrome | win | Ctrl+1 | Jump to tab 1 | Through Ctrl+8; Ctrl+9 is always the last tab | tabs
+Chrome | win | Ctrl+N | New window | | windows
+Chrome | win | Ctrl+Shift+N | New Incognito window | | windows
+Chrome | win | Ctrl+D | Bookmark this page | | bookmarks
+Chrome | win | Ctrl+Shift+B | Show or hide the bookmarks bar | | bookmarks
+Chrome | win | Ctrl+Shift+O | Bookmark manager | | bookmarks
+Chrome | win | Ctrl+H | History | | navigation
+Chrome | win | Ctrl+J | Downloads | | navigation
+Chrome | win | F12 | DevTools | Ctrl+Shift+I too | devtools
+Chrome | win | Ctrl+Shift+J | DevTools Console | | devtools
+Chrome | win | Ctrl+Shift+C | Inspect an element | | devtools
+Chrome | win | Ctrl+F | Find on the page | Enter for next, Shift+Enter for previous | search
+Chrome | win | Ctrl+Shift+Delete | Clear browsing data | | privacy
+Chrome | win | Ctrl+= | Zoom in | Ctrl+- zooms out, Ctrl+0 resets | view
+Chrome | win | Ctrl+R | Reload | Ctrl+Shift+R reloads ignoring the cache | navigation
+Chrome | win | Alt+Left | Back | Alt+Right goes forward | navigation
+Chrome | win | Ctrl+Shift+A | Search open tabs | | tabs
+Chrome | win | Ctrl+U | View page source | | devtools
+
+Excel | win | Ctrl+; | Insert today's date | Ctrl+Shift+; inserts the time | data
+Excel | win | F2 | Edit the active cell | | editing
+Excel | win | F4 | Cycle $ absolute references while editing | Outside editing it repeats the last action | formulas
+Excel | win | Ctrl+Down | Jump to the edge of the data block | Any arrow works | navigation
+Excel | win | Ctrl+Shift+Down | Select to the edge of the data block | | selection
+Excel | win | Ctrl+Space | Select the whole column | Shift+Space selects the row | selection
+Excel | win | Ctrl+Shift+L | Toggle AutoFilter | | data
+Excel | win | Alt+= | AutoSum | | formulas
+Excel | win | Ctrl+1 | Format Cells dialog | | formatting
+Excel | win | Ctrl+T | Turn the range into a Table | | data
+Excel | win | Ctrl+D | Fill down | Ctrl+R fills right | editing
+Excel | win | Ctrl+Enter | Fill the selection with the same entry | | editing
+Excel | win | Alt+Enter | New line inside the cell | | editing
+Excel | win | Ctrl+PgDn | Next sheet | Ctrl+PgUp for the previous | navigation
+Excel | win | Ctrl+Shift+= | Insert cells, rows or columns | Ctrl+- deletes | editing
+Excel | win | Ctrl+` | Show formulas instead of values | | formulas
+Excel | win | Ctrl+E | Flash Fill | | data
+Excel | win | F9 | Recalculate all workbooks | | formulas
+Excel | win | Alt+H O I | AutoFit column width | Ribbon key sequence: Home, Format, AutoFit | formatting
+Excel | win | Ctrl+Shift+V | Paste values only | Microsoft 365 builds | editing
+Excel | win | Ctrl+9 | Hide the selected rows | Ctrl+0 hides columns | formatting
+Excel | win | Shift+F11 | Insert a new worksheet | | sheets
+Excel | win | Ctrl+F1 | Show or hide the ribbon | | view
+Excel | win | Alt+F1 | Quick chart of the selection | F11 puts it on its own sheet | charts
+Excel | win | Ctrl+Shift+3 | Apply the date format | Ctrl+Shift+4 currency, Ctrl+Shift+5 percent | formatting
+Excel | win | Ctrl+Home | Go to A1 | Ctrl+End goes to the last used cell | navigation
+Excel | win | Ctrl+K | Insert a hyperlink | | editing
+
+Gmail | any | c | Compose | Turn on keyboard shortcuts in Settings → General first | mail
+Gmail | any | / | Search | | mail
+Gmail | any | e | Archive | | mail
+Gmail | any | # | Delete | | mail
+Gmail | any | r | Reply | a replies to all, f forwards | mail
+Gmail | any | j | Older conversation | k moves to the newer one | navigation
+Gmail | any | o | Open the conversation | Enter works too | navigation
+Gmail | any | u | Back to the list | | navigation
+Gmail | any | s | Star or unstar | | mail
+Gmail | any | g i | Go to Inbox | g s starred, g d drafts, g t sent | navigation
+Gmail | any | ? | Show the shortcut cheat sheet | | help
+Gmail | any | Ctrl+Enter | Send | | mail
+Gmail | any | Shift+I | Mark as read | Shift+U marks unread | mail
+Gmail | any | l | Label | | mail
+Gmail | any | v | Move to | | mail
+Gmail | any | x | Select the conversation | | mail
+Gmail | any | z | Undo the last action | | mail
+Gmail | any | m | Mute the conversation | | mail
+
+Windows Terminal | win | Ctrl+Shift+T | New tab with the default profile | | tabs
+Windows Terminal | win | Ctrl+Shift+W | Close the pane or tab | | tabs
+Windows Terminal | win | Alt+Shift+D | Split the pane, same profile | Auto-picks the direction | panes
+Windows Terminal | win | Alt+Shift+- | Split the pane horizontally | Alt+Shift++ splits vertically | panes
+Windows Terminal | win | Alt+Left | Move focus to the pane on the left | Any arrow | panes
+Windows Terminal | win | Alt+Shift+Left | Resize the pane | Any arrow | panes
+Windows Terminal | win | Ctrl+Tab | Next tab | Ctrl+Shift+Tab goes back | tabs
+Windows Terminal | win | Ctrl+Alt+1 | Jump to tab 1 | Ctrl+Alt+2, 3 … | tabs
+Windows Terminal | win | Ctrl+Shift+F | Find | | search
+Windows Terminal | win | Ctrl+, | Settings | Ctrl+Shift+, opens settings.json | settings
+Windows Terminal | win | Ctrl+Shift+P | Command palette | | navigation
+Windows Terminal | win | Ctrl+Shift+Space | Open the profile dropdown | | tabs
+Windows Terminal | win | Ctrl+Shift+D | Duplicate the tab | | tabs
+Windows Terminal | win | Alt+Enter | Toggle full screen | F11 too | view
+Windows Terminal | win | Win+` | Summon the quake window | Enable it in Settings first | view
+Windows Terminal | win | Ctrl+Shift+V | Paste | Ctrl+Shift+C copies the selection | editing
+Windows Terminal | win | Ctrl+Shift+M | Mark mode: select with the keyboard | | editing
+Windows Terminal | win | Ctrl+Shift+N | New window | | windows
+
+Claude Code | any | Ctrl+C | Cancel the current generation or input | | session
+Claude Code | any | Ctrl+D | Exit Claude Code | | session
+Claude Code | any | Ctrl+L | Clear the terminal screen | The conversation stays | session
+Claude Code | any | Esc | Interrupt Claude mid-response | | session
+Claude Code | any | Esc Esc | Rewind to an earlier message and edit it | | session
+Claude Code | any | Shift+Tab | Cycle permission modes | Normal, auto-accept edits, plan mode | session
+Claude Code | any | / | Slash commands | /help, /model, /effort, /clear, /artifacts | input
+Claude Code | any | ! | Run a shell command directly | ! git status | input
+Claude Code | any | @ | Mention a file or folder to add it to context | | input
+Claude Code | any | Up | Previous prompt from history | | input
+Claude Code | any | Ctrl+R | Search prompt history | | input
+Claude Code | any | Tab | Autocomplete a file path or command | | input
+Claude Code | any | Ctrl+O | Toggle verbose transcript output | | session
+Claude Code | any | Ctrl+] | Reopen the most recent artifact | | artifacts
+Claude Code | any | Shift+Enter | New line without sending | Run /terminal-setup once; or type \ then Enter | input
+
+Bash | linux | Ctrl+A | Jump to the start of the line | Ctrl+E for the end | editing
+Bash | linux | Ctrl+U | Cut everything before the cursor | Ctrl+K cuts after it | editing
+Bash | linux | Ctrl+W | Delete the word before the cursor | | editing
+Bash | linux | Ctrl+Y | Paste the last cut text | | editing
+Bash | linux | Ctrl+R | Search command history | Keep pressing for older matches | history
+Bash | linux | Ctrl+L | Clear the screen | | session
+Bash | linux | Ctrl+Z | Suspend the foreground job | fg brings it back | jobs
+Bash | linux | Ctrl+D | End of input, or log out of the shell | | session
+Bash | linux | Alt+. | Insert the last argument of the previous command | Same as !$ | history
+Bash | linux | !! | Repeat the last command | sudo !! | history
+Bash | linux | Ctrl+Alt+T | Open a terminal | Ubuntu and GNOME | desktop
+Bash | linux | Ctrl+Shift+C | Copy in the terminal | Ctrl+Shift+V pastes | editing
+Bash | linux | Ctrl+Alt+F3 | Switch to a text console | Ctrl+Alt+F1 or F2 returns to the desktop | desktop
+Bash | linux | Tab Tab | List every possible completion | | editing
+Bash | linux | Alt+F | Move forward one word | Alt+B moves back | editing
+Bash | linux | Ctrl+X Ctrl+E | Edit the current command in $EDITOR | | editing
+
+IntelliJ IDEA | win | Shift Shift | Search Everywhere | | navigation
+IntelliJ IDEA | win | Ctrl+Shift+A | Find Action | | navigation
+IntelliJ IDEA | win | Alt+Enter | Show intention actions and quick fixes | | editing
+IntelliJ IDEA | win | Ctrl+Alt+L | Reformat code | | editing
+IntelliJ IDEA | win | Shift+F6 | Rename | | refactor
+IntelliJ IDEA | win | Ctrl+B | Go to declaration | Ctrl+Click too | navigation
+IntelliJ IDEA | win | Ctrl+Alt+B | Go to implementation | | navigation
+IntelliJ IDEA | win | Ctrl+Alt+M | Extract method | | refactor
+IntelliJ IDEA | win | Ctrl+Alt+V | Extract variable | | refactor
+IntelliJ IDEA | win | Ctrl+N | Go to class | Ctrl+Shift+N for a file, Ctrl+Alt+Shift+N for a symbol | navigation
+IntelliJ IDEA | win | Ctrl+E | Recent files | | navigation
+IntelliJ IDEA | win | Shift+F10 | Run | Shift+F9 debugs | run
+IntelliJ IDEA | win | Ctrl+Shift+F10 | Run the current context | The test or main under the cursor | run
+IntelliJ IDEA | win | F8 | Step over | F7 steps into, Shift+F8 steps out | debug
+IntelliJ IDEA | win | Ctrl+F8 | Toggle breakpoint | | debug
+IntelliJ IDEA | win | Alt+1 | Project tool window | | layout
+IntelliJ IDEA | win | Ctrl+Shift+F12 | Hide all tool windows | | layout
+IntelliJ IDEA | win | Ctrl+W | Extend selection | Ctrl+Shift+W shrinks it | editing
+IntelliJ IDEA | win | Ctrl+/ | Line comment | Ctrl+Shift+/ for a block comment | editing
+IntelliJ IDEA | win | Ctrl+D | Duplicate the line | | editing
+IntelliJ IDEA | win | Ctrl+Y | Delete the line | | editing
+IntelliJ IDEA | win | Alt+Insert | Generate: constructor, getters, toString | | editing
+IntelliJ IDEA | win | Ctrl+Alt+O | Optimise imports | | editing
+IntelliJ IDEA | win | Ctrl+Shift+Alt+T | Refactor This menu | | refactor
+IntelliJ IDEA | win | Alt+F7 | Find usages | | navigation
+IntelliJ IDEA | win | Ctrl+Q | Quick documentation | | navigation
+IntelliJ IDEA | win | Ctrl+P | Parameter info | | editing
+IntelliJ IDEA | win | Ctrl+Alt+T | Surround with if, try, loop… | | editing
+IntelliJ IDEA | win | Ctrl+F12 | File structure popup | | navigation
+
+Slack | win | Ctrl+K | Quick switcher: jump to a channel or person | | navigation
+Slack | win | Ctrl+/ | Show keyboard shortcuts | | help
+Slack | win | Up | Edit your last message | With an empty message box | messages
+Slack | win | Ctrl+Shift+C | Format as inline code | Ctrl+Alt+Shift+C for a code block | messages
+Slack | win | Shift+Esc | Mark everything as read | Esc marks the current channel | messages
+Slack | win | Alt+Shift+Down | Next unread channel | Alt+Shift+Up for the previous | navigation
+Slack | win | Ctrl+Shift+A | All unreads view | | navigation
+Slack | win | Ctrl+Shift+K | Direct messages view | | navigation
+Slack | win | Ctrl+Shift+M | Activity: mentions and reactions | | navigation
+Slack | win | Ctrl+Shift+D | Show or hide the sidebar | | layout
+Slack | win | Shift+Enter | New line in a message | | messages
+Slack | win | Ctrl+G | Search | | search
+Slack | win | Ctrl+. | Show or hide the right pane | | layout
+Slack | win | Ctrl+U | Upload a file | | messages
+Slack | win | Alt+Left | Back to the previous view | Alt+Right goes forward | navigation
+
+# Command-line entries (kind = cmd) are added from the page or via write_db; the six caffeinate
+# commands live in the database as user-caffeinate-01..06 (app Terminal, os mac).

@@ -1,0 +1,4402 @@
+{
+  "format": "keycap-atlas",
+  "v": 1,
+  "shortcuts": [
+    {
+      "id": "seed-windows-11-01",
+      "app": "Windows 11",
+      "os": "win",
+      "keys": "Win+E",
+      "action": "Open File Explorer",
+      "note": "",
+      "tags": [
+        "system"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 1,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-11-02",
+      "app": "Windows 11",
+      "os": "win",
+      "keys": "Win+D",
+      "action": "Show or hide the desktop",
+      "note": "",
+      "tags": [
+        "system",
+        "windows"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 2,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-11-03",
+      "app": "Windows 11",
+      "os": "win",
+      "keys": "Win+L",
+      "action": "Lock the PC",
+      "note": "",
+      "tags": [
+        "system"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 3,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-11-04",
+      "app": "Windows 11",
+      "os": "win",
+      "keys": "Win+V",
+      "action": "Clipboard history",
+      "note": "Turn it on the first time it asks",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 4,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-11-05",
+      "app": "Windows 11",
+      "os": "win",
+      "keys": "Win+Shift+S",
+      "action": "Snip a screenshot",
+      "note": "Opens the Snipping Tool overlay",
+      "tags": [
+        "screenshot"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 5,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-11-06",
+      "app": "Windows 11",
+      "os": "win",
+      "keys": "Win+.",
+      "action": "Emoji, GIF and symbol picker",
+      "note": "",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 6,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-11-07",
+      "app": "Windows 11",
+      "os": "win",
+      "keys": "Win+Tab",
+      "action": "Task View: desktops and open windows",
+      "note": "",
+      "tags": [
+        "windows"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 7,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-11-08",
+      "app": "Windows 11",
+      "os": "win",
+      "keys": "Alt+Tab",
+      "action": "Switch between open apps",
+      "note": "Hold Alt and keep tapping Tab",
+      "tags": [
+        "windows"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 8,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-11-09",
+      "app": "Windows 11",
+      "os": "win",
+      "keys": "Win+Left",
+      "action": "Snap the window to the left half",
+      "note": "Win+Right for the right half; then Win+Up or Down for quarters",
+      "tags": [
+        "windows"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 9,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-11-10",
+      "app": "Windows 11",
+      "os": "win",
+      "keys": "Win+Z",
+      "action": "Snap layouts menu",
+      "note": "",
+      "tags": [
+        "windows"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 10,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-11-11",
+      "app": "Windows 11",
+      "os": "win",
+      "keys": "Win+I",
+      "action": "Open Settings",
+      "note": "",
+      "tags": [
+        "system"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 11,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-11-12",
+      "app": "Windows 11",
+      "os": "win",
+      "keys": "Ctrl+Shift+Esc",
+      "action": "Task Manager, directly",
+      "note": "",
+      "tags": [
+        "system"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 12,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-11-13",
+      "app": "Windows 11",
+      "os": "win",
+      "keys": "Win+X",
+      "action": "Quick Link menu: Terminal, Device Manager, Disk Management",
+      "note": "",
+      "tags": [
+        "system"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 13,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-11-14",
+      "app": "Windows 11",
+      "os": "win",
+      "keys": "Win+1",
+      "action": "Open the first pinned taskbar app",
+      "note": "Win+2, Win+3 … for the rest",
+      "tags": [
+        "apps"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 14,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-11-15",
+      "app": "Windows 11",
+      "os": "win",
+      "keys": "Win+Ctrl+D",
+      "action": "New virtual desktop",
+      "note": "",
+      "tags": [
+        "desktops"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 15,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-11-16",
+      "app": "Windows 11",
+      "os": "win",
+      "keys": "Win+Ctrl+Right",
+      "action": "Switch to the next virtual desktop",
+      "note": "Win+Ctrl+Left goes back",
+      "tags": [
+        "desktops"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 16,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-11-17",
+      "app": "Windows 11",
+      "os": "win",
+      "keys": "Win+A",
+      "action": "Quick Settings: Wi-Fi, volume, brightness",
+      "note": "",
+      "tags": [
+        "system"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 17,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-11-18",
+      "app": "Windows 11",
+      "os": "win",
+      "keys": "Win+N",
+      "action": "Notification centre and calendar",
+      "note": "",
+      "tags": [
+        "system"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 18,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-11-19",
+      "app": "Windows 11",
+      "os": "win",
+      "keys": "Win+H",
+      "action": "Voice typing",
+      "note": "",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 19,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-11-20",
+      "app": "Windows 11",
+      "os": "win",
+      "keys": "Win+K",
+      "action": "Cast to a wireless display",
+      "note": "",
+      "tags": [
+        "display"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 20,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-11-21",
+      "app": "Windows 11",
+      "os": "win",
+      "keys": "Win+P",
+      "action": "Choose a display mode: duplicate, extend",
+      "note": "",
+      "tags": [
+        "display"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 21,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-11-22",
+      "app": "Windows 11",
+      "os": "win",
+      "keys": "Alt+F4",
+      "action": "Close the active window",
+      "note": "From the desktop it opens the Shut Down dialog",
+      "tags": [
+        "windows"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 22,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-11-23",
+      "app": "Windows 11",
+      "os": "win",
+      "keys": "Win+R",
+      "action": "Run dialog",
+      "note": "",
+      "tags": [
+        "system"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 23,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-11-24",
+      "app": "Windows 11",
+      "os": "win",
+      "keys": "Win+M",
+      "action": "Minimise all windows",
+      "note": "Win+Shift+M restores them",
+      "tags": [
+        "windows"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 24,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-11-25",
+      "app": "Windows 11",
+      "os": "win",
+      "keys": "Win+G",
+      "action": "Game Bar: screen recording, performance overlay",
+      "note": "",
+      "tags": [
+        "screenshot"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 25,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-11-26",
+      "app": "Windows 11",
+      "os": "win",
+      "keys": "Win+Space",
+      "action": "Switch keyboard layout or input language",
+      "note": "",
+      "tags": [
+        "system"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 26,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-11-27",
+      "app": "Windows 11",
+      "os": "win",
+      "keys": "Win+PrtScn",
+      "action": "Screenshot straight to Pictures\\Screenshots",
+      "note": "",
+      "tags": [
+        "screenshot"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 27,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-11-28",
+      "app": "Windows 11",
+      "os": "win",
+      "keys": "Ctrl+Shift+N",
+      "action": "New folder in File Explorer",
+      "note": "",
+      "tags": [
+        "files"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 28,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-11-29",
+      "app": "Windows 11",
+      "os": "win",
+      "keys": "Alt+Enter",
+      "action": "Properties of the selected file",
+      "note": "In File Explorer",
+      "tags": [
+        "files"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 29,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-11-30",
+      "app": "Windows 11",
+      "os": "win",
+      "keys": "Win+Ctrl+Shift+B",
+      "action": "Restart the graphics driver",
+      "note": "Fixes a black or frozen screen without rebooting",
+      "tags": [
+        "system"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 30,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-macos-01",
+      "app": "macOS",
+      "os": "mac",
+      "keys": "Cmd+Space",
+      "action": "Spotlight search",
+      "note": "",
+      "tags": [
+        "system"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 31,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-macos-02",
+      "app": "macOS",
+      "os": "mac",
+      "keys": "Cmd+Tab",
+      "action": "Switch between apps",
+      "note": "",
+      "tags": [
+        "windows"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 32,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-macos-03",
+      "app": "macOS",
+      "os": "mac",
+      "keys": "Cmd+`",
+      "action": "Switch between windows of the same app",
+      "note": "",
+      "tags": [
+        "windows"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 33,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-macos-04",
+      "app": "macOS",
+      "os": "mac",
+      "keys": "Cmd+Shift+3",
+      "action": "Screenshot of the whole screen",
+      "note": "",
+      "tags": [
+        "screenshot"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 34,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-macos-05",
+      "app": "macOS",
+      "os": "mac",
+      "keys": "Cmd+Shift+4",
+      "action": "Screenshot of a selected area",
+      "note": "Press Space afterwards to capture a whole window",
+      "tags": [
+        "screenshot"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 35,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-macos-06",
+      "app": "macOS",
+      "os": "mac",
+      "keys": "Cmd+Shift+5",
+      "action": "Screenshot and screen-recording toolbar",
+      "note": "",
+      "tags": [
+        "screenshot"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 36,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-macos-07",
+      "app": "macOS",
+      "os": "mac",
+      "keys": "Cmd+Ctrl+Q",
+      "action": "Lock the screen",
+      "note": "",
+      "tags": [
+        "system"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 37,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-macos-08",
+      "app": "macOS",
+      "os": "mac",
+      "keys": "Cmd+Q",
+      "action": "Quit the app",
+      "note": "",
+      "tags": [
+        "windows"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 38,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-macos-09",
+      "app": "macOS",
+      "os": "mac",
+      "keys": "Cmd+W",
+      "action": "Close the window or tab",
+      "note": "",
+      "tags": [
+        "windows"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 39,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-macos-10",
+      "app": "macOS",
+      "os": "mac",
+      "keys": "Cmd+H",
+      "action": "Hide the app",
+      "note": "Cmd+Opt+H hides every other app",
+      "tags": [
+        "windows"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 40,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-macos-11",
+      "app": "macOS",
+      "os": "mac",
+      "keys": "Cmd+,",
+      "action": "App settings",
+      "note": "",
+      "tags": [
+        "system"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 41,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-macos-12",
+      "app": "macOS",
+      "os": "mac",
+      "keys": "Cmd+Opt+Esc",
+      "action": "Force Quit",
+      "note": "",
+      "tags": [
+        "system"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 42,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-macos-13",
+      "app": "macOS",
+      "os": "mac",
+      "keys": "Ctrl+Up",
+      "action": "Mission Control",
+      "note": "",
+      "tags": [
+        "windows"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 43,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-macos-14",
+      "app": "macOS",
+      "os": "mac",
+      "keys": "Ctrl+Cmd+Space",
+      "action": "Emoji and symbols",
+      "note": "",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 44,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-macos-15",
+      "app": "macOS",
+      "os": "mac",
+      "keys": "Cmd+Shift+.",
+      "action": "Show hidden files in Finder",
+      "note": "",
+      "tags": [
+        "files"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 45,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-macos-16",
+      "app": "macOS",
+      "os": "mac",
+      "keys": "Ctrl+Cmd+F",
+      "action": "Toggle full screen",
+      "note": "",
+      "tags": [
+        "windows"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 46,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-macos-17",
+      "app": "macOS",
+      "os": "mac",
+      "keys": "Cmd+Delete",
+      "action": "Move the selected file to the Trash",
+      "note": "Cmd+Shift+Delete empties the Trash",
+      "tags": [
+        "files"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 47,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-macos-18",
+      "app": "macOS",
+      "os": "mac",
+      "keys": "Cmd+Opt+D",
+      "action": "Show or hide the Dock",
+      "note": "",
+      "tags": [
+        "system"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 48,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-macos-19",
+      "app": "macOS",
+      "os": "mac",
+      "keys": "Cmd+Shift+N",
+      "action": "New folder in Finder",
+      "note": "",
+      "tags": [
+        "files"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 49,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-macos-20",
+      "app": "macOS",
+      "os": "mac",
+      "keys": "Cmd+Opt+V",
+      "action": "Move the copied files here",
+      "note": "Cut-and-paste for Finder, after Cmd+C",
+      "tags": [
+        "files"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 50,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-01",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Ctrl+Shift+P",
+      "action": "Command Palette",
+      "note": "F1 works too. On a Mac use ⌘ wherever these say Ctrl",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 51,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-02",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Ctrl+P",
+      "action": "Quick Open a file by name",
+      "note": "",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 52,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-03",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Ctrl+`",
+      "action": "Toggle the integrated terminal",
+      "note": "Ctrl+Shift+` opens a new one",
+      "tags": [
+        "terminal"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 53,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-04",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Ctrl+B",
+      "action": "Toggle the sidebar",
+      "note": "",
+      "tags": [
+        "layout"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 54,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-05",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Ctrl+Shift+E",
+      "action": "Explorer view",
+      "note": "",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 55,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-06",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Ctrl+Shift+F",
+      "action": "Find in all files",
+      "note": "",
+      "tags": [
+        "search"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 56,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-07",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Ctrl+Shift+G",
+      "action": "Source Control view",
+      "note": "",
+      "tags": [
+        "git"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 57,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-08",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Ctrl+D",
+      "action": "Add the next occurrence to the selection",
+      "note": "",
+      "tags": [
+        "editing",
+        "multicursor"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 58,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-09",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Ctrl+Shift+L",
+      "action": "Select every occurrence of the selection",
+      "note": "",
+      "tags": [
+        "editing",
+        "multicursor"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 59,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-10",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Ctrl+Alt+Down",
+      "action": "Add a cursor on the line below",
+      "note": "Alt+Click adds one anywhere",
+      "tags": [
+        "editing",
+        "multicursor"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 60,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-11",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Alt+Up",
+      "action": "Move the line up",
+      "note": "Alt+Down moves it down",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 61,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-12",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Shift+Alt+Down",
+      "action": "Copy the line down",
+      "note": "",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 62,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-13",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Ctrl+/",
+      "action": "Toggle line comment",
+      "note": "",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 63,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-14",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Ctrl+Shift+K",
+      "action": "Delete the line",
+      "note": "",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 64,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-15",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Ctrl+Shift+Enter",
+      "action": "Insert a line above",
+      "note": "Ctrl+Enter inserts below",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 65,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-16",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "F2",
+      "action": "Rename the symbol everywhere",
+      "note": "",
+      "tags": [
+        "refactor"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 66,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-17",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "F12",
+      "action": "Go to definition",
+      "note": "Alt+F12 peeks it inline",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 67,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-18",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Ctrl+Shift+O",
+      "action": "Go to a symbol in this file",
+      "note": "",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 68,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-19",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Ctrl+T",
+      "action": "Go to a symbol in the workspace",
+      "note": "",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 69,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-20",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Ctrl+G",
+      "action": "Go to line",
+      "note": "",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 70,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-21",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Shift+Alt+F",
+      "action": "Format the document",
+      "note": "",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 71,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-22",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Ctrl+.",
+      "action": "Quick Fix and code actions",
+      "note": "",
+      "tags": [
+        "refactor"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 72,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-23",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Ctrl+Space",
+      "action": "Trigger suggestions",
+      "note": "",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 73,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-24",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Ctrl+\\",
+      "action": "Split the editor",
+      "note": "",
+      "tags": [
+        "layout"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 74,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-25",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Ctrl+1",
+      "action": "Focus editor group 1",
+      "note": "Ctrl+2, Ctrl+3 for the others",
+      "tags": [
+        "layout"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 75,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-26",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Ctrl+Tab",
+      "action": "Cycle through open editors",
+      "note": "",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 76,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-27",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Ctrl+Shift+T",
+      "action": "Reopen the closed editor",
+      "note": "",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 77,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-28",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Ctrl+K Ctrl+S",
+      "action": "Keyboard Shortcuts editor",
+      "note": "",
+      "tags": [
+        "settings"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 78,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-29",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Ctrl+K Z",
+      "action": "Zen mode",
+      "note": "Esc Esc leaves it",
+      "tags": [
+        "layout"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 79,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-30",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Ctrl+Shift+M",
+      "action": "Problems panel",
+      "note": "",
+      "tags": [
+        "debug"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 80,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-31",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Ctrl+Shift+[",
+      "action": "Fold the region",
+      "note": "Ctrl+Shift+] unfolds",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 81,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-32",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Ctrl+Shift+V",
+      "action": "Markdown preview",
+      "note": "Ctrl+K V opens it to the side",
+      "tags": [
+        "markdown"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 82,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-vs-code-33",
+      "app": "VS Code",
+      "os": "win",
+      "keys": "Ctrl+K Ctrl+T",
+      "action": "Choose a colour theme",
+      "note": "",
+      "tags": [
+        "settings"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 83,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-chrome-01",
+      "app": "Chrome",
+      "os": "win",
+      "keys": "Ctrl+T",
+      "action": "New tab",
+      "note": "",
+      "tags": [
+        "tabs"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 84,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-chrome-02",
+      "app": "Chrome",
+      "os": "win",
+      "keys": "Ctrl+W",
+      "action": "Close the tab",
+      "note": "",
+      "tags": [
+        "tabs"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 85,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-chrome-03",
+      "app": "Chrome",
+      "os": "win",
+      "keys": "Ctrl+Shift+T",
+      "action": "Reopen the last closed tab",
+      "note": "Keep pressing for older ones",
+      "tags": [
+        "tabs"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 86,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-chrome-04",
+      "app": "Chrome",
+      "os": "win",
+      "keys": "Ctrl+L",
+      "action": "Jump to the address bar",
+      "note": "Alt+D does the same",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 87,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-chrome-05",
+      "app": "Chrome",
+      "os": "win",
+      "keys": "Ctrl+Tab",
+      "action": "Next tab",
+      "note": "Ctrl+Shift+Tab goes back",
+      "tags": [
+        "tabs"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 88,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-chrome-06",
+      "app": "Chrome",
+      "os": "win",
+      "keys": "Ctrl+1",
+      "action": "Jump to tab 1",
+      "note": "Through Ctrl+8; Ctrl+9 is always the last tab",
+      "tags": [
+        "tabs"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 89,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-chrome-07",
+      "app": "Chrome",
+      "os": "win",
+      "keys": "Ctrl+N",
+      "action": "New window",
+      "note": "",
+      "tags": [
+        "windows"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 90,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-chrome-08",
+      "app": "Chrome",
+      "os": "win",
+      "keys": "Ctrl+Shift+N",
+      "action": "New Incognito window",
+      "note": "",
+      "tags": [
+        "windows"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 91,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-chrome-09",
+      "app": "Chrome",
+      "os": "win",
+      "keys": "Ctrl+D",
+      "action": "Bookmark this page",
+      "note": "",
+      "tags": [
+        "bookmarks"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 92,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-chrome-10",
+      "app": "Chrome",
+      "os": "win",
+      "keys": "Ctrl+Shift+B",
+      "action": "Show or hide the bookmarks bar",
+      "note": "",
+      "tags": [
+        "bookmarks"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 93,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-chrome-11",
+      "app": "Chrome",
+      "os": "win",
+      "keys": "Ctrl+Shift+O",
+      "action": "Bookmark manager",
+      "note": "",
+      "tags": [
+        "bookmarks"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 94,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-chrome-12",
+      "app": "Chrome",
+      "os": "win",
+      "keys": "Ctrl+H",
+      "action": "History",
+      "note": "",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 95,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-chrome-13",
+      "app": "Chrome",
+      "os": "win",
+      "keys": "Ctrl+J",
+      "action": "Downloads",
+      "note": "",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 96,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-chrome-14",
+      "app": "Chrome",
+      "os": "win",
+      "keys": "F12",
+      "action": "DevTools",
+      "note": "Ctrl+Shift+I too",
+      "tags": [
+        "devtools"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 97,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-chrome-15",
+      "app": "Chrome",
+      "os": "win",
+      "keys": "Ctrl+Shift+J",
+      "action": "DevTools Console",
+      "note": "",
+      "tags": [
+        "devtools"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 98,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-chrome-16",
+      "app": "Chrome",
+      "os": "win",
+      "keys": "Ctrl+Shift+C",
+      "action": "Inspect an element",
+      "note": "",
+      "tags": [
+        "devtools"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 99,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-chrome-17",
+      "app": "Chrome",
+      "os": "win",
+      "keys": "Ctrl+F",
+      "action": "Find on the page",
+      "note": "Enter for next, Shift+Enter for previous",
+      "tags": [
+        "search"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 100,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-chrome-18",
+      "app": "Chrome",
+      "os": "win",
+      "keys": "Ctrl+Shift+Delete",
+      "action": "Clear browsing data",
+      "note": "",
+      "tags": [
+        "privacy"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 101,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-chrome-19",
+      "app": "Chrome",
+      "os": "win",
+      "keys": "Ctrl+=",
+      "action": "Zoom in",
+      "note": "Ctrl+- zooms out, Ctrl+0 resets",
+      "tags": [
+        "view"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 102,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-chrome-20",
+      "app": "Chrome",
+      "os": "win",
+      "keys": "Ctrl+R",
+      "action": "Reload",
+      "note": "Ctrl+Shift+R reloads ignoring the cache",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 103,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-chrome-21",
+      "app": "Chrome",
+      "os": "win",
+      "keys": "Alt+Left",
+      "action": "Back",
+      "note": "Alt+Right goes forward",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 104,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-chrome-22",
+      "app": "Chrome",
+      "os": "win",
+      "keys": "Ctrl+Shift+A",
+      "action": "Search open tabs",
+      "note": "",
+      "tags": [
+        "tabs"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 105,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-chrome-23",
+      "app": "Chrome",
+      "os": "win",
+      "keys": "Ctrl+U",
+      "action": "View page source",
+      "note": "",
+      "tags": [
+        "devtools"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 106,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-excel-01",
+      "app": "Excel",
+      "os": "win",
+      "keys": "Ctrl+;",
+      "action": "Insert today's date",
+      "note": "Ctrl+Shift+; inserts the time",
+      "tags": [
+        "data"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 107,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-excel-02",
+      "app": "Excel",
+      "os": "win",
+      "keys": "F2",
+      "action": "Edit the active cell",
+      "note": "",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 108,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-excel-03",
+      "app": "Excel",
+      "os": "win",
+      "keys": "F4",
+      "action": "Cycle $ absolute references while editing",
+      "note": "Outside editing it repeats the last action",
+      "tags": [
+        "formulas"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 109,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-excel-04",
+      "app": "Excel",
+      "os": "win",
+      "keys": "Ctrl+Down",
+      "action": "Jump to the edge of the data block",
+      "note": "Any arrow works",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 110,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-excel-05",
+      "app": "Excel",
+      "os": "win",
+      "keys": "Ctrl+Shift+Down",
+      "action": "Select to the edge of the data block",
+      "note": "",
+      "tags": [
+        "selection"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 111,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-excel-06",
+      "app": "Excel",
+      "os": "win",
+      "keys": "Ctrl+Space",
+      "action": "Select the whole column",
+      "note": "Shift+Space selects the row",
+      "tags": [
+        "selection"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 112,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-excel-07",
+      "app": "Excel",
+      "os": "win",
+      "keys": "Ctrl+Shift+L",
+      "action": "Toggle AutoFilter",
+      "note": "",
+      "tags": [
+        "data"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 113,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-excel-08",
+      "app": "Excel",
+      "os": "win",
+      "keys": "Alt+=",
+      "action": "AutoSum",
+      "note": "",
+      "tags": [
+        "formulas"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 114,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-excel-09",
+      "app": "Excel",
+      "os": "win",
+      "keys": "Ctrl+1",
+      "action": "Format Cells dialog",
+      "note": "",
+      "tags": [
+        "formatting"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 115,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-excel-10",
+      "app": "Excel",
+      "os": "win",
+      "keys": "Ctrl+T",
+      "action": "Turn the range into a Table",
+      "note": "",
+      "tags": [
+        "data"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 116,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-excel-11",
+      "app": "Excel",
+      "os": "win",
+      "keys": "Ctrl+D",
+      "action": "Fill down",
+      "note": "Ctrl+R fills right",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 117,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-excel-12",
+      "app": "Excel",
+      "os": "win",
+      "keys": "Ctrl+Enter",
+      "action": "Fill the selection with the same entry",
+      "note": "",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 118,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-excel-13",
+      "app": "Excel",
+      "os": "win",
+      "keys": "Alt+Enter",
+      "action": "New line inside the cell",
+      "note": "",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 119,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-excel-14",
+      "app": "Excel",
+      "os": "win",
+      "keys": "Ctrl+PgDn",
+      "action": "Next sheet",
+      "note": "Ctrl+PgUp for the previous",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 120,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-excel-15",
+      "app": "Excel",
+      "os": "win",
+      "keys": "Ctrl+Shift+=",
+      "action": "Insert cells, rows or columns",
+      "note": "Ctrl+- deletes",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 121,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-excel-16",
+      "app": "Excel",
+      "os": "win",
+      "keys": "Ctrl+`",
+      "action": "Show formulas instead of values",
+      "note": "",
+      "tags": [
+        "formulas"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 122,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-excel-17",
+      "app": "Excel",
+      "os": "win",
+      "keys": "Ctrl+E",
+      "action": "Flash Fill",
+      "note": "",
+      "tags": [
+        "data"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 123,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-excel-18",
+      "app": "Excel",
+      "os": "win",
+      "keys": "F9",
+      "action": "Recalculate all workbooks",
+      "note": "",
+      "tags": [
+        "formulas"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 124,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-excel-19",
+      "app": "Excel",
+      "os": "win",
+      "keys": "Alt+H O I",
+      "action": "AutoFit column width",
+      "note": "Ribbon key sequence: Home, Format, AutoFit",
+      "tags": [
+        "formatting"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 125,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-excel-20",
+      "app": "Excel",
+      "os": "win",
+      "keys": "Ctrl+Shift+V",
+      "action": "Paste values only",
+      "note": "Microsoft 365 builds",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 126,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-excel-21",
+      "app": "Excel",
+      "os": "win",
+      "keys": "Ctrl+9",
+      "action": "Hide the selected rows",
+      "note": "Ctrl+0 hides columns",
+      "tags": [
+        "formatting"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 127,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-excel-22",
+      "app": "Excel",
+      "os": "win",
+      "keys": "Shift+F11",
+      "action": "Insert a new worksheet",
+      "note": "",
+      "tags": [
+        "sheets"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 128,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-excel-23",
+      "app": "Excel",
+      "os": "win",
+      "keys": "Ctrl+F1",
+      "action": "Show or hide the ribbon",
+      "note": "",
+      "tags": [
+        "view"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 129,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-excel-24",
+      "app": "Excel",
+      "os": "win",
+      "keys": "Alt+F1",
+      "action": "Quick chart of the selection",
+      "note": "F11 puts it on its own sheet",
+      "tags": [
+        "charts"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 130,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-excel-25",
+      "app": "Excel",
+      "os": "win",
+      "keys": "Ctrl+Shift+3",
+      "action": "Apply the date format",
+      "note": "Ctrl+Shift+4 currency, Ctrl+Shift+5 percent",
+      "tags": [
+        "formatting"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 131,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-excel-26",
+      "app": "Excel",
+      "os": "win",
+      "keys": "Ctrl+Home",
+      "action": "Go to A1",
+      "note": "Ctrl+End goes to the last used cell",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 132,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-excel-27",
+      "app": "Excel",
+      "os": "win",
+      "keys": "Ctrl+K",
+      "action": "Insert a hyperlink",
+      "note": "",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 133,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-gmail-01",
+      "app": "Gmail",
+      "os": "any",
+      "keys": "c",
+      "action": "Compose",
+      "note": "Turn on keyboard shortcuts in Settings → General first",
+      "tags": [
+        "mail"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 134,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-gmail-02",
+      "app": "Gmail",
+      "os": "any",
+      "keys": "/",
+      "action": "Search",
+      "note": "",
+      "tags": [
+        "mail"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 135,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-gmail-03",
+      "app": "Gmail",
+      "os": "any",
+      "keys": "e",
+      "action": "Archive",
+      "note": "",
+      "tags": [
+        "mail"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 136,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-gmail-04",
+      "app": "Gmail",
+      "os": "any",
+      "keys": "#",
+      "action": "Delete",
+      "note": "",
+      "tags": [
+        "mail"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 137,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-gmail-05",
+      "app": "Gmail",
+      "os": "any",
+      "keys": "r",
+      "action": "Reply",
+      "note": "a replies to all, f forwards",
+      "tags": [
+        "mail"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 138,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-gmail-06",
+      "app": "Gmail",
+      "os": "any",
+      "keys": "j",
+      "action": "Older conversation",
+      "note": "k moves to the newer one",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 139,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-gmail-07",
+      "app": "Gmail",
+      "os": "any",
+      "keys": "o",
+      "action": "Open the conversation",
+      "note": "Enter works too",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 140,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-gmail-08",
+      "app": "Gmail",
+      "os": "any",
+      "keys": "u",
+      "action": "Back to the list",
+      "note": "",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 141,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-gmail-09",
+      "app": "Gmail",
+      "os": "any",
+      "keys": "s",
+      "action": "Star or unstar",
+      "note": "",
+      "tags": [
+        "mail"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 142,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-gmail-10",
+      "app": "Gmail",
+      "os": "any",
+      "keys": "g i",
+      "action": "Go to Inbox",
+      "note": "g s starred, g d drafts, g t sent",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 143,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-gmail-11",
+      "app": "Gmail",
+      "os": "any",
+      "keys": "?",
+      "action": "Show the shortcut cheat sheet",
+      "note": "",
+      "tags": [
+        "help"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 144,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-gmail-12",
+      "app": "Gmail",
+      "os": "any",
+      "keys": "Ctrl+Enter",
+      "action": "Send",
+      "note": "",
+      "tags": [
+        "mail"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 145,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-gmail-13",
+      "app": "Gmail",
+      "os": "any",
+      "keys": "Shift+I",
+      "action": "Mark as read",
+      "note": "Shift+U marks unread",
+      "tags": [
+        "mail"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 146,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-gmail-14",
+      "app": "Gmail",
+      "os": "any",
+      "keys": "l",
+      "action": "Label",
+      "note": "",
+      "tags": [
+        "mail"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 147,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-gmail-15",
+      "app": "Gmail",
+      "os": "any",
+      "keys": "v",
+      "action": "Move to",
+      "note": "",
+      "tags": [
+        "mail"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 148,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-gmail-16",
+      "app": "Gmail",
+      "os": "any",
+      "keys": "x",
+      "action": "Select the conversation",
+      "note": "",
+      "tags": [
+        "mail"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 149,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-gmail-17",
+      "app": "Gmail",
+      "os": "any",
+      "keys": "z",
+      "action": "Undo the last action",
+      "note": "",
+      "tags": [
+        "mail"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 150,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-gmail-18",
+      "app": "Gmail",
+      "os": "any",
+      "keys": "m",
+      "action": "Mute the conversation",
+      "note": "",
+      "tags": [
+        "mail"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 151,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-terminal-01",
+      "app": "Windows Terminal",
+      "os": "win",
+      "keys": "Ctrl+Shift+T",
+      "action": "New tab with the default profile",
+      "note": "",
+      "tags": [
+        "tabs"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 152,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-terminal-02",
+      "app": "Windows Terminal",
+      "os": "win",
+      "keys": "Ctrl+Shift+W",
+      "action": "Close the pane or tab",
+      "note": "",
+      "tags": [
+        "tabs"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 153,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-terminal-03",
+      "app": "Windows Terminal",
+      "os": "win",
+      "keys": "Alt+Shift+D",
+      "action": "Split the pane, same profile",
+      "note": "Auto-picks the direction",
+      "tags": [
+        "panes"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 154,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-terminal-04",
+      "app": "Windows Terminal",
+      "os": "win",
+      "keys": "Alt+Shift+-",
+      "action": "Split the pane horizontally",
+      "note": "Alt+Shift++ splits vertically",
+      "tags": [
+        "panes"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 155,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-terminal-05",
+      "app": "Windows Terminal",
+      "os": "win",
+      "keys": "Alt+Left",
+      "action": "Move focus to the pane on the left",
+      "note": "Any arrow",
+      "tags": [
+        "panes"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 156,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-terminal-06",
+      "app": "Windows Terminal",
+      "os": "win",
+      "keys": "Alt+Shift+Left",
+      "action": "Resize the pane",
+      "note": "Any arrow",
+      "tags": [
+        "panes"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 157,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-terminal-07",
+      "app": "Windows Terminal",
+      "os": "win",
+      "keys": "Ctrl+Tab",
+      "action": "Next tab",
+      "note": "Ctrl+Shift+Tab goes back",
+      "tags": [
+        "tabs"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 158,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-terminal-08",
+      "app": "Windows Terminal",
+      "os": "win",
+      "keys": "Ctrl+Alt+1",
+      "action": "Jump to tab 1",
+      "note": "Ctrl+Alt+2, 3 …",
+      "tags": [
+        "tabs"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 159,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-terminal-09",
+      "app": "Windows Terminal",
+      "os": "win",
+      "keys": "Ctrl+Shift+F",
+      "action": "Find",
+      "note": "",
+      "tags": [
+        "search"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 160,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-terminal-10",
+      "app": "Windows Terminal",
+      "os": "win",
+      "keys": "Ctrl+,",
+      "action": "Settings",
+      "note": "Ctrl+Shift+, opens settings.json",
+      "tags": [
+        "settings"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 161,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-terminal-11",
+      "app": "Windows Terminal",
+      "os": "win",
+      "keys": "Ctrl+Shift+P",
+      "action": "Command palette",
+      "note": "",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 162,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-terminal-12",
+      "app": "Windows Terminal",
+      "os": "win",
+      "keys": "Ctrl+Shift+Space",
+      "action": "Open the profile dropdown",
+      "note": "",
+      "tags": [
+        "tabs"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 163,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-terminal-13",
+      "app": "Windows Terminal",
+      "os": "win",
+      "keys": "Ctrl+Shift+D",
+      "action": "Duplicate the tab",
+      "note": "",
+      "tags": [
+        "tabs"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 164,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-terminal-14",
+      "app": "Windows Terminal",
+      "os": "win",
+      "keys": "Alt+Enter",
+      "action": "Toggle full screen",
+      "note": "F11 too",
+      "tags": [
+        "view"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 165,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-terminal-15",
+      "app": "Windows Terminal",
+      "os": "win",
+      "keys": "Win+`",
+      "action": "Summon the quake window",
+      "note": "Enable it in Settings first",
+      "tags": [
+        "view"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 166,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-terminal-16",
+      "app": "Windows Terminal",
+      "os": "win",
+      "keys": "Ctrl+Shift+V",
+      "action": "Paste",
+      "note": "Ctrl+Shift+C copies the selection",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 167,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-terminal-17",
+      "app": "Windows Terminal",
+      "os": "win",
+      "keys": "Ctrl+Shift+M",
+      "action": "Mark mode: select with the keyboard",
+      "note": "",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 168,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-windows-terminal-18",
+      "app": "Windows Terminal",
+      "os": "win",
+      "keys": "Ctrl+Shift+N",
+      "action": "New window",
+      "note": "",
+      "tags": [
+        "windows"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 169,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-claude-code-01",
+      "app": "Claude Code",
+      "os": "any",
+      "keys": "Ctrl+C",
+      "action": "Cancel the current generation or input",
+      "note": "",
+      "tags": [
+        "session"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 170,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-claude-code-02",
+      "app": "Claude Code",
+      "os": "any",
+      "keys": "Ctrl+D",
+      "action": "Exit Claude Code",
+      "note": "",
+      "tags": [
+        "session"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 171,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-claude-code-03",
+      "app": "Claude Code",
+      "os": "any",
+      "keys": "Ctrl+L",
+      "action": "Clear the terminal screen",
+      "note": "The conversation stays",
+      "tags": [
+        "session"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 172,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-claude-code-04",
+      "app": "Claude Code",
+      "os": "any",
+      "keys": "Esc",
+      "action": "Interrupt Claude mid-response",
+      "note": "",
+      "tags": [
+        "session"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 173,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-claude-code-05",
+      "app": "Claude Code",
+      "os": "any",
+      "keys": "Esc Esc",
+      "action": "Rewind to an earlier message and edit it",
+      "note": "",
+      "tags": [
+        "session"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 174,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-claude-code-06",
+      "app": "Claude Code",
+      "os": "any",
+      "keys": "Shift+Tab",
+      "action": "Cycle permission modes",
+      "note": "Normal, auto-accept edits, plan mode",
+      "tags": [
+        "session"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 175,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-claude-code-07",
+      "app": "Claude Code",
+      "os": "any",
+      "keys": "/",
+      "action": "Slash commands",
+      "note": "/help, /model, /effort, /clear, /artifacts",
+      "tags": [
+        "input"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 176,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-claude-code-08",
+      "app": "Claude Code",
+      "os": "any",
+      "keys": "!",
+      "action": "Run a shell command directly",
+      "note": "! git status",
+      "tags": [
+        "input"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 177,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-claude-code-09",
+      "app": "Claude Code",
+      "os": "any",
+      "keys": "@",
+      "action": "Mention a file or folder to add it to context",
+      "note": "",
+      "tags": [
+        "input"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 178,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-claude-code-10",
+      "app": "Claude Code",
+      "os": "any",
+      "keys": "Up",
+      "action": "Previous prompt from history",
+      "note": "",
+      "tags": [
+        "input"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 179,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-claude-code-11",
+      "app": "Claude Code",
+      "os": "any",
+      "keys": "Ctrl+R",
+      "action": "Search prompt history",
+      "note": "",
+      "tags": [
+        "input"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 180,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-claude-code-12",
+      "app": "Claude Code",
+      "os": "any",
+      "keys": "Tab",
+      "action": "Autocomplete a file path or command",
+      "note": "",
+      "tags": [
+        "input"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 181,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-claude-code-13",
+      "app": "Claude Code",
+      "os": "any",
+      "keys": "Ctrl+O",
+      "action": "Toggle verbose transcript output",
+      "note": "",
+      "tags": [
+        "session"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 182,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-claude-code-14",
+      "app": "Claude Code",
+      "os": "any",
+      "keys": "Ctrl+]",
+      "action": "Reopen the most recent artifact",
+      "note": "",
+      "tags": [
+        "artifacts"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 183,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-claude-code-15",
+      "app": "Claude Code",
+      "os": "any",
+      "keys": "Shift+Enter",
+      "action": "New line without sending",
+      "note": "Run /terminal-setup once; or type \\ then Enter",
+      "tags": [
+        "input"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 184,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-bash-01",
+      "app": "Bash",
+      "os": "linux",
+      "keys": "Ctrl+A",
+      "action": "Jump to the start of the line",
+      "note": "Ctrl+E for the end",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 185,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-bash-02",
+      "app": "Bash",
+      "os": "linux",
+      "keys": "Ctrl+U",
+      "action": "Cut everything before the cursor",
+      "note": "Ctrl+K cuts after it",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 186,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-bash-03",
+      "app": "Bash",
+      "os": "linux",
+      "keys": "Ctrl+W",
+      "action": "Delete the word before the cursor",
+      "note": "",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 187,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-bash-04",
+      "app": "Bash",
+      "os": "linux",
+      "keys": "Ctrl+Y",
+      "action": "Paste the last cut text",
+      "note": "",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 188,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-bash-05",
+      "app": "Bash",
+      "os": "linux",
+      "keys": "Ctrl+R",
+      "action": "Search command history",
+      "note": "Keep pressing for older matches",
+      "tags": [
+        "history"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 189,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-bash-06",
+      "app": "Bash",
+      "os": "linux",
+      "keys": "Ctrl+L",
+      "action": "Clear the screen",
+      "note": "",
+      "tags": [
+        "session"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 190,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-bash-07",
+      "app": "Bash",
+      "os": "linux",
+      "keys": "Ctrl+Z",
+      "action": "Suspend the foreground job",
+      "note": "fg brings it back",
+      "tags": [
+        "jobs"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 191,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-bash-08",
+      "app": "Bash",
+      "os": "linux",
+      "keys": "Ctrl+D",
+      "action": "End of input, or log out of the shell",
+      "note": "",
+      "tags": [
+        "session"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 192,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-bash-09",
+      "app": "Bash",
+      "os": "linux",
+      "keys": "Alt+.",
+      "action": "Insert the last argument of the previous command",
+      "note": "Same as !$",
+      "tags": [
+        "history"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 193,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-bash-10",
+      "app": "Bash",
+      "os": "linux",
+      "keys": "!!",
+      "action": "Repeat the last command",
+      "note": "sudo !!",
+      "tags": [
+        "history"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 194,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-bash-11",
+      "app": "Bash",
+      "os": "linux",
+      "keys": "Ctrl+Alt+T",
+      "action": "Open a terminal",
+      "note": "Ubuntu and GNOME",
+      "tags": [
+        "desktop"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 195,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-bash-12",
+      "app": "Bash",
+      "os": "linux",
+      "keys": "Ctrl+Shift+C",
+      "action": "Copy in the terminal",
+      "note": "Ctrl+Shift+V pastes",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 196,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-bash-13",
+      "app": "Bash",
+      "os": "linux",
+      "keys": "Ctrl+Alt+F3",
+      "action": "Switch to a text console",
+      "note": "Ctrl+Alt+F1 or F2 returns to the desktop",
+      "tags": [
+        "desktop"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 197,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-bash-14",
+      "app": "Bash",
+      "os": "linux",
+      "keys": "Tab Tab",
+      "action": "List every possible completion",
+      "note": "",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 198,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-bash-15",
+      "app": "Bash",
+      "os": "linux",
+      "keys": "Alt+F",
+      "action": "Move forward one word",
+      "note": "Alt+B moves back",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 199,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-bash-16",
+      "app": "Bash",
+      "os": "linux",
+      "keys": "Ctrl+X Ctrl+E",
+      "action": "Edit the current command in $EDITOR",
+      "note": "",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 200,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-intellij-idea-01",
+      "app": "IntelliJ IDEA",
+      "os": "win",
+      "keys": "Shift Shift",
+      "action": "Search Everywhere",
+      "note": "",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 201,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-intellij-idea-02",
+      "app": "IntelliJ IDEA",
+      "os": "win",
+      "keys": "Ctrl+Shift+A",
+      "action": "Find Action",
+      "note": "",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 202,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-intellij-idea-03",
+      "app": "IntelliJ IDEA",
+      "os": "win",
+      "keys": "Alt+Enter",
+      "action": "Show intention actions and quick fixes",
+      "note": "",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 203,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-intellij-idea-04",
+      "app": "IntelliJ IDEA",
+      "os": "win",
+      "keys": "Ctrl+Alt+L",
+      "action": "Reformat code",
+      "note": "",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 204,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-intellij-idea-05",
+      "app": "IntelliJ IDEA",
+      "os": "win",
+      "keys": "Shift+F6",
+      "action": "Rename",
+      "note": "",
+      "tags": [
+        "refactor"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 205,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-intellij-idea-06",
+      "app": "IntelliJ IDEA",
+      "os": "win",
+      "keys": "Ctrl+B",
+      "action": "Go to declaration",
+      "note": "Ctrl+Click too",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 206,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-intellij-idea-07",
+      "app": "IntelliJ IDEA",
+      "os": "win",
+      "keys": "Ctrl+Alt+B",
+      "action": "Go to implementation",
+      "note": "",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 207,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-intellij-idea-08",
+      "app": "IntelliJ IDEA",
+      "os": "win",
+      "keys": "Ctrl+Alt+M",
+      "action": "Extract method",
+      "note": "",
+      "tags": [
+        "refactor"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 208,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-intellij-idea-09",
+      "app": "IntelliJ IDEA",
+      "os": "win",
+      "keys": "Ctrl+Alt+V",
+      "action": "Extract variable",
+      "note": "",
+      "tags": [
+        "refactor"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 209,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-intellij-idea-10",
+      "app": "IntelliJ IDEA",
+      "os": "win",
+      "keys": "Ctrl+N",
+      "action": "Go to class",
+      "note": "Ctrl+Shift+N for a file, Ctrl+Alt+Shift+N for a symbol",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 210,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-intellij-idea-11",
+      "app": "IntelliJ IDEA",
+      "os": "win",
+      "keys": "Ctrl+E",
+      "action": "Recent files",
+      "note": "",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 211,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-intellij-idea-12",
+      "app": "IntelliJ IDEA",
+      "os": "win",
+      "keys": "Shift+F10",
+      "action": "Run",
+      "note": "Shift+F9 debugs",
+      "tags": [
+        "run"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 212,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-intellij-idea-13",
+      "app": "IntelliJ IDEA",
+      "os": "win",
+      "keys": "Ctrl+Shift+F10",
+      "action": "Run the current context",
+      "note": "The test or main under the cursor",
+      "tags": [
+        "run"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 213,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-intellij-idea-14",
+      "app": "IntelliJ IDEA",
+      "os": "win",
+      "keys": "F8",
+      "action": "Step over",
+      "note": "F7 steps into, Shift+F8 steps out",
+      "tags": [
+        "debug"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 214,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-intellij-idea-15",
+      "app": "IntelliJ IDEA",
+      "os": "win",
+      "keys": "Ctrl+F8",
+      "action": "Toggle breakpoint",
+      "note": "",
+      "tags": [
+        "debug"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 215,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-intellij-idea-16",
+      "app": "IntelliJ IDEA",
+      "os": "win",
+      "keys": "Alt+1",
+      "action": "Project tool window",
+      "note": "",
+      "tags": [
+        "layout"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 216,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-intellij-idea-17",
+      "app": "IntelliJ IDEA",
+      "os": "win",
+      "keys": "Ctrl+Shift+F12",
+      "action": "Hide all tool windows",
+      "note": "",
+      "tags": [
+        "layout"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 217,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-intellij-idea-18",
+      "app": "IntelliJ IDEA",
+      "os": "win",
+      "keys": "Ctrl+W",
+      "action": "Extend selection",
+      "note": "Ctrl+Shift+W shrinks it",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 218,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-intellij-idea-19",
+      "app": "IntelliJ IDEA",
+      "os": "win",
+      "keys": "Ctrl+/",
+      "action": "Line comment",
+      "note": "Ctrl+Shift+/ for a block comment",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 219,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-intellij-idea-20",
+      "app": "IntelliJ IDEA",
+      "os": "win",
+      "keys": "Ctrl+D",
+      "action": "Duplicate the line",
+      "note": "",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 220,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-intellij-idea-21",
+      "app": "IntelliJ IDEA",
+      "os": "win",
+      "keys": "Ctrl+Y",
+      "action": "Delete the line",
+      "note": "",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 221,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-intellij-idea-22",
+      "app": "IntelliJ IDEA",
+      "os": "win",
+      "keys": "Alt+Insert",
+      "action": "Generate: constructor, getters, toString",
+      "note": "",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 222,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-intellij-idea-23",
+      "app": "IntelliJ IDEA",
+      "os": "win",
+      "keys": "Ctrl+Alt+O",
+      "action": "Optimise imports",
+      "note": "",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 223,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-intellij-idea-24",
+      "app": "IntelliJ IDEA",
+      "os": "win",
+      "keys": "Ctrl+Shift+Alt+T",
+      "action": "Refactor This menu",
+      "note": "",
+      "tags": [
+        "refactor"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 224,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-intellij-idea-25",
+      "app": "IntelliJ IDEA",
+      "os": "win",
+      "keys": "Alt+F7",
+      "action": "Find usages",
+      "note": "",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 225,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-intellij-idea-26",
+      "app": "IntelliJ IDEA",
+      "os": "win",
+      "keys": "Ctrl+Q",
+      "action": "Quick documentation",
+      "note": "",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 226,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-intellij-idea-27",
+      "app": "IntelliJ IDEA",
+      "os": "win",
+      "keys": "Ctrl+P",
+      "action": "Parameter info",
+      "note": "",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 227,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-intellij-idea-28",
+      "app": "IntelliJ IDEA",
+      "os": "win",
+      "keys": "Ctrl+Alt+T",
+      "action": "Surround with if, try, loop…",
+      "note": "",
+      "tags": [
+        "editing"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 228,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-intellij-idea-29",
+      "app": "IntelliJ IDEA",
+      "os": "win",
+      "keys": "Ctrl+F12",
+      "action": "File structure popup",
+      "note": "",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 229,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-slack-01",
+      "app": "Slack",
+      "os": "win",
+      "keys": "Ctrl+K",
+      "action": "Quick switcher: jump to a channel or person",
+      "note": "",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 230,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-slack-02",
+      "app": "Slack",
+      "os": "win",
+      "keys": "Ctrl+/",
+      "action": "Show keyboard shortcuts",
+      "note": "",
+      "tags": [
+        "help"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 231,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-slack-03",
+      "app": "Slack",
+      "os": "win",
+      "keys": "Up",
+      "action": "Edit your last message",
+      "note": "With an empty message box",
+      "tags": [
+        "messages"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 232,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-slack-04",
+      "app": "Slack",
+      "os": "win",
+      "keys": "Ctrl+Shift+C",
+      "action": "Format as inline code",
+      "note": "Ctrl+Alt+Shift+C for a code block",
+      "tags": [
+        "messages"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 233,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-slack-05",
+      "app": "Slack",
+      "os": "win",
+      "keys": "Shift+Esc",
+      "action": "Mark everything as read",
+      "note": "Esc marks the current channel",
+      "tags": [
+        "messages"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 234,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-slack-06",
+      "app": "Slack",
+      "os": "win",
+      "keys": "Alt+Shift+Down",
+      "action": "Next unread channel",
+      "note": "Alt+Shift+Up for the previous",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 235,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-slack-07",
+      "app": "Slack",
+      "os": "win",
+      "keys": "Ctrl+Shift+A",
+      "action": "All unreads view",
+      "note": "",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 236,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-slack-08",
+      "app": "Slack",
+      "os": "win",
+      "keys": "Ctrl+Shift+K",
+      "action": "Direct messages view",
+      "note": "",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 237,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-slack-09",
+      "app": "Slack",
+      "os": "win",
+      "keys": "Ctrl+Shift+M",
+      "action": "Activity: mentions and reactions",
+      "note": "",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 238,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-slack-10",
+      "app": "Slack",
+      "os": "win",
+      "keys": "Ctrl+Shift+D",
+      "action": "Show or hide the sidebar",
+      "note": "",
+      "tags": [
+        "layout"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 239,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-slack-11",
+      "app": "Slack",
+      "os": "win",
+      "keys": "Shift+Enter",
+      "action": "New line in a message",
+      "note": "",
+      "tags": [
+        "messages"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 240,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-slack-12",
+      "app": "Slack",
+      "os": "win",
+      "keys": "Ctrl+G",
+      "action": "Search",
+      "note": "",
+      "tags": [
+        "search"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 241,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-slack-13",
+      "app": "Slack",
+      "os": "win",
+      "keys": "Ctrl+.",
+      "action": "Show or hide the right pane",
+      "note": "",
+      "tags": [
+        "layout"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 242,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-slack-14",
+      "app": "Slack",
+      "os": "win",
+      "keys": "Ctrl+U",
+      "action": "Upload a file",
+      "note": "",
+      "tags": [
+        "messages"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 243,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    },
+    {
+      "id": "seed-slack-15",
+      "app": "Slack",
+      "os": "win",
+      "keys": "Alt+Left",
+      "action": "Back to the previous view",
+      "note": "Alt+Right goes forward",
+      "tags": [
+        "navigation"
+      ],
+      "fav": false,
+      "conf": 0,
+      "drills": 0,
+      "src": "seed",
+      "order": 244,
+      "createdAt": 1788678211928,
+      "updatedAt": 1788678211928
+    }
+  ]
+}

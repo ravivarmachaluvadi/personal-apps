@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Personal Apps</title>
+<script src="config.js"></script>
+<script src="drive-sync.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#E9ECF1;--surface:#FFFFFF;--surface-2:#F2F4F7;--line:#D4D9E1;--text:#1C2129;--muted:#5D6875;--faint:#98A2AE;--accent:#E0562B;--accent-ink:#fff;--good:#2E7D4F;--warn:#9A6212;--danger:#B42318;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171C;--surface:#1C2027;--surface-2:#242932;--line:#323945;--text:#E8EAEE;--muted:#9AA4B1;--faint:#6B7582;--accent:#FF7A4D;--accent-ink:#1B0F0A;--good:#6BCF8B;--warn:#E2A33B;--danger:#F27A6B;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14171C;--surface:#1C2027;--surface-2:#242932;--line:#323945;--text:#E8EAEE;--muted:#9AA4B1;--faint:#6B7582;--accent:#FF7A4D;--accent-ink:#1B0F0A;--good:#6BCF8B;--warn:#E2A33B;--danger:#F27A6B;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 "IBM Plex Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+main{max-width:860px;margin:0 auto;padding:28px 18px 60px}
+h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:clamp(30px,6vw,42px);letter-spacing:-.03em;margin:0 0 4px}
+.lead{color:var(--muted);margin:0 0 18px;max-width:60ch}
+.apps{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin:18px 0 26px}
+.app{display:block;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;text-decoration:none;color:inherit;box-shadow:0 10px 30px rgba(0,0,0,.06)}
+.app:hover{border-color:var(--accent)}
+.app .ic{font-size:28px;line-height:1;margin-bottom:10px}
+.app b{display:block;font-family:"Bricolage Grotesque",sans-serif;font-size:20px;font-weight:700;letter-spacing:-.01em}
+.app span{display:block;color:var(--muted);font-size:14px;margin-top:4px}
+.app code{font:12px "IBM Plex Mono",monospace;color:var(--faint)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:14px}
+.card h2{font-family:"Bricolage Grotesque",sans-serif;font-size:19px;margin:0 0 8px;letter-spacing:-.01em}
+.card p,.card li{color:var(--muted);font-size:14.5px;margin:6px 0}
+.card ol{padding-left:20px;margin:6px 0}
+code{font:12.5px "IBM Plex Mono",monospace;background:var(--surface-2);padding:1px 6px;border-radius:5px}
+#auth{margin:6px 0 0}
+</style>
+</head>
+<body>
+<main>
+  <h1>Personal Apps</h1>
+  <p class="lead">Five pages, one folder in your Google Drive. Sign in once per device; everything else is a file you own.</p>
+  <div id="auth"></div>
+  <div class="apps">
+    <a class="app" href="keycap-atlas.html"><div class="ic">⌨️</div><b>Keycap Atlas</b><span>Shortcuts and commands, by app and OS, with a drill mode.</span><code>keycap-atlas.json</code></a>
+    <a class="app" href="strongroom.html"><div class="ic">🔐</div><b>Strongroom</b><span>Password vault. Encrypted in the browser with your master password.</span><code>strongroom-vault.json</code></a>
+    <a class="app" href="dumbbell-dojo.html"><div class="ic">🏋️</div><b>Dumbbell Dojo</b><span>Home strength plan, with ticks and weight logs that follow you.</span><code>dumbbell-dojo.json</code></a>
+    <a class="app" href="tally-board.html"><div class="ic">📌</div><b>Tally Board</b><span>Activities, plans, milestones and sticky notes.</span><code>tally-board.json</code></a>
+    <a class="app" href="spine-bell.html"><div class="ic">🔔</div><b>Spine Bell</b><span>Stand-up timer with a pain, sleep and movement diary.</span><code>spine-bell.json</code></a>
+  </div>
+  <section class="card">
+    <h2>Games</h2>
+    <p>Small games kept alongside the apps. They save nothing to Drive.</p>
+    <p><a href="river-rapids/river-rapids.html">River Rapids</a> · <a href="sky-rings/sky-rings.html">Sky Rings</a> · <a href="sound-safari/sound-safari.html">Sound Safari</a> · <a href="vroom-valley/vroom-valley.html">Vroom Valley</a> · <a href="word-racer/word-racer.html">Word Racer</a></p>
+  </section>
+  <section class="card">
+    <h2>How the data moves</h2>
+    <p>Each page keeps its data as one JSON file in <b>My Drive → Personal Apps</b>. The browser caches a copy so pages open instantly and work offline; changes are saved to Drive a second or two after you make them and picked up by your other devices within about a minute, or the moment you return to the page.</p>
+    <p>The vault file holds only ciphertext. Your master password never leaves the device.</p>
+  </section>
+  <section class="card">
+    <h2>On a phone</h2>
+    <ol>
+      <li>Open this page in Chrome or Safari and sign in with Google.</li>
+      <li>Use the browser's <b>Add to Home Screen</b> for the pages you use most.</li>
+    </ol>
+  </section>
+</main>
+<script>
+(function(){
+  var el=document.getElementById('auth');
+  function render(){var a=DriveStore.authState();while(el.firstChild)el.removeChild(el.firstChild);
+    var wrap=document.createElement('div');wrap.className='ds';
+    if(!a.configured){wrap.textContent='Google sign-in is not set up yet: paste your OAuth client ID into config.js (see the README).';el.appendChild(wrap);return;}
+    if(a.signedIn){var d=document.createElement('i');wrap.appendChild(d);wrap.dataset.state='saved';var s=document.createElement('span');s.textContent='Signed in'+(a.email?' as '+a.email:'');wrap.appendChild(s);var o=document.createElement('button');o.type='button';o.textContent='Sign out';o.style.marginLeft='8px';o.addEventListener('click',function(){DriveStore.signOut();});wrap.appendChild(o);}
+    else{var b=document.createElement('button');b.type='button';b.className='ds-google';b.textContent='Continue with Google';b.addEventListener('click',function(){DriveStore.signIn().catch(function(){});});wrap.appendChild(b);}
+    el.appendChild(wrap);}
+  DriveStore.ensureCss();
+  DriveStore.onAuth(render);render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+# plaintext password material — never commit
+vault-import.csv
+*.csv
+seed/export/vault/
+seed/export/**/entries*
+*.PDF
+*.pdf
+
+# scratch and personal exports
+seed/docs/
+seed/export/
+archive/
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
