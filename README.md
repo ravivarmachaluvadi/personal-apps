@@ -28,42 +28,18 @@ holds the one setting you must fill in (the Google OAuth client ID).
 - The vault file contains only AES-256-GCM ciphertext plus the salt used to stretch the master password.
   The master password never leaves the browser. There is no reset.
 
-## One-time setup
+## Setup status (done on 2026-09-06)
 
-### 1. Host the `docs/` folder (GitHub Pages)
+- Hosted at https://ravivarmachaluvadi.github.io/personal-apps/ from the GitHub repo `ravivarmachaluvadi/personal-apps`
+  (Pages serves `docs/` on `main`). Deploy = commit and `git push origin main`.
+- Google Cloud project `personal-apps-507811` ("Personal Apps"): Drive API enabled, OAuth consent screen External,
+  test user = your Gmail, Web client "Personal Apps site" with origins `https://ravivarmachaluvadi.github.io` and
+  `http://localhost:8000`. The client ID is in `docs/config.js`; it is public by design and only works from those
+  origins. Manage it at https://console.cloud.google.com/auth/overview?project=personal-apps-507811.
+- Local testing: `python -m http.server 8000 --directory docs`, then http://localhost:8000/.
 
-Google sign-in needs an `https://` origin (or `http://localhost`). The simplest free host is GitHub Pages.
-
-```powershell
-cd "C:\Users\Ravi Varma Chaluvadi\Documents\Projects\PersonalPasswordManager"
-gh repo create personal-apps --public --source=. --remote=origin --push
-gh api -X POST repos/ravivarmachaluvadi/personal-apps/pages -f "source[branch]=main" -f "source[path]=/docs"
-```
-
-After a minute the site is at `https://ravivarmachaluvadi.github.io/personal-apps/`. (A private repo needs GitHub
-Pro for Pages; the repo holds no secrets, so public is fine. `.gitignore` keeps the CSV and PDF out.)
-
-For local testing on the laptop: `python -m http.server 8000 --directory docs` and open
-`http://localhost:8000/`.
-
-### 2. Create the Google OAuth client (about ten minutes)
-
-1. Open https://console.cloud.google.com/ and create a project, for example **Personal Apps**.
-2. **APIs & Services → Library** → search **Google Drive API** → Enable.
-3. **APIs & Services → OAuth consent screen** → External → fill in the app name and your email → Scopes: add
-   `.../auth/drive.file`, `openid`, `email` → Test users: add your own Gmail address → Save.
-   When it works, press **Publish app** so the consent does not expire every seven days. The `drive.file` scope
-   does not need Google's verification.
-4. **APIs & Services → Credentials → Create credentials → OAuth client ID** → Application type **Web application**
-   → Authorised JavaScript origins: add `https://ravivarmachaluvadi.github.io` and `http://localhost:8000`.
-   No redirect URI is needed. Create, then copy the **Client ID** (ends in `.apps.googleusercontent.com`).
-5. Paste it into `docs/config.js`:
-
-   ```js
-   googleClientId: '1234567890-abc.apps.googleusercontent.com',
-   ```
-
-   Commit and push. Reload the site: every page now shows **Continue with Google**.
+If sign-in ever stops working: check the Audience page of that console project (publishing status and test users)
+and that the origin you are using is listed on the client.
 
 ### 3. First run
 
