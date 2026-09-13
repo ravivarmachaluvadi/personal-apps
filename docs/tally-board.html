@@ -118,10 +118,35 @@ details.adder[open] summary::before{content:"–"}
 .dots{display:flex;gap:2px;flex-wrap:wrap;justify-content:center;max-width:90%}
 .dots i{width:6px;height:6px;border-radius:50%;background:var(--accent)}
 .dots i.done{background:var(--good)}.dots i.cancelled{background:var(--faint)}.dots i.mile{background:var(--warn);border-radius:1px;transform:rotate(45deg)}
-.cell .tick{position:absolute;bottom:4px;left:5px;width:5px;height:5px;border-radius:50%;background:var(--muted)}
+.cell .acts{position:absolute;bottom:3px;left:3px;right:3px;display:flex;justify-content:center;gap:2px;flex-wrap:wrap}
+.cell .acts i{width:6px;height:4px;border-radius:1.5px;display:block}
+.cell .acts b{font-size:8px;line-height:4px;color:var(--muted);font-weight:500}
 .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin:10px 0 0}
 .legend i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-right:5px}
-.legend i.done{background:var(--good)}.legend i.cancelled{background:var(--faint)}.legend i.mile{background:var(--warn);border-radius:1px;transform:rotate(45deg)}.legend i.tick{background:var(--muted)}
+.legend i.done{background:var(--good)}.legend i.cancelled{background:var(--faint)}.legend i.mile{background:var(--warn);border-radius:1px;transform:rotate(45deg)}.legend i.act{background:linear-gradient(90deg,var(--c0),var(--c1),var(--c2),var(--c4));border-radius:2px}
+/* aggregate view: one row per activity, one square per day of the month */
+.aggwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.agg{border-collapse:separate;border-spacing:3px;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11.5px;color:var(--muted)}
+table.agg th{font-weight:500;text-align:center;padding:0;white-space:nowrap}
+table.agg th.wdl{font-size:10px;color:var(--faint)}
+table.agg th.dn{font-size:11px}
+table.agg th.dn.today{color:var(--accent);font-weight:700}
+table.agg th.nm{text-align:left;font-family:"Instrument Sans",sans-serif;font-size:13px;color:var(--text);font-weight:600;position:sticky;left:0;z-index:1;background:var(--surface);padding-right:10px;max-width:150px;overflow:hidden;text-overflow:ellipsis}
+table.agg th.nm i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+table.agg tr.any th.nm{font-weight:500;color:var(--muted)}
+table.agg td{padding:0}
+.hc{display:block;width:20px;height:20px;border-radius:5px;background:var(--surface-2);border:0;padding:0;cursor:pointer}
+.hc.we:not(.on){background:var(--line)}
+.hc.on{background:var(--c)}
+.hc.today{box-shadow:inset 0 0 0 1.5px var(--text)}
+.hc.future{opacity:.3;cursor:default}
+.hc:not(.on):not(.future):hover{background:var(--faint)}
+.am{display:block;width:20px;height:6px;border-radius:2px;background:var(--surface-2);margin:0 auto}
+.am.on{background:var(--muted)}
+.am.future{opacity:.3}
+table.agg td.tot{text-align:left;white-space:nowrap;padding-left:8px;font-size:12px}
+table.agg th.tot{text-align:left;padding-left:8px}
+table.agg td.tot b{color:var(--text);font-weight:600}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{font-size:13px;padding:5px 10px;border-radius:999px;background:var(--surface-2)}
 .chip.on{background:var(--accent-soft);color:var(--accent-deep)}
@@ -214,7 +239,7 @@ footer{margin-top:22px;color:var(--muted);font-size:13px;max-width:70ch}
       <section class="card">
         <div class="cal-hd"><button class="btn sm" id="calPrev" type="button" aria-label="Previous month">‹</button><b id="calTitle"></b><button class="btn sm" id="calNext" type="button" aria-label="Next month">›</button></div>
         <div class="cal-grid" id="calGrid"></div>
-        <div class="legend"><span><i></i>Planned</span><span><i class="done"></i>Done</span><span><i class="cancelled"></i>Cancelled</span><span><i class="mile"></i>Milestone</span><span><i class="tick"></i>Activity logged</span></div>
+        <div class="legend"><span><i></i>Planned</span><span><i class="done"></i>Done</span><span><i class="cancelled"></i>Cancelled</span><span><i class="mile"></i>Milestone</span><span><i class="act"></i>Activity logged, in its colour</span></div>
         <button class="btn sm" id="calToday" type="button" style="margin-top:10px">Jump to today</button>
       </section>
       <div class="col">
@@ -241,6 +266,11 @@ footer{margin-top:22px;color:var(--muted);font-size:13px;max-width:70ch}
         </section>
       </div>
     </div>
+    <section class="card" style="margin-top:16px">
+      <h2>All activities <small id="aggSub"></small></h2>
+      <div class="aggwrap" id="aggWrap"></div>
+      <p class="empty" style="margin:10px 0 0">One row per activity, one square per day of the month shown above. Tap a square to log or unlog that day. Totals count the days up to today.</p>
+    </section>
   </main>
 
   <main class="panel" id="panel-notes" hidden>
@@ -368,12 +398,35 @@ footer{margin-top:22px;color:var(--muted);font-size:13px;max-width:70ch}
   $('#calToday').addEventListener('click',function(){var d=new Date();calY=d.getFullYear();calM=d.getMonth();selDay=today();renderCal();renderDay();});
   function renderCal(){$('#calTitle').textContent=MOL[calM]+' '+calY;var g=$('#calGrid');clear(g);['Mo','Tu','We','Th','Fr','Sa','Su'].forEach(function(w){g.appendChild(h('div',{class:'wd',text:w}));});
     var first=keyOf(new Date(calY,calM,1)),start=weekStart(first),t=today();
-    var dim=new Date(calY,calM+1,0).getDate(),rows=Math.ceil((diffDays(start,first)+dim)/7);for(var i=0;i<rows*7;i++){(function(i){var k=addDays(start,i),d=toDate(k),inMonth=d.getMonth()===calM,evs=eventsOn(k),logged=actsOn(k).length>0;
-      var cell=h('button',{type:'button',class:'cell'+(inMonth?'':' out')+(k===t?' today':'')+(k===selDay?' sel':''),'aria-label':fmtLong(k)+(evs.length?', '+evs.length+' events':''),onclick:function(){selDay=k;if(!inMonth){calY=d.getFullYear();calM=d.getMonth();}renderCal();renderDay();}},[h('span',{text:String(d.getDate())})]);
+    var dim=new Date(calY,calM+1,0).getDate(),rows=Math.ceil((diffDays(start,first)+dim)/7);for(var i=0;i<rows*7;i++){(function(i){var k=addDays(start,i),d=toDate(k),inMonth=d.getMonth()===calM,evs=eventsOn(k),acts=actsOn(k);
+      var cell=h('button',{type:'button',class:'cell'+(inMonth?'':' out')+(k===t?' today':'')+(k===selDay?' sel':''),'aria-label':fmtLong(k)+(evs.length?', '+evs.length+' events':'')+(acts.length?', logged: '+acts.map(function(a){return a.name;}).join(', '):''),onclick:function(){selDay=k;if(!inMonth){calY=d.getFullYear();calM=d.getMonth();}renderCal();renderDay();}},[h('span',{text:String(d.getDate())})]);
       if(evs.length){var dots=h('div',{class:'dots'});evs.slice(0,4).forEach(function(e){dots.appendChild(h('i',{class:e.type==='mile'&&e.state!=='cancelled'?'mile':e.state}));});cell.appendChild(dots);}
-      if(logged)cell.appendChild(h('i',{class:'tick'}));
-
-      g.appendChild(cell);})(i);}}
+      if(acts.length){var ar=h('div',{class:'acts'});acts.slice(0,6).forEach(function(a){ar.appendChild(h('i',{style:'background:var(--c'+(a.color||0)+')',title:a.name}));});if(acts.length>6)ar.appendChild(h('b',{text:'+'+(acts.length-6)}));cell.appendChild(ar);}
+      g.appendChild(cell);})(i);}
+    renderAgg();}
+  /* ---------- aggregate view: every activity on one month grid, with month totals ---------- */
+  function monthTarget(a,elapsed){var c=a.cad||{type:'none'},n=Math.max(1,+c.n||1);if(c.type==='daily')return elapsed;if(c.type==='every')return Math.ceil(elapsed/n);if(c.type==='weekly')return Math.max(1,Math.round(elapsed/7*n));return null;}
+  function renderAgg(){var wrap=$('#aggWrap'),keep=wrap.scrollLeft;clear(wrap);var t=today(),dim=new Date(calY,calM+1,0).getDate(),first=keyOf(new Date(calY,calM,1)),last=keyOf(new Date(calY,calM,dim));
+    var acts=live('activity').slice().sort(function(a,b){return a.name.localeCompare(b.name);});
+    var elapsed=last<=t?dim:(first>t?0:diffDays(first,t)+1);
+    $('#aggSub').textContent=MOL[calM]+' '+calY+(elapsed&&elapsed<dim?' · '+elapsed+' of '+dim+' days so far':'');
+    if(!acts.length){wrap.appendChild(h('p',{class:'empty',text:'No activities yet. Add one on the Activities tab.'}));return;}
+    var tb=h('table',{class:'agg'}),thead=h('thead'),r1=h('tr'),r2=h('tr'),keys=[];
+    r1.appendChild(h('th',{class:'nm'}));r2.appendChild(h('th',{class:'nm',text:'Activity'}));
+    for(var d=1;d<=dim;d++){var k=keyOf(new Date(calY,calM,d)),dt=toDate(k),we=dt.getDay()===0||dt.getDay()===6;keys.push(k);r1.appendChild(h('th',{class:'wdl',text:WD[dt.getDay()][0]}));r2.appendChild(h('th',{class:'dn'+(k===t?' today':''),text:String(d)}));}
+    r1.appendChild(h('th',{class:'tot'}));r2.appendChild(h('th',{class:'tot',text:'Month'}));thead.appendChild(r1);thead.appendChild(r2);tb.appendChild(thead);
+    var body=h('tbody'),anyDays={};
+    acts.forEach(function(a){var col='var(--c'+(a.color||0)+')',set={},cnt=0,tr=h('tr');(a.dates||[]).forEach(function(x){set[x]=1;});
+      tr.appendChild(h('th',{class:'nm',title:a.name},[h('i',{style:'background:'+col}),a.name]));
+      keys.forEach(function(k){var on=!!set[k],fut=k>t,dt=toDate(k),we=dt.getDay()===0||dt.getDay()===6;if(on){cnt++;anyDays[k]=1;}
+        tr.appendChild(h('td',{},[h('button',{type:'button',class:'hc'+(on?' on':'')+(fut?' future':'')+(k===t?' today':'')+(we?' we':''),style:'--c:'+col,'aria-label':a.name+', '+fmtDay(k)+(on?', done':', not done'),'aria-pressed':String(on),disabled:fut?'':null,onclick:function(){if(!fut)toggleDate(a,k);}})]));});
+      var target=elapsed?monthTarget(a,elapsed):null,pct=target?Math.min(100,Math.round(cnt/target*100)):null;
+      tr.appendChild(h('td',{class:'tot'},[h('b',{text:String(cnt)}),h('span',{text:target?' of '+target+' · '+pct+'%':(cnt===1?' day':' days')})]));
+      body.appendChild(tr);});
+    var anyTr=h('tr',{class:'any'}),anyN=0;anyTr.appendChild(h('th',{class:'nm',text:'Any activity'}));
+    keys.forEach(function(k){var on=!!anyDays[k];if(on)anyN++;anyTr.appendChild(h('td',{},[h('i',{class:'am'+(on?' on':'')+(k>t?' future':'')})]));});
+    anyTr.appendChild(h('td',{class:'tot'},[h('b',{text:String(anyN)}),h('span',{text:elapsed?' of '+elapsed+' days':' days'})]));body.appendChild(anyTr);
+    tb.appendChild(body);wrap.appendChild(tb);wrap.scrollLeft=keep;}
   function evRow(e,compact){var pillText=e.state==='cancelled'?'cancelled':e.state==='done'?'done':e.type==='mile'?'milestone':(e.time||'planned');
     var row=h('div',{class:'row'+(e.state==='cancelled'?' strike':'')},[h('div',{class:'t'},[h('b',{text:e.title}),h('span',{text:(compact?fmtDay(e.date)+(e.time?' '+e.time:''):(e.time||''))+(e.note?(compact||e.time?' · ':'')+e.note:'')})]),h('span',{class:'pill '+(e.state==='done'?'done':e.state==='cancelled'?'':e.type==='mile'?'mile':''),text:pillText})]);
     var acts=h('div',{class:'actions'});
