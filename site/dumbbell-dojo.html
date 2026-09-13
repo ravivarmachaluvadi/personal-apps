@@ -5,6 +5,7 @@
 <style>
   :root{
     --bg:#EEF0F3; --surface:#FFFFFF; --panel:#F6F7F9; --ink:#171B21; --muted:#5A6472;
+    --text:var(--ink); --surface-2:var(--panel); /* names the shared Drive sign-in widget reads */
     --line:#D8DDE3; --accent:#E8590C; --accent-ink:#FFFFFF; --good:#2B8A3E;
     --push:#E8590C; --pull:#1971C2; --legs:#2F9E44; --restc:#868E96;
     --shoul:#E8A20C; --arms:#9C36B5; --core:#0C8599;
@@ -120,6 +121,23 @@
   .rmbtn{border:1px dashed var(--line); background:transparent; color:var(--muted);
     padding:3px 10px; border-radius:999px; font-size:12px; font-weight:600; cursor:pointer; margin-left:auto; align-self:center}
   .rmbtn:hover{color:var(--accent); border-color:var(--accent)}
+  /* muscle map: front + back body, solid = main muscles, faded = helpers */
+  .mmap{display:flex; align-items:center; gap:10px; margin:8px 0 10px; padding:8px 10px; border:1px solid var(--line);
+    border-radius:8px; background:var(--panel); max-width:100%}
+  .mm-fig{display:flex; flex-direction:column; align-items:center; flex:none; gap:2px}
+  .mm-fig svg{width:40px; height:88px; display:block}
+  .mm-k{font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
+  .mm-t{font-size:13.5px; line-height:1.35; min-width:0}
+  .mm-t b{display:block; font-weight:700; color:var(--tc,var(--ink))}
+  .mm-t span{color:var(--muted); font-size:13px}
+  .mmr{fill:var(--fig-faint); opacity:.55}
+  .mmr.p{fill:var(--tc,var(--accent)); opacity:1}
+  .mmr.s{fill:var(--tc,var(--accent)); opacity:.42}
+  .dayhead.withmap{display:flex; align-items:center; gap:16px; flex-wrap:wrap}
+  .dayhead.withmap .dh-t{flex:1 1 280px; min-width:0}
+  .dayhead.withmap .mmap{margin:0}
+  .mm-mini{display:inline-flex; gap:3px; margin-left:auto; vertical-align:middle}
+  .mm-mini svg{width:16px; height:35px}
 
   .restcard{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:22px 24px}
   .restcard h2{font-family:'Barlow Condensed',sans-serif; text-transform:uppercase; font-size:26px; margin:0 0 8px}
@@ -1050,6 +1068,123 @@ const SPINE = {
 };
 
 
+/* ============================================================
+   Muscle map: which muscles each exercise works, drawn on a
+   front and a back body. p = main movers, s = helpers.
+   ============================================================ */
+const MM_LABEL = {chest:'Chest', frontdelts:'Front delts', sidedelts:'Side delts', reardelts:'Rear delts', biceps:'Biceps',
+  triceps:'Triceps', forearms:'Forearms', abs:'Abs', obliques:'Obliques', hipflexors:'Hip flexors', quads:'Quads', calves:'Calves',
+  traps:'Traps', upperback:'Upper back', lats:'Lats', lowerback:'Lower back', glutes:'Glutes', hamstrings:'Hamstrings'};
+const EXM = {
+  floorpress:{p:['chest','triceps'], s:['frontdelts']},
+  squeeze:{p:['chest'], s:['triceps','frontdelts']},
+  fly:{p:['chest'], s:['frontdelts','biceps']},
+  pullover:{p:['chest','lats'], s:['triceps']},
+  pushup:{p:['chest','triceps'], s:['frontdelts','abs']},
+  row:{p:['lats','upperback'], s:['biceps','reardelts','lowerback']},
+  onearmrow:{p:['lats','upperback'], s:['biceps','reardelts']},
+  revfly:{p:['reardelts','upperback'], s:['traps']},
+  shrug:{p:['traps'], s:['forearms']},
+  renegade:{p:['lats','upperback'], s:['abs','obliques','triceps','chest']},
+  rdl:{p:['hamstrings','glutes'], s:['lowerback','forearms']},
+  slrdl:{p:['hamstrings','glutes'], s:['lowerback','calves']},
+  goodmorning:{p:['hamstrings','lowerback'], s:['glutes']},
+  superman:{p:['lowerback'], s:['glutes','upperback']},
+  birddog:{p:['lowerback','abs'], s:['glutes','upperback']},
+  shoulderpress:{p:['frontdelts','sidedelts'], s:['triceps','traps']},
+  arnold:{p:['frontdelts','sidedelts'], s:['triceps']},
+  lateral:{p:['sidedelts'], s:['traps']},
+  frontraise:{p:['frontdelts'], s:['chest']},
+  curl:{p:['biceps'], s:['forearms']},
+  hammer:{p:['biceps','forearms'], s:[]},
+  concentration:{p:['biceps'], s:[]},
+  reversecurl:{p:['forearms'], s:['biceps']},
+  ohext:{p:['triceps'], s:[]},
+  skullcrusher:{p:['triceps'], s:[]},
+  kickback:{p:['triceps'], s:['reardelts']},
+  diamondpushup:{p:['triceps','chest'], s:['frontdelts']},
+  goblet:{p:['quads','glutes'], s:['abs','upperback']},
+  sumo:{p:['quads','glutes'], s:['hamstrings']},
+  lunge:{p:['quads','glutes'], s:['hamstrings','calves']},
+  stepup:{p:['quads','glutes'], s:['hamstrings','calves']},
+  bulgarian:{p:['quads','glutes'], s:['hamstrings']},
+  bridge:{p:['glutes'], s:['hamstrings','lowerback']},
+  calf:{p:['calves'], s:[]},
+  crunch:{p:['abs'], s:[]},
+  twist:{p:['obliques'], s:['abs']},
+  legraise:{p:['abs','hipflexors'], s:[]},
+  deadbug:{p:['abs'], s:['hipflexors']},
+  plank:{p:['abs'], s:['obliques','frontdelts','glutes']},
+  sideplank:{p:['obliques'], s:['glutes','sidedelts']},
+  pelvictilt:{p:['lowerback','abs'], s:[]},
+  catcow:{p:['lowerback','upperback'], s:['abs']},
+  childpose:{p:['lowerback','lats'], s:['glutes']},
+  cobra:{p:['lowerback'], s:['abs','chest','hipflexors']},
+  kneechest:{p:['lowerback','glutes'], s:[]},
+  supinetwist:{p:['lowerback','obliques'], s:['glutes']},
+  figure4:{p:['glutes'], s:['lowerback']},
+  hamstring:{p:['hamstrings'], s:['calves']},
+  hipflexor:{p:['hipflexors'], s:['quads']},
+  openbook:{p:['upperback','chest'], s:['obliques']},
+  bwbridge:{p:['glutes'], s:['hamstrings','lowerback']},
+  mcgillcurl:{p:['abs'], s:[]},
+  standext:{p:['lowerback'], s:['hipflexors']},
+  doorway:{p:['chest','frontdelts'], s:[]}
+};
+/* Body shapes on a 100 × 220 canvas: [muscle keys that light it up, kind, ...geometry]. */
+const MM_SHAPES = {
+  front:[
+    [null,'c',50,14,11], [null,'r',45,25,10,9,3],
+    [['frontdelts','sidedelts'],'c',27,42,9], [['frontdelts','sidedelts'],'c',73,42,9],
+    [['chest'],'r',33,35,16,22,6], [['chest'],'r',51,35,16,22,6],
+    [['abs'],'r',41,59,18,44,5], [['obliques'],'r',33,60,7,42,3.5], [['obliques'],'r',60,60,7,42,3.5],
+    [['hipflexors'],'e',40,107,6,4], [['hipflexors'],'e',60,107,6,4],
+    [['biceps'],'r',17,51,11,28,5.5], [['biceps'],'r',72,51,11,28,5.5],
+    [['forearms'],'r',14,81,10,32,5], [['forearms'],'r',76,81,10,32,5],
+    [['quads'],'r',34,112,14,54,6], [['quads'],'r',52,112,14,54,6],
+    [['calves'],'r',35,170,12,42,5], [['calves'],'r',53,170,12,42,5]],
+  back:[
+    [null,'c',50,14,11], [null,'r',45,25,10,9,3],
+    [['traps'],'p','50,29 30,40 44,54 56,54 70,40'],
+    [['reardelts','sidedelts'],'c',27,42,9], [['reardelts','sidedelts'],'c',73,42,9],
+    [['upperback'],'r',41,55,18,26,5],
+    [['lats'],'p','28,50 40,56 40,100 35,100'], [['lats'],'p','72,50 60,56 60,100 65,100'],
+    [['lowerback'],'r',41,83,18,22,5],
+    [['glutes'],'r',33,107,16,24,7], [['glutes'],'r',51,107,16,24,7],
+    [['triceps'],'r',17,51,11,28,5.5], [['triceps'],'r',72,51,11,28,5.5],
+    [['forearms'],'r',14,81,10,32,5], [['forearms'],'r',76,81,10,32,5],
+    [['hamstrings'],'r',34,133,14,38,6], [['hamstrings'],'r',52,133,14,38,6],
+    [['calves'],'r',35,173,12,40,5], [['calves'],'r',53,173,12,40,5]]
+};
+function mmSVG(view, p, s){
+  const P=new Set(p), S=new Set(s);
+  const body = MM_SHAPES[view].map(sh=>{
+    const keys=sh[0], kind=sh[1];
+    const cls = 'mmr' + (keys && keys.some(k=>P.has(k)) ? ' p' : keys && keys.some(k=>S.has(k)) ? ' s' : '');
+    if(kind==='c') return `<circle class="${cls}" cx="${sh[2]}" cy="${sh[3]}" r="${sh[4]}"/>`;
+    if(kind==='e') return `<ellipse class="${cls}" cx="${sh[2]}" cy="${sh[3]}" rx="${sh[4]}" ry="${sh[5]}"/>`;
+    if(kind==='p') return `<polygon class="${cls}" points="${sh[2]}"/>`;
+    return `<rect class="${cls}" x="${sh[2]}" y="${sh[3]}" width="${sh[4]}" height="${sh[5]}" rx="${sh[6]}"/>`;
+  }).join('');
+  return `<svg viewBox="0 0 100 220" aria-hidden="true">${body}</svg>`;
+}
+function exMuscles(id){ const m=EXM[id]; return m? {p:m.p||[], s:m.s||[]} : {p:[], s:[]}; }
+function listMuscles(list){
+  const p=new Set(), s=new Set();
+  list.forEach(id=>{ const m=exMuscles(id); m.p.forEach(k=>p.add(k)); m.s.forEach(k=>s.add(k)); });
+  p.forEach(k=>s.delete(k));
+  return {p:[...p], s:[...s]};
+}
+function mmNames(keys){ return keys.map(k=>MM_LABEL[k]||k).join(', '); }
+function muscleMapHTML(p, s, label){
+  return `<div class="mmap" title="Front and back view. Solid = main muscles, faded = helpers.">
+    <div class="mm-fig">${mmSVG('front',p,s)}<span class="mm-k">front</span></div>
+    <div class="mm-fig">${mmSVG('back',p,s)}<span class="mm-k">back</span></div>
+    <div class="mm-t"><b>${esc(label)}: ${esc(mmNames(p)||'—')}</b>${s.length? `<span>also ${esc(mmNames(s))}</span>`:''}</div>
+  </div>`;
+}
+function mmMini(m){ return `<span class="mm-mini" aria-hidden="true">${mmSVG('front',m.p,m.s)}${mmSVG('back',m.p,m.s)}</span>`; }
+
 /* ---------- storage (safe) ---------- */
 function sGet(k, fb){ try{ const v = localStorage.getItem(k); return v===null? fb : JSON.parse(v); }catch(e){ return fb; } }
 function sSet(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
@@ -1300,6 +1435,7 @@ function estMinutes(list){
 }
 function exCardHTML(exId, idx, colorVar, dateKey, removable){
   const ex=EXR[exId];
+  const mm=exMuscles(exId);
   const done = dateKey && progress[dateKey] && progress[dateKey][exId];
   const rs = restSeconds(ex);
   const last = dateKey? logLast(exId, dateKey) : null;
@@ -1319,6 +1455,7 @@ function exCardHTML(exId, idx, colorVar, dateKey, removable){
         ${ex.opt? '<span class="opt-tag">optional finisher</span>':''}
         ${removable? `<button class="rmbtn" data-rm="${exId}" title="Remove ${escA(ex.name)} from ${escA(DAY_NAMES[selectedDay])}">Remove</button>`:''}
       </div>
+      ${muscleMapHTML(mm.p, mm.s, ex.rxLabel?'Targets':'Works')}
       <div class="rx">
         <span><span class="lbl">${esc(ex.rxLabel||'Sets × reps')}</span><b>${esc(ex.sets)}</b></span>
         ${rs? `<span><span class="lbl">Rest</span><b>${esc(ex.rest)}</b></span>`:''}
@@ -1463,10 +1600,12 @@ function renderToday(){
       <div class="exlist">${list.map((id,i)=>exCardHTML(id,i,headerColor,dk,true)).join('')}</div>`;
   }
 
+  const dm=listMuscles(list);
   root.innerHTML=`
-    <div class="dayhead" style="--tc:var(${headerColor})">
-      <h1>${nameHtml}</h1>
-      <div class="sub">${sub}${jumpBtn}</div>
+    <div class="dayhead withmap" style="--tc:var(${headerColor})">
+      <div class="dh-t"><h1>${nameHtml}</h1>
+      <div class="sub">${sub}${jumpBtn}</div></div>
+      ${list.length? muscleMapHTML(dm.p, dm.s, 'Today') : ''}
     </div>
     ${bodyHtml}
     ${hasCustom? `<p class="wk-note"><button class="resetbtn" id="resetday">Reset ${esc(DAY_NAMES[dayIdx])} to default</button></p>`:''}
@@ -1514,7 +1653,7 @@ function renderWeek(){
         const isToday=i===wd;
         const isDone=t!=='rest'&&complete[todayKey(dateForWeekday(i))];
         return `<div class="wk-card ${isToday?'today':''}" style="--tc:var(${wo.c})">
-          <h3><span class="dot"></span>${DAY_NAMES[i]}${isDone?' <span style="color:var(--good)">✓</span>':''}${isToday?' · today':''}</h3>
+          <h3><span class="dot"></span>${DAY_NAMES[i]}${isDone?' <span style="color:var(--good)">✓</span>':''}${isToday?' · today':''}${t==='rest'?'':mmMini(listMuscles(effectiveList(i).list))}</h3>
           <div class="focus">${t==='rest'?'Recovery — walk & stretch':esc(wo.name)+' — '+esc(wo.focus)}</div>
           ${t==='rest'?'':'<ul>'+wo.ex.map(id=>'<li>'+esc(EXR[id].name)+'</li>').join('')+'</ul>'}
         </div>`;

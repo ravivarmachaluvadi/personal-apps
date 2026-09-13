@@ -38,12 +38,12 @@
   --shadow:0 12px 32px rgba(0,0,0,.38);
   color-scheme:dark;
 }
-body[data-mode="work-done"],body[data-mode="break"],body[data-mode="break-done"]{
+body[data-mode="work-done"],body[data-mode="break"],body[data-mode="break-done"],body[data-mode="timer-done"]{
   --accent:var(--break); --accent-soft:var(--break-soft); --accent-deep:var(--break-deep); --accent-ink:var(--break-ink);
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;transition:background .5s ease}
-body[data-mode="work-done"],body[data-mode="break-done"]{background:color-mix(in srgb,var(--bg) 78%,var(--break))}
+body[data-mode="work-done"],body[data-mode="break-done"],body[data-mode="timer-done"]{background:color-mix(in srgb,var(--bg) 78%,var(--break))}
 body[data-mode="break"]{background:color-mix(in srgb,var(--bg) 90%,var(--break))}
 button{font:inherit;cursor:pointer;border:0;border-radius:12px;color:inherit}
 button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
@@ -70,9 +70,9 @@ button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:3px so
 .ring .digits{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
 .digits .t{font-family:"IBM Plex Mono",ui-monospace,monospace;font-weight:600;font-size:clamp(48px,14vw,68px);letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
 .digits .sub{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12.5px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
-body[data-mode="work-done"] .ring,body[data-mode="break-done"] .ring{animation:pulse 1.2s ease-in-out infinite}
+body[data-mode="work-done"] .ring,body[data-mode="break-done"] .ring,body[data-mode="timer-done"] .ring{animation:pulse 1.2s ease-in-out infinite}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
-@media (prefers-reduced-motion:reduce){body[data-mode="work-done"] .ring,body[data-mode="break-done"] .ring{animation:none}}
+@media (prefers-reduced-motion:reduce){body[data-mode="work-done"] .ring,body[data-mode="break-done"] .ring,body[data-mode="timer-done"] .ring{animation:none}}
 .hint{color:var(--muted);max-width:34ch;text-wrap:balance;min-height:1.5em;margin:0}
 .actions{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;width:100%}
 .primary{background:var(--accent);color:var(--accent-ink);padding:14px 24px;font-weight:600;font-size:17px;min-width:200px;box-shadow:0 6px 18px color-mix(in srgb,var(--accent) 35%,transparent);transition:background .4s,transform .1s}
@@ -117,6 +117,12 @@ h3 small{font-family:"IBM Plex Sans",sans-serif;font-weight:400;font-size:13.5px
 .sw[aria-checked="true"]::after{transform:translateX(20px)}
 .vol{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
 .vol input[type=range]{flex:1;accent-color:var(--accent)}
+.qmins{display:flex;flex-wrap:wrap;gap:6px;grid-column:1/-1}
+.qmin{background:var(--surface-2);color:var(--text);padding:7px 12px;border-radius:999px;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:13px;font-weight:500;border:1.5px solid transparent}
+.qmin.on{background:var(--accent-soft);color:var(--accent-deep);border-color:var(--accent)}
+.handoff{width:100%;font-size:13.5px;color:var(--muted);text-align:center;margin:0;max-width:44ch}
+.handoff a{color:var(--accent-deep);font-weight:600}
+.handoff[hidden]{display:none}
 .small{background:var(--surface-2);color:var(--text);padding:8px 12px;font-size:14px;font-weight:500}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
 @media (min-width:480px){.stats{grid-template-columns:repeat(6,1fr)}}
@@ -208,6 +214,7 @@ footer strong{color:var(--danger)}
         <button class="ghost" id="secondaryBtn" hidden>Snooze 2 min</button>
         <button class="ghost" id="resetBtn">Reset</button>
       </div>
+      <p class="handoff" id="handoff" hidden></p>
       <p class="status" id="status"></p>
     </section>
 
@@ -226,21 +233,28 @@ footer strong{color:var(--danger)}
         <button class="pill" data-preset="pomo">Pomodoro<b>25 / 5</b></button>
         <button class="pill" data-preset="deep">Deep work<b>50 / 10</b></button>
         <button class="pill" data-preset="custom">Custom</button>
+        <button class="pill" data-preset="timer">Just a timer<b>one bell</b></button>
       </div>
-      <div class="fields">
+      <div class="fields" id="cycleFields">
         <div class="field"><label for="fWork">Work min</label><input id="fWork" type="number" inputmode="numeric" min="1" max="180" value="30"></div>
         <div class="field"><label for="fBreak">Break min</label><input id="fBreak" type="number" inputmode="numeric" min="1" max="60" value="3"></div>
         <div class="field"><label for="fLong">Long break min</label><input id="fLong" type="number" inputmode="numeric" min="1" max="90" value="10"></div>
         <div class="field"><label for="fEvery">Long every N</label><input id="fEvery" type="number" inputmode="numeric" min="2" max="12" value="4"></div>
       </div>
+      <div class="fields" id="timerFields" hidden>
+        <div class="field"><label for="fTimerMin">Minutes</label><input id="fTimerMin" type="number" inputmode="numeric" min="1" max="720" value="15"></div>
+        <div class="field"><label for="fTimerUntil">or ring at (clock time)</label><input id="fTimerUntil" type="time"></div>
+        <div class="qmins" id="qmins" role="group" aria-label="Quick minutes"></div>
+      </div>
       <div class="toggles">
         <div class="tg"><div class="l">Bell keeps ringing until I tap<span>Every 5 s for up to 2 min. The point is to make you stand.</span></div><button class="sw" role="switch" aria-checked="true" data-key="repeatAlarm" aria-label="Bell keeps ringing"></button></div>
         <div class="tg"><div class="l"><span class="inl">Eye reminder every <input id="fEye" type="number" inputmode="numeric" min="5" max="60" value="20"> min</span><span>Soft ping while you work: look 20 feet away for 20 seconds. Counts across blocks, so short blocks still get it.</span></div><button class="sw" role="switch" aria-checked="true" data-key="eye" aria-label="Eye reminder"></button></div>
         <div class="tg"><div class="l"><span class="inl">Water reminder every <input id="fWater" type="number" inputmode="numeric" min="10" max="180" value="45"> min</span><span>Soft ping while you work, counted across blocks. Tap Done to count the glass.</span></div><button class="sw" role="switch" aria-checked="true" data-key="water" aria-label="Water reminder"></button></div>
-        <div class="tg"><div class="l">Keep the screen awake<span>Phones stop background timers. Leave this tab open.</span></div><button class="sw" role="switch" aria-checked="true" data-key="wake" aria-label="Keep screen awake"></button></div>
+        <div class="tg"><div class="l">Keep the screen awake<span>Phones pause a page that is not on screen, so the bell cannot ring from the background. Leave this page open and face up.</span></div><button class="sw" role="switch" aria-checked="true" data-key="wake" aria-label="Keep screen awake"></button></div>
         <div class="tg"><div class="l">Vibrate on phone<span>Works even when the phone is on silent (Android).</span></div><button class="sw" role="switch" aria-checked="true" data-key="vibrate" aria-label="Vibrate"></button></div>
         <div class="tg"><div class="l">Auto-start the next work block<span>Off means you tap “Back to work” yourself.</span></div><button class="sw" role="switch" aria-checked="false" data-key="autoWork" aria-label="Auto-start next work block"></button></div>
-        <div class="tg"><div class="l">Desktop notifications<span id="notifyState">Shows a banner even if this tab is hidden.</span></div><button class="small" id="notifyBtn" type="button">Enable</button></div>
+        <div class="tg" id="clockTg" hidden><div class="l">Also set the phone's Clock timer<span>Android only. When a countdown starts here, the phone's own Clock app gets the same timer, so it rings even if you switch apps or lock the screen. Pausing here does not pause the Clock.</span></div><button class="sw" role="switch" aria-checked="false" data-key="clockToo" aria-label="Also set the phone's Clock timer"></button></div>
+        <div class="tg"><div class="l">Notifications<span id="notifyState">A banner (and a buzz on Android) even when this tab is hidden.</span></div><button class="small" id="notifyBtn" type="button">Enable</button></div>
         <div class="vol"><label for="vol" class="l">Volume</label><input id="vol" type="range" min="0" max="100" value="70"><button class="small" id="testBtn" type="button">Test bell</button></div>
       </div>
     </section>
@@ -314,7 +328,8 @@ footer strong{color:var(--danger)}
   var $=function(s){return document.querySelector(s);};
   var KEY={settings:'spinebell.settings',run:'spinebell.run',days:'spinebell.days',dev:'spinebell.dev',today:'spinebell.today',tab:'spinebell.tab'};
   var PRESETS={back:{work:30,brk:3,lng:10,every:4},pomo:{work:25,brk:5,lng:15,every:4},deep:{work:50,brk:10,lng:20,every:3}};
-  var DEF={preset:'back',work:30,brk:3,lng:10,every:4,repeatAlarm:true,wake:true,vibrate:true,autoWork:false,volume:70,eye:true,eyeEvery:20,water:true,waterEvery:45};
+  var DEF={preset:'back',work:30,brk:3,lng:10,every:4,repeatAlarm:true,wake:true,vibrate:true,autoWork:false,volume:70,eye:true,eyeEvery:20,water:true,waterEvery:45,timerMin:15,timerUntil:'',clockToo:false};
+  var IS_ANDROID=/Android/i.test(navigator.userAgent),IS_MOBILE=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent),QUICK=[5,10,15,20,30,45,60];
   var STRETCHES=[
     {n:'Walk it off',h:'Stand up and walk 30 steps. Get water, look out a window. Walking unloads the discs that sitting compresses.',t:60},
     {n:'Standing back bends',h:'Hands on hips, feet hip-width. Lean back gently 5 times, 2 seconds each. Stop short of pain. Reverses the slump you have held for half an hour.',t:45},
@@ -398,13 +413,27 @@ footer strong{color:var(--danger)}
   /* ---------- wake lock + notifications ---------- */
   var wl=null;
   function wake(on){try{if(on&&S.wake&&'wakeLock' in navigator){if(!wl){navigator.wakeLock.request('screen').then(function(l){wl=l;l.addEventListener('release',function(){wl=null;});}).catch(function(){});}}else if(!on&&wl){wl.release().catch(function(){});wl=null;}}catch(e){}}
-  function notify(title,body){if(!('Notification' in window)||Notification.permission!=='granted')return;try{new Notification(title,{body:body,tag:'spinebell',renotify:true});}catch(e){}}
+  var SWREG=null;
+  if('serviceWorker' in navigator){try{navigator.serviceWorker.register('sw.js').catch(function(){});navigator.serviceWorker.ready.then(function(r){SWREG=r;}).catch(function(){});}catch(e){}}
+  function notify(title,body){if(!('Notification' in window)||Notification.permission!=='granted')return;var o={body:body,tag:'spinebell',renotify:true,requireInteraction:true,vibrate:[400,150,400,150,600],data:{url:location.href}};
+    if(SWREG&&SWREG.showNotification){SWREG.showNotification(title,o).catch(function(){try{new Notification(title,o);}catch(e){}});return;}
+    try{new Notification(title,o);}catch(e){}}
   function notifyUI(){var b=$('#notifyBtn'),s=$('#notifyState');if(!('Notification' in window)){b.hidden=true;s.textContent='Not supported in this browser.';return;}if(Notification.permission==='granted'){b.textContent='On';b.disabled=true;s.textContent='Banner shows even when this tab is hidden.';}else if(Notification.permission==='denied'){b.textContent='Blocked';b.disabled=true;s.textContent='Blocked in browser settings for this site.';}else{b.textContent='Enable';b.disabled=false;}}
   $('#notifyBtn').addEventListener('click',function(){Notification.requestPermission().then(notifyUI);});
 
   /* ---------- helpers ---------- */
   function fmt(ms){var s=Math.max(0,Math.ceil(ms/1000));var m=Math.floor(s/60);s=s%60;return (m<10?'0':'')+m+':'+(s<10?'0':'')+s;}
-  function isRunning(){return (R.mode==='work'||R.mode==='break')&&!R.paused;}
+  function isRunning(){return (R.mode==='work'||R.mode==='break'||R.mode==='timer')&&!R.paused;}
+  function fmtDur(ms){var m=Math.round(ms/60000);if(m<1)return Math.max(1,Math.round(ms/1000))+' s';var h=Math.floor(m/60);return h?h+' h'+(m%60?' '+(m%60)+' min':''):m+' min';}
+  function clockAt(ms){var d=new Date(Date.now()+ms);return pad(d.getHours())+':'+pad(d.getMinutes());}
+  function timerMs(){var u=S.timerUntil;if(/^\d{2}:\d{2}$/.test(u)){var n=new Date(),t=new Date(n.getFullYear(),n.getMonth(),n.getDate(),+u.slice(0,2),+u.slice(3,5),0,0);if(t<=n)t.setDate(t.getDate()+1);return t-n;}return Math.max(1,Math.min(720,+S.timerMin||15))*60000;}
+  /* Android: hand the countdown to the phone's own Clock app (AlarmClock.ACTION_SET_TIMER), which rings from the background. */
+  function intentUrl(sec,label,silent){return 'intent:#Intent;action=android.intent.action.SET_TIMER;i.android.intent.extra.alarm.LENGTH='+Math.max(1,Math.round(sec))+';S.android.intent.extra.alarm.MESSAGE='+encodeURIComponent(label)+(silent?';B.android.intent.extra.alarm.SKIP_UI=true':'')+';end';}
+  function handoffLabel(){return R.mode==='work'?'Spine Bell: stand up':R.mode==='break'?'Spine Bell: back to work':'Spine Bell timer';}
+  function sendToClock(){if(!IS_ANDROID||!S.clockToo||!isRunning())return;try{location.href=intentUrl((R.endAt-Date.now())/1000,handoffLabel(),true);}catch(e){}}
+  function renderHandoff(){var box=$('#handoff'),on=isRunning();box.hidden=!(on&&IS_MOBILE);if(!on||!IS_MOBILE)return;while(box.firstChild)box.removeChild(box.firstChild);
+    if(IS_ANDROID){var a=document.createElement('a');a.id='handoffLink';a.href=intentUrl((R.endAt-Date.now())/1000,handoffLabel(),false);a.textContent='Hand this countdown to the phone\u2019s Clock app \u2197';a.addEventListener('click',function(){if(isRunning())a.href=intentUrl((R.endAt-Date.now())/1000,handoffLabel(),false);});box.appendChild(a);box.appendChild(document.createElement('br'));box.appendChild(document.createTextNode('It rings even if you leave this page or lock the screen.'));}
+    else box.textContent='Keep this page open with the screen on. Phone browsers pause a page in the background, so the bell cannot ring from there.';}
   function isLong(){return R.block%S.every===0;}
   function breakLen(){return isLong()?S.lng:S.brk;}
   function persistRun(){save(KEY.run,R);}
@@ -427,22 +456,28 @@ footer strong{color:var(--danger)}
     else if(S.water&&now>=R.waterAt&&!micro.kind){R.waterAt=now+S.waterEvery*60000;persistRun();chime('water');buzz([120,80,120]);showToast('water');}}
 
   /* ---------- state machine ---------- */
-  function startWork(){stopAlarm();hideToast();R.mode='work';R.snoozed=false;R.total=S.work*60000;R.endAt=Date.now()+R.total;R.paused=false;persistRun();scheduleMicro();wake(true);render();}
-  function startBreak(){stopAlarm();hideToast();R.mode='break';R.total=breakLen()*60000;R.endAt=Date.now()+R.total;R.paused=false;persistRun();wake(true);render();}
+  function startWork(){stopAlarm();hideToast();R.mode='work';R.snoozed=false;R.total=S.work*60000;R.endAt=Date.now()+R.total;R.paused=false;persistRun();scheduleMicro();wake(true);render();sendToClock();}
+  function startBreak(){stopAlarm();hideToast();R.mode='break';R.total=breakLen()*60000;R.endAt=Date.now()+R.total;R.paused=false;persistRun();wake(true);render();sendToClock();}
+  function startTimer(ms){stopAlarm();hideToast();R.mode='timer';R.snoozed=false;R.total=ms||timerMs();R.endAt=Date.now()+R.total;R.paused=false;persistRun();
+    if(!ms&&S.timerUntil){S.timerUntil='';save(KEY.settings,S);renderSettings();} /* a clock time is a one-off; next start uses the minutes again */
+    wake(true);render();sendToClock();}
+  function timerDone(){R.mode='timer-done';R.paused=false;persistRun();startAlarm('work-done');notify('Time is up','Your '+fmtDur(R.total)+' timer has finished.');render();}
   function creditWork(){bump('focus',Math.round(R.total/60000));if(!R.snoozed){bump('blocks');pickStretch();}R.snoozed=false;}
   function workDone(){R.mode='work-done';R.paused=false;hideToast();creditWork();persistRun();startAlarm('work-done');notify('Stand up',(isLong()?'Long break: ':'Break: ')+breakLen()+' min. '+(isLong()?LONG.n:STRETCHES[R.stretch].n));render();}
   function breakDone(){R.mode='break-done';R.paused=false;persistRun();startAlarm('break-done');notify('Back to work','Block '+(R.block+1)+' of '+S.work+' min.');render();if(S.autoWork){setTimeout(function(){if(R.mode==='break-done'){R.block++;startWork();}},6000);}}
-  var microShown='';function tick(){if(!isRunning())return;var rem=R.endAt-Date.now();if(rem<=0){if(R.mode==='work'){workDone();}else{breakDone();}return;}renderTime(rem);microTick(rem);var mt=microText();if(mt!==microShown){microShown=mt;renderMicro();}}
+  var microShown='';function tick(){if(!isRunning())return;var rem=R.endAt-Date.now();if(rem<=0){if(R.mode==='work'){workDone();}else if(R.mode==='timer'){timerDone();}else{breakDone();}return;}renderTime(rem);microTick(rem);var mt=microText();if(mt!==microShown){microShown=mt;renderMicro();}}
 
   el.primary.addEventListener('click',function(){ensureAudio();
-    if(R.mode==='idle'){startWork();}
+    if(R.mode==='idle'){if(S.preset==='timer')startTimer();else startWork();}
+    else if(R.mode==='timer-done'){stopAlarm();R.mode='idle';persistRun();wake(false);render();}
     else if(R.mode==='work-done'){bump('stood');startBreak();}
     else if(R.mode==='break-done'){R.block++;startWork();}
     else if(R.mode==='break'){R.block++;startWork();}
   });
-  el.pause.addEventListener('click',function(){if(R.mode!=='work'&&R.mode!=='break')return;if(R.paused){var gap=Math.max(0,Date.now()-(R.pausedAt||Date.now()));R.endAt=Date.now()+R.remaining;if(R.eyeAt)R.eyeAt+=gap;if(R.waterAt)R.waterAt+=gap;scheduleMicro();R.paused=false;wake(true);}else{R.remaining=R.endAt-Date.now();R.pausedAt=Date.now();R.paused=true;wake(false);}persistRun();render();});
+  el.pause.addEventListener('click',function(){if(!(R.mode==='work'||R.mode==='break'||R.mode==='timer'))return;if(R.paused){var gap=Math.max(0,Date.now()-(R.pausedAt||Date.now()));R.endAt=Date.now()+R.remaining;if(R.eyeAt)R.eyeAt+=gap;if(R.waterAt)R.waterAt+=gap;scheduleMicro();R.paused=false;wake(true);}else{R.remaining=R.endAt-Date.now();R.pausedAt=Date.now();R.paused=true;wake(false);}persistRun();render();});
   el.secondary.addEventListener('click',function(){ensureAudio();
     if(R.mode==='work-done'){stopAlarm();bump('snooze');R.mode='work';R.snoozed=true;R.total=2*60000;R.endAt=Date.now()+R.total;R.paused=false;persistRun();wake(true);render();}
+    else if(R.mode==='timer-done'){startTimer(R.total);}
   });
   el.reset.addEventListener('click',function(){stopAlarm();hideToast();if(R.mode==='idle'){R.block=1;}else if(R.mode==='work-done'||R.mode==='break'||R.mode==='break-done'){R.block++;}R.mode='idle';R.snoozed=false;R.paused=false;R.endAt=0;persistRun();wake(false);render();});
   $('#nextStretch').addEventListener('click',function(){pickStretch();persistRun();renderStretch();});
@@ -459,7 +494,12 @@ footer strong{color:var(--danger)}
     if(k==='eyeEvery'){R.eyeAt=Date.now()+v*60000;persistRun();}if(k==='waterEvery'){R.waterAt=Date.now()+v*60000;persistRun();}save(KEY.settings,S);renderSettings();if(R.mode==='idle'){render();}renderMicro();});});
   document.querySelectorAll('.sw').forEach(function(b){b.addEventListener('click',function(){var k=b.dataset.key;S[k]=!S[k];save(KEY.settings,S);b.setAttribute('aria-checked',String(S[k]));if(k==='wake'){wake(isRunning());}if(k==='repeatAlarm'&&!S.repeatAlarm){stopAlarm();}if((k==='eye'||k==='water')&&!S[k]&&micro.kind===k){hideToast();}if(k==='eye'&&S.eye){R.eyeAt=Date.now()+S.eyeEvery*60000;persistRun();}if(k==='water'&&S.water){R.waterAt=Date.now()+S.waterEvery*60000;persistRun();}renderMicro();});});
   $('#vol').addEventListener('input',function(e){S.volume=parseInt(e.target.value,10);save(KEY.settings,S);});
-  function renderSettings(){document.querySelectorAll('.pill[data-preset]').forEach(function(b){b.classList.toggle('on',b.dataset.preset===S.preset);});Object.keys(fields).forEach(function(k){fields[k].value=S[k];});document.querySelectorAll('.sw').forEach(function(b){b.setAttribute('aria-checked',String(!!S[b.dataset.key]));});$('#vol').value=S.volume;}
+  var tmin=$('#fTimerMin'),tuntil=$('#fTimerUntil');
+  tmin.addEventListener('change',function(){var v=parseInt(tmin.value,10);if(isNaN(v))v=S.timerMin;v=Math.min(720,Math.max(1,v));S.timerMin=v;S.timerUntil='';save(KEY.settings,S);renderSettings();if(R.mode==='idle')render();});
+  tuntil.addEventListener('change',function(){S.timerUntil=/^\d{2}:\d{2}$/.test(tuntil.value)?tuntil.value:'';save(KEY.settings,S);renderSettings();if(R.mode==='idle')render();});
+  (function buildQuick(){var box=$('#qmins');QUICK.forEach(function(m){var b=document.createElement('button');b.type='button';b.className='qmin';b.textContent=m+' min';b.dataset.min=String(m);b.addEventListener('click',function(){S.timerMin=m;S.timerUntil='';save(KEY.settings,S);renderSettings();if(R.mode==='idle')render();});box.appendChild(b);});})();
+  function renderSettings(){document.querySelectorAll('.pill[data-preset]').forEach(function(b){b.classList.toggle('on',b.dataset.preset===S.preset);});Object.keys(fields).forEach(function(k){fields[k].value=S[k];});document.querySelectorAll('.sw').forEach(function(b){b.setAttribute('aria-checked',String(!!S[b.dataset.key]));});$('#vol').value=S.volume;
+    var tm=S.preset==='timer';$('#cycleFields').hidden=tm;$('#timerFields').hidden=!tm;tmin.value=S.timerMin;tuntil.value=S.timerUntil||'';document.querySelectorAll('.qmin').forEach(function(b){b.classList.toggle('on',!S.timerUntil&&+b.dataset.min===S.timerMin);});$('#clockTg').hidden=!IS_ANDROID;}
 
   /* ---------- tabs ---------- */
   function showTab(name){document.querySelectorAll('.tab').forEach(function(t){t.setAttribute('aria-selected',String(t.dataset.tab===name));});['timer','diary','trends'].forEach(function(n){$('#panel-'+n).hidden=n!==name;});try{localStorage.setItem(KEY.tab,name);}catch(e){}if(name==='trends')renderCharts();if(name==='diary')renderDiary();}
@@ -485,7 +525,7 @@ footer strong{color:var(--danger)}
 
   /* ---------- render: timer + today ---------- */
   var titleFlip=false;
-  function renderTime(rem){el.digits.textContent=fmt(rem);var p=R.total>0?Math.max(0,Math.min(1,rem/R.total)):1;el.bar.style.strokeDashoffset=String(CIRC*(1-p));document.title=fmt(rem)+' · '+(R.mode==='work'?'Work':'Break')+(R.paused?' (paused)':'');}
+  function renderTime(rem){el.digits.textContent=fmt(rem);var p=R.total>0?Math.max(0,Math.min(1,rem/R.total)):1;el.bar.style.strokeDashoffset=String(CIRC*(1-p));document.title=fmt(rem)+' · '+(R.mode==='work'?'Work':R.mode==='timer'?'Timer':'Break')+(R.paused?' (paused)':'');}
   function renderStretch(){var st=(R.mode!=='work'&&isLong())?LONG:STRETCHES[R.stretch];el.stretchName.textContent=st.n;el.stretchHow.textContent=st.h;el.stretchTime.textContent=st.t>=120?'about '+Math.round(st.t/60)+' min':'about '+st.t+' s';el.stretchEyebrow.textContent=R.mode==='work-done'?'Do this now, then tap the button':(R.mode==='break'?'This break':'Next break');}
   function renderToday(){var k=dayKey(),t=totals(k),d=diary(k);
     $('#sBlocks').textContent=t.blocks;$('#sStood').textContent=t.stood;$('#sFocus').textContent=t.focus;$('#sSnooze').textContent=t.snooze;$('#sWater').textContent=t.water;$('#sEye').textContent=t.eye;
@@ -497,17 +537,20 @@ footer strong{color:var(--danger)}
   function render(){
     document.body.dataset.mode=R.mode;
     var m=R.mode,b=R.block;
-    el.pause.hidden=!(m==='work'||m==='break');el.secondary.hidden=m!=='work-done';el.reset.hidden=false;
+    el.pause.hidden=!(m==='work'||m==='break'||m==='timer');el.secondary.hidden=!(m==='work-done'||m==='timer-done');el.reset.hidden=false;
     el.pause.textContent=R.paused?'Resume':'Pause';
     el.stretchCard.hidden=!(m==='work-done'||m==='break'||m==='break-done');
     if(m!=='work')hideToast();
     renderMicro();
-    if(m==='idle'){el.mode.innerHTML='<small>Block '+b+'</small>Ready to work';el.digits.textContent=fmt(S.work*60000);el.sub.textContent='work';el.bar.style.strokeDashoffset='0';el.hint.textContent='Sit tall, feet flat. The bell rings at 0:00 and keeps ringing until you tap.';el.primary.hidden=false;el.primary.textContent='Start work';el.reset.textContent='Reset';document.title='Spine Bell';}
-    else if(m==='work'){el.mode.innerHTML='<small>Block '+b+(R.snoozed?' · snoozed':'')+'</small>Working';el.sub.textContent='until you stand';el.hint.textContent=R.paused?'Paused. Resume when you are back.':'Next: '+(isLong()?'long break '+S.lng:'break '+S.brk)+' min. Shoulders down, screen at eye level.';el.primary.hidden=true;el.reset.textContent='Reset block';renderTime(R.paused?R.remaining:R.endAt-Date.now());}
+    if(m==='idle'&&S.preset==='timer'){var tms=timerMs();el.mode.innerHTML='<small>Timer</small>Ready';el.digits.textContent=fmt(tms);el.sub.textContent='timer';el.bar.style.strokeDashoffset='0';el.hint.textContent=(S.timerUntil?'Rings at '+S.timerUntil+', in '+fmtDur(tms):fmtDur(tms)+', rings at '+clockAt(tms))+'. One bell, no break cycle.';el.primary.hidden=false;el.primary.textContent='Start timer';el.reset.textContent='Reset';document.title='Spine Bell';}
+    else if(m==='timer'){var trem=R.paused?R.remaining:R.endAt-Date.now();el.mode.innerHTML='<small>Timer · '+fmtDur(R.total)+'</small>Counting down';el.sub.textContent='rings at '+clockAt(trem);el.hint.textContent=R.paused?'Paused. Resume when you are back.':'The bell rings at 0:00 and keeps ringing until you tap.';el.primary.hidden=true;el.reset.textContent='Cancel';renderTime(trem);}
+    else if(m==='timer-done'){el.mode.innerHTML='<small>Timer · '+fmtDur(R.total)+'</small>Time is up';el.digits.textContent='0:00';el.sub.textContent='now';el.bar.style.strokeDashoffset='0';el.hint.textContent='The bell stops when you tap.';el.primary.hidden=false;el.primary.textContent='Done';el.secondary.textContent='Again · '+fmtDur(R.total);el.reset.textContent='Reset';document.title='▲ TIME IS UP · Spine Bell';}
+    else if(m==='idle'){el.mode.innerHTML='<small>Block '+b+'</small>Ready to work';el.digits.textContent=fmt(S.work*60000);el.sub.textContent='work';el.bar.style.strokeDashoffset='0';el.hint.textContent='Sit tall, feet flat. The bell rings at 0:00 and keeps ringing until you tap.';el.primary.hidden=false;el.primary.textContent='Start work';el.reset.textContent='Reset';document.title='Spine Bell';}
+    else if(m==='work'){el.mode.innerHTML='<small>Block '+b+(R.snoozed?' · snoozed':'')+'</small>Working';el.sub.textContent='stand up at '+clockAt(R.paused?R.remaining:R.endAt-Date.now());el.hint.textContent=R.paused?'Paused. Resume when you are back.':'Next: '+(isLong()?'long break '+S.lng:'break '+S.brk)+' min. Shoulders down, screen at eye level.';el.primary.hidden=true;el.reset.textContent='Reset block';renderTime(R.paused?R.remaining:R.endAt-Date.now());}
     else if(m==='work-done'){el.mode.innerHTML='<small>Block '+b+' done</small>Stand up';el.digits.textContent='0:00';el.sub.textContent='now';el.bar.style.strokeDashoffset='0';el.hint.textContent='The bell stops when you tap. Stand first, then tap.';el.primary.hidden=false;el.primary.textContent='I am standing · start break';el.secondary.textContent='Snooze 2 min';el.reset.textContent='Reset';document.title='▲ STAND UP · Spine Bell';renderStretch();}
-    else if(m==='break'){el.mode.innerHTML='<small>'+(isLong()?'Long break':'Break')+' after block '+b+'</small>Off the chair';el.sub.textContent='break';el.hint.textContent=R.paused?'Break paused.':'Stay standing. Sit down only when this hits 0:00.';el.primary.hidden=false;el.primary.textContent='End break early';el.reset.textContent='Reset';renderTime(R.paused?R.remaining:R.endAt-Date.now());renderStretch();}
+    else if(m==='break'){el.mode.innerHTML='<small>'+(isLong()?'Long break':'Break')+' after block '+b+'</small>Off the chair';el.sub.textContent='sit down at '+clockAt(R.paused?R.remaining:R.endAt-Date.now());el.hint.textContent=R.paused?'Break paused.':'Stay standing. Sit down only when this hits 0:00.';el.primary.hidden=false;el.primary.textContent='End break early';el.reset.textContent='Reset';renderTime(R.paused?R.remaining:R.endAt-Date.now());renderStretch();}
     else if(m==='break-done'){el.mode.innerHTML='<small>Break over</small>Back to work';el.digits.textContent='0:00';el.sub.textContent='next: block '+(b+1);el.bar.style.strokeDashoffset='0';el.hint.textContent=S.autoWork?'Next block starts by itself in a few seconds.':'Tap when you are seated and ready.';el.primary.hidden=false;el.primary.textContent='Back to work · block '+(b+1);el.reset.textContent='Reset';document.title='▲ BACK TO WORK · Spine Bell';renderStretch();}
-    renderToday();
+    renderHandoff();renderToday();
   }
 
   /* ---------- charts ---------- */
@@ -589,16 +632,16 @@ footer strong{color:var(--danger)}
 
   /* ---------- boot ---------- */
   renderSettings();notifyUI();
-  if((R.mode==='work'||R.mode==='break')&&!R.paused&&R.endAt<=Date.now()){if(R.mode==='work'){creditWork();R.mode='work-done';}else{R.mode='break-done';}persistRun();}
+  if((R.mode==='work'||R.mode==='break'||R.mode==='timer')&&!R.paused&&R.endAt<=Date.now()){if(R.mode==='work'){creditWork();R.mode='work-done';}else if(R.mode==='timer'){R.mode='timer-done';}else{R.mode='break-done';}persistRun();}
   if(R.mode==='break-done'&&S.autoWork){setTimeout(function(){if(R.mode==='break-done'){R.block++;startWork();}},6000);}
-  if(R.mode==='work-done'||R.mode==='break-done'){el.status.textContent='Timer ended while this page was closed. Tap the button to continue.';}
+  if(R.mode==='work-done'||R.mode==='break-done'||R.mode==='timer-done'){el.status.textContent='Timer ended while this page was closed. Tap the button to continue.';}
   if(R.mode==='work'){scheduleMicro();}
   render();renderDiary();
   var savedTab='timer';try{savedTab=localStorage.getItem(KEY.tab)||'timer';}catch(e){}
-  showTab((R.mode==='work-done'||R.mode==='break-done')?'timer':savedTab);
+  showTab((R.mode==='work-done'||R.mode==='break-done'||R.mode==='timer-done')?'timer':savedTab);
   initSync();
   setInterval(tick,250);
-  setInterval(function(){if(R.mode==='work-done'||R.mode==='break-done'){titleFlip=!titleFlip;document.title=titleFlip?(R.mode==='work-done'?'▲ STAND UP':'▲ BACK TO WORK'):'Spine Bell';}},1000);
+  setInterval(function(){if(R.mode==='work-done'||R.mode==='break-done'||R.mode==='timer-done'){titleFlip=!titleFlip;document.title=titleFlip?(R.mode==='work-done'?'▲ STAND UP':R.mode==='timer-done'?'▲ TIME IS UP':'▲ BACK TO WORK'):'Spine Bell';}},1000);
   document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'){tick();if(isRunning())wake(true);}});
   window.addEventListener('focus',function(){tick();});
   var lastDay=dayKey();

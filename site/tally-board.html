@@ -444,12 +444,16 @@ footer{margin-top:22px;color:var(--muted);font-size:13px;max-width:70ch}
     maybeNotify(items);}
 
   /* ---------- notifications ---------- */
+  var SWREG=null;
+  if('serviceWorker' in navigator){try{navigator.serviceWorker.register('sw.js').catch(function(){});navigator.serviceWorker.ready.then(function(r){SWREG=r;}).catch(function(){});}catch(e){}}
   function notifyUI(){var b=$('#notifyBtn'),s=$('#notifyState');if(!('Notification' in window)){b.hidden=true;s.textContent='Notifications not supported here.';return;}
     if(Notification.permission==='granted'){b.hidden=true;s.textContent='Reminders on: one banner a day when something needs attention, while this page is open.';}else if(Notification.permission==='denied'){b.hidden=true;s.textContent='Notifications are blocked for this site in the browser.';}else{b.hidden=false;s.textContent='';}}
   $('#notifyBtn').addEventListener('click',function(){Notification.requestPermission().then(function(){notifyUI();renderToday();});});
   function maybeNotify(items){if(!items.length||!('Notification' in window)||Notification.permission!=='granted')return;var t=today();try{if(localStorage.getItem(KEY.notified)===t)return;}catch(e){}
     var names=items.map(function(i){return i.kind==='act'?i.a.name:i.kind==='note'?i.n.text.split('\n')[0]:i.e.title;}).slice(0,4);
-    try{new Notification('Tally Board',{body:items.length+' thing'+(items.length===1?'':'s')+' today: '+names.join(', '),tag:'tally'});localStorage.setItem(KEY.notified,t);}catch(e){}}
+    var o={body:items.length+' thing'+(items.length===1?'':'s')+' today: '+names.join(', '),tag:'tally',data:{url:location.href}};function shown(){try{localStorage.setItem(KEY.notified,t);}catch(e){}}
+    if(SWREG&&SWREG.showNotification){SWREG.showNotification('Tally Board',o).then(shown).catch(function(){});return;}
+    try{new Notification('Tally Board',o);shown();}catch(e){}}
 
   /* ---------- tabs + boot ---------- */
   function showTab(name){document.querySelectorAll('.tab').forEach(function(t){t.setAttribute('aria-selected',String(t.dataset.tab===name));});['today','activities','calendar','notes'].forEach(function(n){$('#panel-'+n).hidden=n!==name;});try{localStorage.setItem(KEY.tab,name);}catch(e){}}

@@ -1,8 +1,9 @@
 # Personal Apps
 
-Three single-file web apps whose data lives as JSON files in **your own Google Drive**, not in any app's
+Five single-file web apps whose data lives as JSON files in **your own Google Drive**, not in any app's
 database. Open them from a laptop or a phone, sign in with Google once per device, and every device sees the
-same data.
+same data. The **Continue with Google** button sits in the header of every page; until you tap it on a device,
+that device keeps its data only in its own browser (the header then says *changes waiting*).
 
 | App | Page | Drive file (in `My Drive/Personal Apps`) |
 |---|---|---|
@@ -51,6 +52,20 @@ and that the origin you are using is listed on the client.
 
 On a phone: open the site, sign in, and use *Add to Home Screen*.
 
+## Timers and reminders on a phone
+
+- A phone browser pauses a page that is not on screen (another app in front, or the screen locked), so no web
+  page can ring a bell from the background. Spine Bell therefore keeps the screen awake while a countdown runs
+  (toggle in Rhythm); leave it open and face up. When you come back to a page whose time ran out, it rings then.
+- **Android**: while a countdown runs, Spine Bell shows *Hand this countdown to the phone's Clock app*. That
+  opens the phone's own Clock with the same timer, which rings from anywhere. The Rhythm toggle *Also set the
+  phone's Clock timer* does this automatically on every start. Both use the standard `SET_TIMER` intent; they
+  need a Clock app that supports it (Google Clock and Samsung Clock do). Untested on real hardware so far.
+- **Notifications**: `docs/sw.js` is a tiny service worker that exists only so Android Chrome can show the
+  Spine Bell and Tally Board banners (Android refuses page-level notifications). It caches nothing.
+- **Just a timer**: the fourth Rhythm preset in Spine Bell is a plain countdown, either N minutes or "ring at"
+  a clock time, one bell and no break cycle. The clock time is one-off; the next start uses the minutes.
+
 ## Sign-in details worth knowing
 
 - The Google token lasts one hour. After that the pages show *Continue with Google* again; one tap, no consent
@@ -67,11 +82,15 @@ of Dumbbell Dojo, Spine Bell and Tally Board from that folder (artifact versions
 
 ## Repository layout
 
-- `docs/` — the site. `tools/build-site.py` regenerates the three pages from the sources below.
+- `docs/` — the site. `tools/build-site.py` regenerates the five pages from the sources below; run it after
+  editing any source. It leaves `docs/data/keycap-atlas.json` alone unless the gitignored `seed/export/` folder
+  is present. `docs/sw.js` is the notification service worker (not built, edit in place).
 - `keycap-atlas.html`, `strongroom.html` — page sources (artifact-style fragments; the build adds the storage layer
   and the HTML skeleton).
-- `site/dumbbell-dojo.html`, `site/tally-board.html`, `site/spine-bell.html` — page sources as exported from their
-  artifacts; the build swaps their storage code for the Drive layer.
+- `site/dumbbell-dojo.html`, `site/tally-board.html`, `site/spine-bell.html` — page sources (originally exported
+  from their artifacts, now maintained here); the build swaps their storage code for the Drive layer and moves
+  the sign-in control into the header. Dumbbell Dojo's muscle maps (which muscles each exercise and each day
+  works, front and back) live in the source as `EXM` and `MM_SHAPES`.
 - `seed/shortcuts.txt`, `seed/build-seed.mjs` — the starter shortcut set and its builder.
 - `seed/ocr-notebook-to-csv.py` — turns OCR text of a scanned password notebook into the vault's import CSV.
 

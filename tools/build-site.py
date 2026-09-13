@@ -172,7 +172,8 @@ wr('docs/dumbbell-dojo.html', dj)
 # ---------------------------------------------------------------- Tally Board
 tb = rd('site/tally-board.html')
 tb = rep(tb, '<title>Tally Board</title>', '<title>Tally Board</title>\n<script src="config.js"></script>\n<script src="drive-sync.js"></script>')
-tb = rep(tb, '<div class="sync" id="sync" data-state="local"><i></i><span id="syncText">Local only on this device</span></div>', '<div id="sync"></div>')
+tb = rep(tb, '          <div class="sync" id="sync" data-state="local"><i></i><span id="syncText">Local only on this device</span></div>\n', '')
+tb = rep(tb, '<div class="datel" id="dateLine"></div>\n  </header>', '<div class="datel" id="dateLine"></div>\n    <div id="sync"></div>\n  </header>')
 start = tb.index("  var ITEMS=load(KEY.items,{});")
 end = tb.index("  /* ---------- activities ---------- */")
 tb = tb[:start] + r'''  var STORE=DriveStore.open({file:'tally-board.json',cacheKey:'tally.doc',empty:function(){return {v:1,app:'tally-board',items:{}};},
@@ -201,7 +202,8 @@ wr('docs/tally-board.html', tb)
 # ---------------------------------------------------------------- Spine Bell
 sb = rd('site/spine-bell.html')
 sb = rep(sb, '<title>Spine Bell</title>', '<title>Spine Bell</title>\n<script src="config.js"></script>\n<script src="drive-sync.js"></script>')
-sb = rep(sb, '<div class="sync" id="sync" data-state="local"><i></i><span id="syncText">Local only on this device</span></div>', '<div id="sync"></div>')
+sb = rep(sb, '      <div class="sync" id="sync" data-state="local"><i></i><span id="syncText">Local only on this device</span></div>\n', '')
+sb = rep(sb, '<div class="chip" id="todayChip">Today · 0 blocks · stood up 0×</div>\n  </header>', '<div class="chip" id="todayChip">Today · 0 blocks · stood up 0×</div>\n    <div id="sync"></div>\n  </header>')
 sb = rep(sb, "  var DAYS=load(KEY.days,{});", r'''  var STORE=DriveStore.open({file:'spine-bell.json',cacheKey:'spinebell.doc',empty:function(){return {v:1,app:'spine-bell',items:{}};},merge:mergeDays,
     onChange:function(doc,src){DAYS=doc.items;if(src==='remote'&&BOOTED){renderToday();renderDiary();renderCharts();}}});
   var DAYS=STORE.doc.items,BOOTED=false;
@@ -241,6 +243,9 @@ for f in sorted(glob.glob(os.path.join(ROOT, 'seed', 'export', 'keycap', 'shortc
     if d and d.get('id') and d.get('keys'):
         docs.append(d)
 docs.sort(key=lambda d: d.get('order', 0))
-with open(os.path.join(DOCS, 'data', 'keycap-atlas.json'), 'w', encoding='utf-8') as f:
-    json.dump({'format': 'keycap-atlas', 'v': 1, 'shortcuts': docs}, f, ensure_ascii=False)
-print('built docs/: keycap-atlas.html, strongroom.html, dumbbell-dojo.html, data/keycap-atlas.json (%d shortcuts)' % len(docs))
+if docs:
+    with open(os.path.join(DOCS, 'data', 'keycap-atlas.json'), 'w', encoding='utf-8') as f:
+        json.dump({'format': 'keycap-atlas', 'v': 1, 'shortcuts': docs}, f, ensure_ascii=False)
+    print('built docs/: keycap-atlas, strongroom, dumbbell-dojo, tally-board, spine-bell, data/keycap-atlas.json (%d shortcuts)' % len(docs))
+else:
+    print('built docs/: keycap-atlas, strongroom, dumbbell-dojo, tally-board, spine-bell (seed/export absent, data/keycap-atlas.json kept as is)')
