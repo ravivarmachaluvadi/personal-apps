@@ -9,7 +9,7 @@ that device keeps its data only in its own browser (the header then says *change
 |---|---|---|
 | Keycap Atlas | `docs/keycap-atlas.html` | `keycap-atlas.json` — shortcuts and commands, by app and OS |
 | Strongroom | `docs/strongroom.html` | `strongroom-vault.json` — password vault, ciphertext only |
-| Dumbbell Dojo | `docs/dumbbell-dojo.html` | `dumbbell-dojo.json` — ticks, weight logs, plan choice |
+| Dumbbell Dojo | `docs/dumbbell-dojo.html` | `dumbbell-dojo.json` — ticks (timestamps), weight logs, plan choice, day edits |
 | Tally Board | `docs/tally-board.html` | `tally-board.json` — activities, plans, milestones, notes |
 | Spine Bell | `docs/spine-bell.html` | `spine-bell.json` — per-device counters and the daily diary |
 
@@ -65,6 +65,24 @@ On a phone: open the site, sign in, and use *Add to Home Screen*.
   Spine Bell and Tally Board banners (Android refuses page-level notifications). It caches nothing.
 - **Just a timer**: the fourth Rhythm preset in Spine Bell is a plain countdown, either N minutes or "ring at"
   a clock time, one bell and no break cycle. The clock time is one-off; the next start uses the minutes.
+
+## Dumbbell Dojo notes (after the 2026-09-14 review)
+
+- **Plans**: keys `ppl6`, `ul4`, `full3`, `bro5` are stored in Drive, so never rename them. `ppl6` (Push / Pull / Legs, each muscle
+  twice a week) is the default; `ul4` is the 4-day Upper / Lower plan for sport or flare-up weeks; `full3` is a real full-body A / B / C;
+  `bro5` is the six-session body-part split. The plan bar above the week strip switches between them from the Today tab.
+- **Day edits** are stored per weekday as `{add, remove, swap}`; Swap keeps the replacement in the original's slot. "Sore back today"
+  turns the day into the Spine Reset (remove everything, add the reset moves); "Reset day" undoes it.
+- **Ticks** store a timestamp (not `true`) so the session summary can say how long the session took. Completion is recomputed
+  whenever the list changes (`recomputeComplete`).
+- **Backups**: the export is v2 (`items` with timestamps and tombstones). *Merge a backup* keeps whichever is newer per key;
+  *Replace everything* makes the file the truth and tombstones what it lacks. Files from the other apps are refused.
+- **Tombstones** in `drive-sync.js` are kept for ten years (`TOMBSTONE_DAYS`), so a device left closed for months cannot resurrect
+  deletions.
+- **Rest timer**: the countdown survives a reload (`sessionStorage`), "GO!" stays until tapped, a notification goes through `sw.js`
+  when Alerts are enabled, and on Android a link hands the countdown to the Clock app. The bar follows a running rest onto other tabs.
+- **Rendering**: All exercises, Back care and Do & Don't render on first visit; 3D canvases are created when a card scrolls into view.
+- **Do & Don't tab**: `DOS` holds the pairs and `figSVG` draws the side-view figures from a few joint coordinates.
 
 ## Sign-in details worth knowing
 

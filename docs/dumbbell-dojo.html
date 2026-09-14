@@ -1,14 +1,17 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style></head><body>
+<!doctype html><html lang="en"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light dark}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style></head><body>
 <meta charset="utf-8">
 <title>Dumbbell Dojo</title>
 <script src="config.js"></script>
 <script src="drive-sync.js"></script>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&family=Barlow:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
   :root{
     --bg:#EEF0F3; --surface:#FFFFFF; --panel:#F6F7F9; --ink:#171B21; --muted:#5A6472;
     --text:var(--ink); --surface-2:var(--panel); /* names the shared Drive sign-in widget reads */
-    --line:#D8DDE3; --accent:#E8590C; --accent-ink:#FFFFFF; --good:#2B8A3E;
+    --line:#D8DDE3; --accent:#E8590C; --accent-ink:#FFFFFF; --good:#237032;
+    --text-mix:62%; /* how much of a day colour survives when used as small text (darkened on light grounds) */
     --push:#E8590C; --pull:#1971C2; --legs:#2F9E44; --restc:#868E96;
     --shoul:#E8A20C; --arms:#9C36B5; --core:#0C8599;
     --fig:#2A313A; --fig-faint:#B9C1CA; --focusring:#1971C2; --care:#C2255C;
@@ -16,7 +19,7 @@
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
       --bg:#101317; --surface:#191E24; --panel:#14181D; --ink:#E6EAEE; --muted:#98A2AE;
-      --line:#2A313A; --accent:#FF7A33; --accent-ink:#14181D; --good:#51CF66;
+      --line:#2A313A; --accent:#FF7A33; --accent-ink:#14181D; --good:#51CF66; --text-mix:100%;
       --push:#FF7A33; --pull:#4DABF7; --legs:#69DB7C; --restc:#6C757D;
       --shoul:#FFC078; --arms:#DA77F2; --core:#3BC9DB;
       --fig:#D3DAE1; --fig-faint:#49525C; --focusring:#4DABF7; --care:#F783AC;
@@ -24,7 +27,7 @@
   }
   :root[data-theme="dark"]{
     --bg:#101317; --surface:#191E24; --panel:#14181D; --ink:#E6EAEE; --muted:#98A2AE;
-    --line:#2A313A; --accent:#FF7A33; --accent-ink:#14181D; --good:#51CF66;
+    --line:#2A313A; --accent:#FF7A33; --accent-ink:#14181D; --good:#51CF66; --text-mix:100%;
     --push:#FF7A33; --pull:#4DABF7; --legs:#69DB7C; --restc:#6C757D;
     --shoul:#FFC078; --arms:#DA77F2; --core:#3BC9DB;
     --fig:#D3DAE1; --fig-faint:#49525C; --focusring:#4DABF7; --care:#F783AC;
@@ -65,9 +68,9 @@
   .dayhead{margin:4px 0 16px}
   .dayhead h1{font-family:'Barlow Condensed',sans-serif; font-weight:700; text-transform:uppercase;
     letter-spacing:.03em; font-size:42px; margin:0; line-height:1.05; text-wrap:balance}
-  .dayhead h1 .accent{color:var(--tc,var(--accent))}
+  .dayhead h1 .accent{color:color-mix(in srgb, var(--tc,var(--accent)) var(--text-mix), var(--ink))}
   .dayhead .sub{color:var(--muted); font-size:15px; margin-top:4px; display:flex; align-items:center; gap:8px; flex-wrap:wrap}
-  .todaypill{background:var(--tc,var(--accent)); color:var(--accent-ink); font-size:11px; font-weight:700;
+  .todaypill{background:var(--tc,var(--accent)); color:#14181D; font-size:11px; font-weight:700;
     padding:2px 8px; border-radius:999px; letter-spacing:.04em; text-transform:uppercase}
   .jumpbtn{border:1px solid var(--line); background:var(--surface); color:var(--ink);
     padding:4px 12px; border-radius:999px; font-size:12.5px; font-weight:600; cursor:pointer}
@@ -75,7 +78,7 @@
   .resetbtn{border:none; background:none; color:var(--pull); text-decoration:underline;
     font-size:13.5px; cursor:pointer; padding:0; font-family:inherit}
   .banner{display:none; margin:0 0 16px; padding:12px 16px; border-radius:8px;
-    background:var(--good); color:#fff; font-weight:600}
+    background:var(--good); color:var(--accent-ink); font-weight:600}
   .banner.show{display:block}
 
   .warm{background:var(--surface); border:1px dashed var(--line); border-radius:10px;
@@ -105,7 +108,7 @@
     text-transform:uppercase; letter-spacing:.02em; margin:0}
   .chip{font-size:12px; font-weight:600; letter-spacing:.03em; padding:2px 9px; border-radius:999px;
     background:color-mix(in srgb, var(--tc,var(--muted)) 14%, transparent);
-    color:var(--tc,var(--muted)); border:1px solid color-mix(in srgb, var(--tc,var(--muted)) 35%, transparent)}
+    color:color-mix(in srgb, var(--tc,var(--muted)) var(--text-mix), var(--ink)); border:1px solid color-mix(in srgb, var(--tc,var(--muted)) 35%, transparent)}
   .rx{display:flex; gap:18px; flex-wrap:wrap; margin:8px 0 10px;
     font-family:'IBM Plex Mono',monospace; font-size:14px; font-variant-numeric:tabular-nums}
   .rx b{font-weight:600}
@@ -113,11 +116,11 @@
   .cues{margin:0 0 8px; padding-left:20px; font-size:14.5px}
   .cues li{margin:3px 0}
   .avoid{font-size:13.5px; color:var(--muted); margin:0 0 12px}
-  .avoid b{color:var(--accent); font-weight:700}
+  .avoid b{color:color-mix(in srgb, var(--accent) var(--text-mix), var(--ink)); font-weight:700}
   .ex-actions{display:flex; gap:6px 16px; align-items:center; flex-wrap:wrap}
   .donebtn{border:1.5px solid var(--line); background:var(--surface); color:var(--ink);
     padding:8px 16px; border-radius:8px; font-size:14.5px; font-weight:600; cursor:pointer}
-  .donebtn[aria-pressed="true"]{background:var(--good); border-color:var(--good); color:#fff}
+  .donebtn[aria-pressed="true"]{background:var(--good); border-color:var(--good); color:var(--accent-ink)}
   .vidlink{font-size:14px; font-weight:500}
   .opt-tag{font-size:12px; color:var(--muted); font-style:italic}
   .rmbtn{border:1px dashed var(--line); background:transparent; color:var(--muted);
@@ -130,7 +133,7 @@
   .mm-fig svg{width:40px; height:88px; display:block}
   .mm-k{font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
   .mm-t{font-size:13.5px; line-height:1.35; min-width:0}
-  .mm-t b{display:block; font-weight:700; color:var(--tc,var(--ink))}
+  .mm-t b{display:block; font-weight:700; color:color-mix(in srgb, var(--tc,var(--ink)) var(--text-mix), var(--ink))}
   .mm-t span{color:var(--muted); font-size:13px}
   .mmr{fill:var(--fig-faint); opacity:.55}
   .mmr.p{fill:var(--tc,var(--accent)); opacity:1}
@@ -140,6 +143,99 @@
   .dayhead.withmap .mmap{margin:0}
   .mm-mini{display:inline-flex; gap:3px; margin-left:auto; vertical-align:middle}
   .mm-mini svg{width:16px; height:35px}
+  /* ---- plan bar, ordinals, flare-up, summary, toast ---- */
+  .planbar{display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin:0 0 10px; font-size:13px; color:var(--muted)}
+  .planbar .lab{font-size:11px; text-transform:uppercase; letter-spacing:.08em; font-weight:600; margin-right:2px}
+  .pbtn{border:1px solid var(--line); background:var(--surface); color:var(--ink); padding:5px 11px; border-radius:999px; font-size:13px; font-weight:600; cursor:pointer}
+  .pbtn[aria-pressed="true"]{border-color:var(--accent); color:var(--accent); box-shadow:0 0 0 1px var(--accent)}
+  .pbtn.more{border-style:dashed; color:var(--muted); font-weight:500}
+  .daychip .w small{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--faint); margin-left:2px}
+  .daychip:focus-visible{outline:3px solid var(--focusring); outline-offset:2px}
+  .ord{display:block; width:100%; font-size:13.5px; color:var(--muted)}
+  .ord b{color:var(--ink); font-weight:600}
+  .flarebtn{border:1.5px solid var(--care); background:transparent; color:var(--care); padding:6px 12px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer}
+  .flarebtn:hover{background:color-mix(in srgb, var(--care) 10%, transparent)}
+  .summary{display:none; margin:14px 0 0; padding:14px 18px; border-radius:8px; background:var(--good); color:var(--accent-ink); font-weight:600}
+  .summary.show{display:flex; gap:8px 18px; flex-wrap:wrap; align-items:baseline}
+  .summary span{font-weight:500; font-family:'IBM Plex Mono',monospace; font-size:13px; opacity:.95}
+  .toast{position:fixed; left:50%; bottom:calc(var(--barh,70px) + 14px); transform:translate(-50%,20px); opacity:0; pointer-events:none;
+    background:var(--ink); color:var(--bg); padding:10px 14px; border-radius:10px; font-size:14px; display:flex; gap:12px; align-items:center;
+    box-shadow:0 8px 24px rgba(0,0,0,.25); transition:opacity .2s, transform .2s; z-index:30; max-width:calc(100% - 32px)}
+  .toast.show{opacity:1; transform:translate(-50%,0); pointer-events:auto}
+  .toast button{border:1px solid currentColor; background:transparent; color:inherit; padding:4px 10px; border-radius:6px; font-weight:700; cursor:pointer}
+  /* ---- compact Today cards ---- */
+  .ex-card.compact{grid-template-columns:1fr}
+  .ex-card.compact .ex-body{padding:12px 16px 12px}
+  .more{margin-top:10px; border-top:1px dashed var(--line); padding-top:8px}
+  .more summary{cursor:pointer; font-weight:600; color:var(--pull); list-style:none; display:inline-flex; gap:8px; align-items:center; font-size:14px}
+  .more summary::-webkit-details-marker{display:none}
+  .more summary::before{content:'+'; font-family:'IBM Plex Mono',monospace; font-size:16px; line-height:1}
+  .more[open] summary::before{content:'–'}
+  .more-in{display:grid; grid-template-columns:230px 1fr; gap:14px; margin-top:10px}
+  .more-in .anim-box{border:1px solid var(--line); border-radius:8px; min-height:214px}
+  .how-text .cues{margin-top:0}
+  @media (max-width:660px){ .more-in{grid-template-columns:1fr} .more-in .anim-box{max-width:260px} }
+  details.warm summary{cursor:pointer; list-style:none; display:flex; align-items:center; gap:10px}
+  details.warm summary::-webkit-details-marker{display:none}
+  details.warm summary h2{margin:0}
+  details.warm summary::after{content:'show'; font-size:12px; color:var(--muted); font-family:'IBM Plex Mono',monospace; margin-left:auto}
+  details.warm[open] summary::after{content:'hide'}
+  details.warm[open] summary{margin-bottom:6px}
+  details.pickwrap{margin-top:20px}
+  details.pickwrap > summary{cursor:pointer; list-style:none; display:inline-flex; align-items:center; gap:8px; border:1px dashed var(--line);
+    background:var(--surface); padding:10px 16px; border-radius:10px; font-family:'Barlow Condensed',sans-serif; text-transform:uppercase; letter-spacing:.06em; font-size:17px; font-weight:700}
+  details.pickwrap > summary::-webkit-details-marker{display:none}
+  details.pickwrap > summary::before{content:'+'; font-family:'IBM Plex Mono',monospace; color:var(--accent)}
+  details.pickwrap[open] > summary::before{content:'–'}
+  details.pickwrap .picker{margin-top:8px}
+  .loghint{color:var(--good); font-size:12.5px; font-weight:600; width:100%}
+  .loghist{width:100%; font-size:12.5px}
+  .loghist summary{cursor:pointer; color:var(--muted); list-style:none; display:inline-flex; gap:4px}
+  .loghist summary::-webkit-details-marker{display:none}
+  .loghist summary::before{content:'▸ '}
+  .loghist[open] summary::before{content:'▾ '}
+  .loghist ul{margin:4px 0 0; padding-left:16px; font-family:'IBM Plex Mono',monospace}
+  .loghist li span{color:var(--muted); margin-left:6px}
+  .swapbtn{border:1px dashed var(--line); background:transparent; color:var(--muted); padding:6px 10px; border-radius:999px; font-size:12.5px; font-weight:600; cursor:pointer}
+  .swapbtn:hover{color:var(--accent); border-color:var(--accent)}
+  .swapsel{font-family:inherit; font-size:13.5px; padding:6px 8px; border-radius:8px; border:1.5px solid var(--accent); background:var(--surface); color:var(--ink); max-width:100%}
+  .rmbtn{padding:6px 12px; min-height:28px}
+  .vbtns button{padding:5px 9px; min-height:26px; font-size:11.5px}
+  .jumpbtn,.resetbtn{padding:6px 12px}
+  .wk-card{cursor:pointer}
+  .wk-card:focus-visible{outline:3px solid var(--focusring); outline-offset:2px}
+  .wk-card .wkdone{color:var(--good)}
+  .wk-card .added{color:var(--accent); font-weight:700}
+  .wk-card .edited{font-size:12px; color:var(--muted); font-family:'IBM Plex Mono',monospace; margin-top:6px}
+  .sr{position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden}
+  .tclock{font:600 12.5px 'IBM Plex Mono',monospace; color:var(--accent); text-decoration:underline dotted; text-underline-offset:3px}
+  .tbtn.gear{padding:8px 10px}
+  .timerbar.typing{display:none!important}
+  @media (max-width:520px){ .tlabel{display:none} .tdisplay{min-width:72px; font-size:26px} .tbtn{padding:8px 10px; font-size:13px} .timerbar{padding:8px 10px; gap:6px} }
+  /* ---- Do & Don't tab ---- */
+  .dd-h{font-family:'Barlow Condensed',sans-serif; text-transform:uppercase; font-size:24px; letter-spacing:.04em; margin:28px 0 8px}
+  .dd-pair{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:0 0 16px}
+  .dd-t{grid-column:1/-1; font-family:'Barlow Condensed',sans-serif; text-transform:uppercase; letter-spacing:.05em; font-size:17px; font-weight:700; margin:4px 0 0}
+  .dd-card{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:12px 14px; display:flex; gap:14px; align-items:center}
+  .dd-card.do{border-color:color-mix(in srgb, var(--good) 50%, var(--line))}
+  .dd-card.dont{border-color:color-mix(in srgb, var(--care) 50%, var(--line))}
+  .dd-card svg,.dd-glyph{width:36%; max-width:132px; flex:none}
+  .dd-glyph{font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:20px; text-align:center; padding:22px 6px; border-radius:8px; background:var(--panel); line-height:1.15}
+  .dd-glyph.do{color:var(--good)} .dd-glyph.dont{color:var(--care)}
+  .dd-txt{font-size:14.5px; min-width:0}
+  .dd-txt b{display:inline-block; font-family:'Barlow Condensed',sans-serif; text-transform:uppercase; letter-spacing:.06em; padding:1px 9px; border-radius:999px; margin-right:6px; font-size:13.5px}
+  .do .dd-txt b{background:var(--good); color:var(--accent-ink)} .dont .dd-txt b{background:var(--care); color:#fff}
+  .dd-txt span{display:block; color:var(--muted); font-size:13px; margin-top:5px}
+  @media (max-width:560px){ .dd-pair{grid-template-columns:1fr} }
+  .ddfig{display:block; height:auto; background:var(--panel); border-radius:8px}
+  .ddfig .body{fill:none; stroke-width:3.4; stroke-linecap:round; stroke-linejoin:round}
+  .ddfig .body circle{fill:var(--panel)}
+  .ddfig .floor{stroke:var(--line); stroke-width:1.5}
+  .ddfig .prop{fill:none; stroke:var(--muted); stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+  .ddfig .propfill{fill:var(--fig-faint); stroke:none}
+  .ddfig .db{fill:var(--accent); stroke:none}
+  .ddfig .mark{fill:none; stroke:var(--care); stroke-width:2; stroke-dasharray:3 2}
+  .ddfig text{font:600 11px 'IBM Plex Mono',monospace; fill:var(--muted)}
 
   .restcard{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:22px 24px}
   .restcard h2{font-family:'Barlow Condensed',sans-serif; text-transform:uppercase; font-size:26px; margin:0 0 8px}
@@ -229,7 +325,7 @@
   .logwrap .lbl{color:var(--muted); font-size:11px; letter-spacing:.05em; text-transform:uppercase; font-weight:600}
   .loginp{border:1.5px solid var(--line); background:var(--panel); color:var(--ink); padding:6px 10px; border-radius:8px;
     font-family:'IBM Plex Mono',monospace; font-size:13.5px; width:150px}
-  .loginp:focus{border-color:var(--accent); outline:none}
+  .loginp:focus{border-color:var(--accent)}
   .loglast{color:var(--muted); font-family:'IBM Plex Mono',monospace; font-size:12.5px}
   .loglast b{color:var(--ink); font-weight:600}
   .logsaved{color:var(--good); font-size:12px; font-weight:600}
@@ -296,32 +392,37 @@
   </header>
 
   <nav role="tablist" aria-label="Sections">
-    <button class="tab" role="tab" data-view="today" aria-selected="true">Today</button>
-    <button class="tab" role="tab" data-view="week" aria-selected="false">Week plan</button>
-    <button class="tab" role="tab" data-view="library" aria-selected="false">All exercises</button>
-    <button class="tab" role="tab" data-view="guide" aria-selected="false">Guide</button>
-    <button class="tab" role="tab" data-view="care" aria-selected="false">Back care</button>
+    <button class="tab" role="tab" id="tab-today" data-view="today" aria-selected="true" aria-controls="view-today">Today</button>
+    <button class="tab" role="tab" id="tab-week" data-view="week" aria-selected="false" aria-controls="view-week">Week plan</button>
+    <button class="tab" role="tab" id="tab-library" data-view="library" aria-selected="false" aria-controls="view-library">All exercises</button>
+    <button class="tab" role="tab" id="tab-guide" data-view="guide" aria-selected="false" aria-controls="view-guide">Guide</button>
+    <button class="tab" role="tab" id="tab-care" data-view="care" aria-selected="false" aria-controls="view-care">Back care</button>
+    <button class="tab" role="tab" id="tab-dos" data-view="dos" aria-selected="false" aria-controls="view-dos">Do &amp; Don't</button>
   </nav>
 
-  <div class="strip" id="weekstrip" aria-label="This week"></div>
+  <div class="planbar" id="planbar" role="group" aria-label="Training plan"></div>
+  <div class="strip" id="weekstrip" role="group" aria-label="This week"></div>
 
   <main>
-    <section id="view-today"></section>
-    <section id="view-week" hidden></section>
-    <section id="view-library" hidden></section>
-    <section id="view-guide" hidden></section>
-    <section id="view-care" hidden></section>
+    <section id="view-today" role="tabpanel" aria-labelledby="tab-today"></section>
+    <section id="view-week" role="tabpanel" aria-labelledby="tab-week" hidden></section>
+    <section id="view-library" role="tabpanel" aria-labelledby="tab-library" hidden></section>
+    <section id="view-guide" role="tabpanel" aria-labelledby="tab-guide" hidden></section>
+    <section id="view-care" role="tabpanel" aria-labelledby="tab-care" hidden></section>
+    <section id="view-dos" role="tabpanel" aria-labelledby="tab-dos" hidden></section>
   </main>
 </div>
 
 <div class="timerbar" id="timerbar">
   <span class="tlabel">Rest timer</span>
-  <span class="tdisplay" id="tdisplay">--:--</span>
-  <button class="tbtn" data-sec="60">60s</button>
-  <button class="tbtn" data-sec="90">90s</button>
-  <button class="tbtn" data-sec="120">120s</button>
-  <button class="tbtn stop" id="tstop">Stop</button>
-  <span class="tvol"><input type="range" id="tvol" min="0" max="100" value="70" aria-label="Bell volume"><button class="tbtn" id="ttest" type="button">Test bell</button></span>
+  <span class="tdisplay" id="tdisplay">--:--</span><span class="sr" id="tstatus" role="status" aria-live="polite"></span>
+  <button class="tbtn" data-sec="60" type="button">60s</button>
+  <button class="tbtn" data-sec="90" type="button">90s</button>
+  <button class="tbtn" data-sec="120" type="button">120s</button>
+  <button class="tbtn stop" id="tstop" type="button">Stop</button>
+  <a class="tclock" id="tclock" href="#" hidden>Clock app ↗</a>
+  <button class="tbtn gear" id="tgear" type="button" aria-label="Bell settings" aria-expanded="false">⚙</button>
+  <span class="tvol" id="tsettings" hidden><input type="range" id="tvol" min="0" max="100" value="70" aria-label="Bell volume"><button class="tbtn" id="ttest" type="button">Test bell</button><button class="tbtn" id="talerts" type="button">Alerts</button></span>
 </div>
 
 <script>
@@ -405,8 +506,8 @@ const GOB   = {ua:[0.28,-0.85,0.42], fa:[-0.3,0.62,0.62]};
 
 const EXR = {
 /* ---------------- CHEST ---------------- */
-floorpress:{name:'Floor Press', mus:'Chest', sets:'4 × 8–12', rest:'90 s', v:'f', ly:1, dur:2.6,
-  cues:['Lie on your back, knees bent, feet flat. Upper arms rest on the floor, forearms vertical, dumbbells over your elbows.',
+floorpress:{name:'Floor Press', mus:'Chest', sets:'4 × 8–12', rest:'120 s', v:'f', ly:1, dur:2.6,
+  cues:['Sit on the floor with the dumbbells on your thighs, then lie back and let your knees kick them up to the start: knees bent, feet flat, upper arms on the floor, forearms vertical. To finish, bring them to your thighs and sit up with them, never over your chest.',
         'Press both dumbbells straight up over your chest until your arms are fully long.',
         'Lower slowly until your upper arms touch the floor. Pause one second, then press again.'],
   avoid:'Bouncing the elbows off the floor, or flaring the elbows straight out to the sides.',
@@ -446,7 +547,7 @@ pushup:{name:'Push-Up', mus:'Chest', sets:'2 × max', rest:'60 s', v:'s', ly:1, 
   p:[{hip:[0,40,-8], torso:[0,0.16,0.99], ua:[0.06,-1,0.02], fa:[0.03,-1,0], th:[0.07,-0.2,-0.98], sh:[0,-0.35,-0.94], ft:[0,-0.85,-0.5]},
      {hip:[0,22,-8], torso:[0,0.16,0.99], ua:[0.65,-0.35,-0.6], fa:[-0.45,-0.68,0.55], th:[0.07,-0.08,-1], sh:[0,-0.2,-0.97], ft:[0,-0.85,-0.5]}]},
 /* ---------------- UPPER BACK ---------------- */
-row:{name:'Bent-Over Row', mus:'Upper back', sets:'4 × 8–12', rest:'90 s', v:'s', dur:2.4,
+row:{name:'Bent-Over Row', mus:'Upper back', sets:'3 × 8–12', rest:'120 s', v:'s', dur:2.4,
   cues:['Hinge forward at the hips until your chest points at the floor, back flat, arms hanging.',
         'Pull both dumbbells to your lower ribs, driving the elbows up and back.',
         'Squeeze your shoulder blades together at the top, then lower slowly.'],
@@ -461,10 +562,10 @@ onearmrow:{name:'One-Arm Row', mus:'Upper back', sets:'3 × 10–12 / side', res
   avoid:'Twisting the torso open to hoist the weight up.',
   q:'single arm dumbbell row form', bell:'wristR', bellAxis:'x',
   p:[{...HINGE, thL:[-0.1,-0.72,0.68], shL:[0,-1,0.08], thR:[0.12,-0.9,-0.42], shR:[0,-1,-0.05],
-      uaL:[-0.05,-0.85,0.52], faL:[-0.02,-0.55,0.83], uaR:[0.12,-1,0.08], faR:[0.03,-1,0]},
+      uaL:[0.03,-0.96,-0.29], faL:[0.03,-0.96,-0.29], uaR:[0.12,-1,0.08], faR:[0.03,-1,0]},
      {...HINGE, thL:[-0.1,-0.72,0.68], shL:[0,-1,0.08], thR:[0.12,-0.9,-0.42], shR:[0,-1,-0.05],
-      uaL:[-0.05,-0.85,0.52], faL:[-0.02,-0.55,0.83], uaR:[0.15,-0.45,-0.88], faR:[0.03,-1,0.1]}]},
-revfly:{name:'Bent-Over Reverse Fly', mus:'Upper back', sets:'3 × 12–15', rest:'60 s', v:'s', dur:2.6,
+      uaL:[0.03,-0.96,-0.29], faL:[0.03,-0.96,-0.29], uaR:[0.15,-0.45,-0.88], faR:[0.03,-1,0.1]}]},
+revfly:{name:'Bent-Over Reverse Fly', mus:'Upper back', sets:'3 × 12–20', rest:'60 s', v:'s', dur:2.6,
   cues:['Hinge forward at the hips, back flat, light dumbbells hanging below your chest.',
         'With softly bent elbows, raise both arms out wide until they reach shoulder level.',
         'Squeeze between the shoulder blades, then lower slowly. Go light — this is a small muscle.'],
@@ -491,15 +592,15 @@ renegade:{name:'Renegade Row', mus:'Upper back', sets:'3 × 8 / side', rest:'90 
      {hip:[0,38,-8], torso:[0,0.18,0.98], th:[0.22,-0.2,-0.95], sh:[0,-0.3,-0.94], ft:[0,-0.9,-0.4],
       uaL:[-0.06,-1,0.02], faL:[-0.03,-1,0], uaR:[0.1,0.75,-0.65], faR:[0.02,-1,0.1]}]},
 /* ---------------- LOWER BACK ---------------- */
-rdl:{name:'Romanian Deadlift', mus:'Lower back', sets:'4 × 8–12', rest:'120 s', v:'s', dur:2.8,
+rdl:{name:'Romanian Deadlift', mus:'Hinge & lower back', sets:'4 × 8–12', rest:'120 s', v:'s', dur:2.8,
   cues:['Stand tall, dumbbells resting on the front of your thighs, knees soft.',
-        'Push your hips straight back and slide the dumbbells down your legs, back flat.',
-        'Stop at a strong hamstring stretch (around mid-shin), then drive your hips forward to stand.'],
+        'Push your hips straight back and lower the dumbbells close to your legs, back flat.',
+        'Stop just below the knees, at a strong hamstring stretch and before your back wants to round, then drive your hips forward to stand.'],
   avoid:'Rounding the back or bending the knees into a squat — this is a hip hinge.',
   q:'dumbbell romanian deadlift form', bell:'wrists', bellAxis:'x',
   p:[{hip:[0,60,0], fa:[0.05,-1,0.12]},
-     {hip:[0,58,-10], torso:[0,0.62,0.79], th:[0.07,-1,0.3], sh:[0,-1,0.02], ua:[0.05,-1,0.12], fa:[0.02,-1,0.05]}]},
-slrdl:{name:'Single-Leg RDL', mus:'Lower back', sets:'3 × 8 / side', rest:'60 s', v:'s', dur:3.0,
+     {hip:[0,57,-14], torso:[0,0.3,0.95], th:[0.07,-1,0.42], sh:[0,-1,0.02], ua:[0.05,-1,-0.3], fa:[0.02,-1,-0.3]}]},
+slrdl:{name:'Single-Leg RDL', mus:'Hinge & lower back', sets:'3 × 8 / side', rest:'60 s', v:'s', dur:3.0,
   cues:['Balance on one leg with a soft knee, dumbbells hanging in front of your thighs.',
         'Hinge forward as your free leg lifts straight back — body tips like a seesaw.',
         'Stop when your torso and back leg are near horizontal, then squeeze the glute to stand.'],
@@ -508,7 +609,7 @@ slrdl:{name:'Single-Leg RDL', mus:'Lower back', sets:'3 × 8 / side', rest:'60 s
   p:[{hip:[0,60,0], fa:[0.05,-1,0.12]},
      {hip:[0,58,-4], torso:[0,0.52,0.85], thL:[-0.07,-1,0.12], shL:[0,-1,0.02],
       thR:[0.07,0.02,-1], shR:[0,-0.02,-1], ftR:[0,-0.5,-0.9], ua:[0.05,-1,0.12], fa:[0.02,-1,0.02]}]},
-goodmorning:{name:'Good Morning', mus:'Lower back', sets:'3 × 10–12', rest:'60 s', v:'s', dur:2.8,
+goodmorning:{name:'Good Morning', mus:'Hinge & lower back', sets:'3 × 10–12', rest:'60 s', v:'s', dur:2.8,
   cues:['Hold one dumbbell vertically against your upper chest, feet hip-width, knees soft.',
         'Push your hips back and bow forward with a flat back until your torso nears horizontal.',
         'Drive your hips forward to stand tall. All the movement comes from the hips.'],
@@ -516,7 +617,7 @@ goodmorning:{name:'Good Morning', mus:'Lower back', sets:'3 × 10–12', rest:'6
   q:'dumbbell good morning exercise form', bell:'goblet',
   p:[{hip:[0,60,0], ...GOB},
      {hip:[0,58,-8], torso:[0,0.55,0.83], th:[0.07,-1,0.25], ...GOB}]},
-superman:{name:'Superman', mus:'Lower back', sets:'3 × 10–12', rest:'45 s', v:'s', ly:1, dur:2.6,
+superman:{name:'Superman', mus:'Hinge & lower back', sets:'3 × 10–12', rest:'45 s', v:'s', ly:1, dur:2.6,
   cues:['Lie face down, arms extended in front of you, legs long behind you.',
         'Lift your arms, chest, and legs off the floor together, squeezing your lower back and glutes.',
         'Hold two seconds at the top, then lower everything slowly. Eyes on the floor.'],
@@ -526,7 +627,7 @@ superman:{name:'Superman', mus:'Lower back', sets:'3 × 10–12', rest:'45 s', v
       ua:[0.15,0.02,1], fa:[0.06,0.05,1]},
      {hip:[0,9,0], torso:[0,0.3,0.95], th:[0.06,0.22,-0.98], sh:[0,0.12,-1], ft:[0,-0.3,-0.95],
       ua:[0.15,0.3,0.95], fa:[0.06,0.32,0.95]}]},
-birddog:{name:'Bird Dog', mus:'Lower back', sets:'3 × 8 / side', rest:'30 s', v:'s', ly:1, dur:3.0,
+birddog:{name:'Bird Dog', mus:'Hinge & lower back', sets:'3 × 8 / side', rest:'30 s', v:'s', ly:1, dur:3.0,
   cues:['On all fours — hands under shoulders, knees under hips, back flat like a table.',
         'Extend your right arm forward and left leg back until both are horizontal.',
         'Hold two seconds without your hips tilting, return, and switch sides.'],
@@ -554,15 +655,15 @@ arnold:{name:'Arnold Press', mus:'Shoulders', sets:'3 × 8–12', rest:'90 s', v
   q:'arnold press form', bell:'wrists', bellAxis:'x',
   p:[{hip:[0,60,0], ua:[0.3,-0.35,0.85], fa:[0.05,1,0.12]},
      {hip:[0,60,0], ua:[0.4,1,0.03], fa:[0.06,1,0]}]},
-lateral:{name:'Lateral Raise', mus:'Shoulders', sets:'3 × 12–15', rest:'60 s', v:'f', dur:2.6,
+lateral:{name:'Lateral Raise', mus:'Shoulders', sets:'3 × 12–20', rest:'60 s', v:'f', dur:2.6,
   cues:['Stand tall, dumbbells at your sides, a soft bend in the elbows.',
-        'Raise both arms out to the sides until they reach shoulder height — like pouring two jugs.',
+        'Raise both arms out to the sides until they reach shoulder height — elbows lead, palms facing the floor, hands level with the elbows.',
         'Lower slowly, taking two seconds on the way down. Use a light weight.'],
   avoid:'Swinging the weights up with momentum or shrugging your shoulders toward your ears.',
   q:'dumbbell lateral raise form', bell:'wrists', bellAxis:'z',
   p:[{hip:[0,60,0], ua:[0.3,-1,0.05], fa:[0.15,-1,0.1]},
      {hip:[0,60,0], ua:[1,0.08,0.02], fa:[1,0.02,0.05]}]},
-frontraise:{name:'Front Raise', mus:'Shoulders', sets:'3 × 12–15', rest:'60 s', v:'s', dur:2.6,
+frontraise:{name:'Front Raise', mus:'Shoulders', sets:'3 × 12–20', rest:'60 s', v:'s', dur:2.6,
   cues:['Stand tall, dumbbells resting on the front of your thighs.',
         'Raise both arms straight in front of you to shoulder height, thumbs up or palms down.',
         'Lower with a slow two-second count. Light weight, strict form.'],
@@ -594,10 +695,10 @@ concentration:{name:'Concentration Curl', mus:'Biceps', sets:'3 × 10–12 / sid
   avoid:'Lifting the elbow off the leg or leaning back to help the weight up.',
   q:'concentration curl form', bell:'wristR', bellAxis:'x',
   props:[{box:[-13,0,-24,26,28,20]}],
-  p:[{hip:[0,32,-4], torso:[0,0.88,0.48], th:[0.28,-0.1,0.96], sh:[0,-1,0.05], ft:[0,-0.3,1],
-      uaR:[0.18,-0.92,0.35], faR:[0.05,-0.85,0.4], uaL:[-0.25,-0.75,0.5], faL:[-0.15,-0.4,0.9]},
-     {hip:[0,32,-4], torso:[0,0.88,0.48], th:[0.28,-0.1,0.96], sh:[0,-1,0.05], ft:[0,-0.3,1],
-      uaR:[0.18,-0.92,0.35], faR:[0.02,0.6,0.7], uaL:[-0.25,-0.75,0.5], faL:[-0.15,-0.4,0.9]}]},
+  p:[{hip:[0,32,-4], torso:[0,0.5,0.87], th:[0.28,-0.1,0.96], sh:[0,-1,0.05], ft:[0,-0.3,1],
+      uaR:[-0.05,-1,-0.35], faR:[0.05,-0.85,0.4], uaL:[-0.25,-0.75,0.5], faL:[-0.15,-0.4,0.9]},
+     {hip:[0,32,-4], torso:[0,0.5,0.87], th:[0.28,-0.1,0.96], sh:[0,-1,0.05], ft:[0,-0.3,1],
+      uaR:[-0.05,-1,-0.35], faR:[0.02,0.6,0.7], uaL:[-0.25,-0.75,0.5], faL:[-0.15,-0.4,0.9]}]},
 reversecurl:{name:'Reverse Curl', mus:'Biceps', sets:'3 × 10–15', rest:'60 s', v:'s', dur:2.2,
   cues:['Stand tall holding the dumbbells with an overhand grip — palms facing behind you.',
         'Curl up to shoulder height keeping your wrists dead straight.',
@@ -623,7 +724,7 @@ skullcrusher:{name:'Lying Triceps Extension', mus:'Triceps', sets:'3 × 10–15'
   q:'lying dumbbell tricep extension form', bell:'wrists', bellAxis:'x',
   p:[{...SUP, ua:[0.15,1,-0.05], fa:[0.05,-0.3,-0.94]},
      {...SUP, ua:[0.15,1,-0.05], fa:[0.05,1,-0.05]}]},
-kickback:{name:'Triceps Kickback', mus:'Triceps', sets:'3 × 12–15', rest:'60 s', v:'s', dur:2.2,
+kickback:{name:'Triceps Kickback', mus:'Triceps', sets:'3 × 12–20', rest:'60 s', v:'s', dur:2.2,
   cues:['Hinge forward at the hips, back flat, upper arms pinned along your sides.',
         'Straighten your arms, pushing the dumbbells back and up until your arms are fully long.',
         'Squeeze the back of the arm for a second, then bend the elbows back to 90°.'],
@@ -640,8 +741,8 @@ diamondpushup:{name:'Diamond Push-Up', mus:'Triceps', sets:'2 × max', rest:'60 
   p:[{hip:[0,40,-8], torso:[0,0.16,0.99], ua:[0.3,-1,0.02], fa:[-0.28,-1,0.05], th:[0.07,-0.2,-0.98], sh:[0,-0.35,-0.94], ft:[0,-0.85,-0.5]},
      {hip:[0,22,-8], torso:[0,0.16,0.99], ua:[0.4,-0.4,-0.82], fa:[-0.35,-0.6,0.62], th:[0.07,-0.08,-1], sh:[0,-0.2,-0.97], ft:[0,-0.85,-0.5]}]},
 /* ---------------- LEGS ---------------- */
-goblet:{name:'Goblet Squat', mus:'Legs', sets:'4 × 8–12', rest:'90 s', v:'s', dur:2.8,
-  cues:['Hold one dumbbell vertically against your chest with both hands, feet shoulder-width.',
+goblet:{name:'Goblet Squat', mus:'Legs', sets:'4 × 8–12', rest:'120 s', v:'s', dur:2.8,
+  cues:['Hold one dumbbell vertically against your chest with both hands, feet shoulder-width. When 15 easy reps with your heaviest dumbbell arrive, the Bulgarian split squat becomes your main leg lift; do not chase a heavier goblet.',
         'Sit down and back until your thighs are at least parallel to the floor, chest proud.',
         'Drive through your whole foot to stand back up. Knees track over the toes.'],
   avoid:'Heels lifting off the floor or knees caving inward.',
@@ -658,7 +759,7 @@ sumo:{name:'Sumo Squat', mus:'Legs', sets:'3 × 10–15', rest:'90 s', v:'f', du
       ua:[0.1,-1,0.12], fa:[-0.08,-1,0.1]},
      {hip:[0,42,-2], torso:[0,0.97,0.24], th:[0.72,-0.35,0.3], sh:[-0.05,-1,0], ft:[0.35,-0.3,0.9],
       ua:[0.1,-1,0.12], fa:[-0.08,-1,0.1]}]},
-lunge:{name:'Reverse Lunge', mus:'Legs', sets:'3 × 10 / side', rest:'90 s', v:'s', dur:2.8,
+lunge:{name:'Reverse Lunge', mus:'Legs', sets:'3 × 10 / side', rest:'120 s', v:'s', dur:2.8,
   cues:['Stand tall with dumbbells at your sides. Step one foot back about a metre.',
         'Drop straight down until the back knee hovers just above the floor — both knees near 90°.',
         'Push through the front foot to stand and bring the feet together. Alternate legs.'],
@@ -669,17 +770,17 @@ lunge:{name:'Reverse Lunge', mus:'Legs', sets:'3 × 10 / side', rest:'90 s', v:'
       thR:[0.05,-0.78,-0.63], shR:[0,-0.32,-0.95], ftR:[0,-0.7,-0.72],
       ua:[0.05,-1,0.05], fa:[0.02,-1,0.02]}]},
 stepup:{name:'Step-Up', mus:'Legs', sets:'3 × 10 / side', rest:'90 s', v:'s', dur:2.8,
-  cues:['Place your whole foot on a sturdy chair or step, dumbbell in each hand.',
-        'Drive through that top leg to stand tall on the chair — don\'t push off the floor leg.',
+  cues:['Place your whole foot on a stair step or a sturdy box no higher than your knee, not a chair, dumbbell in each hand.',
+        'Drive through that top leg to stand tall on the step — don\'t push off the floor leg.',
         'Lower yourself slowly back down with the same leg doing the braking.'],
   avoid:'Bouncing off the bottom foot — the top leg does all the work, up and down.',
   q:'dumbbell step up form', bell:'wrists', bellAxis:'x',
-  props:[{box:[-13,0,22,26,26,20]}],
-  p:[{hip:[0,58,-2], thL:[-0.05,-0.38,0.92], shL:[0.13,-0.9,0.33], ftL:[0,-0.35,1],
+  props:[{box:[-13,0,22,26,20,20]}],
+  p:[{hip:[0,58,-2], thL:[-0.05,-0.2,0.98], shL:[0,-0.95,0.3], ftL:[0,-0.35,1],
       thR:[0.06,-1,-0.02], shR:[0,-1,0]},
-     {hip:[0,86,24], thL:[-0.05,-1,0.1], shL:[0,-1,0.02], ftL:[0,-0.35,1],
+     {hip:[0,80,24], thL:[-0.05,-1,0.1], shL:[0,-1,0.02], ftL:[0,-0.35,1],
       thR:[0.06,-0.8,-0.55], shR:[0,-1,-0.15], ftR:[0,-0.6,0.85]}]},
-bulgarian:{name:'Bulgarian Split Squat', mus:'Legs', sets:'3 × 8–12 / side', rest:'90 s', v:'s', dur:2.8,
+bulgarian:{name:'Bulgarian Split Squat', mus:'Legs', sets:'3 × 8–12 / side', rest:'120 s', v:'s', dur:2.8,
   cues:['Stand a big step in front of a sturdy chair; rest the top of your back foot on it.',
         'Lower straight down until the front thigh is near parallel, torso tall.',
         'Drive through the front foot to stand. All the work belongs to the front leg.'],
@@ -767,12 +868,12 @@ sideplank:{name:'Side Plank', mus:'Abs', sets:'3 × 20–45 s / side', rest:'45 
         'Hold and breathe — or add slow hip dips for reps. Switch sides.'],
   avoid:'Hips sagging toward the floor or rolling forward.',
   q:'side plank form', bell:'none',
-  p:[{hip:[0,16,0], torso:[0.98,0.2,0], shoulderAxis:[0,-1,0], hipAxis:[0,-1,0],
-      th:[-1,-0.05,0.02], sh:[-1,-0.02,0], ft:[-0.35,-0.9,0.1],
-      uaR:[0,-1,0.05], faR:[0,-0.05,1], uaL:[0,1,0.02], faL:[0,1,0]},
-     {hip:[0,22,0], torso:[0.99,0.08,0], shoulderAxis:[0,-1,0], hipAxis:[0,-1,0],
-      th:[-1,-0.12,0.02], sh:[-1,-0.05,0], ft:[-0.35,-0.9,0.1],
-      uaR:[0,-1,0.05], faR:[0,-0.05,1], uaL:[0,1,0.02], faL:[0,1,0]}]},
+  p:[{hip:[0,12,0], torso:[0.87,0.5,0], shoulderAxis:[0,-1,0], hipAxis:[0,-1,0],
+      th:[-1,0,0.02], thL:[-1,0,0.02], sh:[-1,0,0], shL:[-1,0,0], ft:[-0.9,-0.4,0.1], ftL:[-0.9,-0.4,0.1],
+      uaR:[0,-1,0.05], faR:[0,0,1], uaL:[0,1,0.02], faL:[0,1,0]},
+     {hip:[0,24,0], torso:[0.97,0.24,0], shoulderAxis:[0,-1,0], hipAxis:[0,-1,0],
+      th:[-1,-0.28,0.02], thL:[-1,-0.28,0.02], sh:[-1,-0.15,0], shL:[-1,-0.15,0], ft:[-0.9,-0.4,0.1], ftL:[-0.9,-0.4,0.1],
+      uaR:[0,-1,0.05], faR:[0,0,1], uaL:[0,1,0.02], faL:[0,1,0]}]},
 /* ---------------- BACK CARE (stretches, asanas, spine-safe core) ---------------- */
 pelvictilt:{name:'Pelvic Tilt', alt:'gentle warm-up', mus:'Back care', sets:'10 slow reps · 3 s hold', rxLabel:'Dose', rest:'—', v:'s', ly:1, dur:2.8,
   cues:['Lie on your back, knees bent, feet flat, arms relaxed at your sides.',
@@ -782,11 +883,11 @@ pelvictilt:{name:'Pelvic Tilt', alt:'gentle warm-up', mus:'Back care', sets:'10 
   q:'pelvic tilt exercise lower back', bell:'none',
   p:[{...SUP},
      {...SUP, hip:[0,8.5,7], torso:[0,-0.11,-0.99], th:[0.06,0.66,0.75]}]},
-catcow:{name:'Cat–Cow', alt:'Marjaryasana–Bitilasana', mus:'Back care', sets:'10 slow reps', rxLabel:'Dose', rest:'—', v:'s', ly:1, dur:3.2,
+catcow:{name:'Cat–Cow', alt:'Marjaryasana–Bitilasana', mus:'Back care', sets:'6–8 gentle cycles', rxLabel:'Dose', rest:'—', v:'s', ly:1, dur:3.2,
   cues:['On all fours — hands under shoulders, knees under hips.',
-        'Inhale: drop the belly, lift the chest and tailbone, look slightly up (Cow).',
-        'Exhale: press the floor away, round the whole spine toward the ceiling, tuck the chin (Cat). Flow between the two with your breath.'],
-  avoid:'Cranking the neck up in Cow — the movement lives in the spine, not the neck.',
+        'Inhale: let the belly soften and the tailbone lift a little (Cow).',
+        'Exhale: press the floor away and round gently (Cat). Move through the middle of your range with your breath — this lubricates the spine, it is not a stretch.'],
+  avoid:'Pushing to the end of either direction. Small, easy and pain-free; stop well short of the limit each way.',
   q:'cat cow stretch', bell:'none',
   p:[{hip:[0,28,-16], torso:[0,0.38,0.92], th:[0.07,-1,-0.05], sh:[0,-0.02,-1], ft:[0,-0.15,-1],
       ua:[0.05,-1,0], fa:[0.03,-1,0]},
@@ -874,10 +975,10 @@ openbook:{name:'Open Book', alt:'thoracic rotation', mus:'Back care', sets:'8 sl
   avoid:'Letting the top knee lift off the bottom one — that turns it into a lower-back twist.',
   q:'open book thoracic rotation stretch', bell:'none',
   p:[{hip:[0,12,0], torso:[1,0,0], shoulderAxis:[0,-1,0], hipAxis:[0,-1,0],
-      th:[-0.7,0,0.71], sh:[-0.7,0,-0.71], ft:[-0.9,0.1,-0.4],
+      th:[-0.7,0,0.71], thL:[-0.7,0,0.71], sh:[-0.7,0,-0.71], shL:[-0.7,0,-0.71], ft:[-0.9,0.1,-0.4], ftL:[-0.9,0.1,-0.4],
       uaR:[0,0,1], faR:[0,0,1], uaL:[0,-0.1,1], faL:[0,-0.05,1]},
      {hip:[0,12,0], torso:[1,0,0], shoulderAxis:[0,-1,0], hipAxis:[0,-1,0], twist:-70,
-      th:[-0.7,0,0.71], sh:[-0.7,0,-0.71], ft:[-0.9,0.1,-0.4],
+      th:[-0.7,0,0.71], thL:[-0.7,0,0.71], sh:[-0.7,0,-0.71], shL:[-0.7,0,-0.71], ft:[-0.9,0.1,-0.4], ftL:[-0.9,0.1,-0.4],
       uaR:[0,0,1], faR:[0,0,1], uaL:[0,-0.35,-0.94], faL:[0,-0.3,-0.95]}]},
 bwbridge:{name:'Glute Bridge (no weight)', alt:'Setu Bandhasana', mus:'Back care', sets:'12 reps · 2 s hold', rxLabel:'Dose', rest:'—', v:'s', ly:1, dur:2.8,
   cues:['Lie on your back, knees bent, feet flat and close to your hips, arms by your sides.',
@@ -926,7 +1027,7 @@ floorpress:{page:{url:'https://musclewiki.com/exercise/dumbbell-floor-press',sou
 shoulderpress:{page:{url:'https://musclewiki.com/exercise/dumbbell-overhead-press',source:'MuscleWiki'},video:{url:'https://www.youtube.com/watch?v=Raemd3qWgJc',source:'Renaissance Periodization'}},
 fly:{page:{url:'https://musclewiki.com/exercise/dumbbell-floor-fly',source:'MuscleWiki'},video:{url:'https://www.youtube.com/watch?v=bgC53-J-6gA',source:'PureGym'}},
 lateral:{page:{url:'https://musclewiki.com/exercise/dumbbell-lateral-raise',source:'MuscleWiki'},video:{url:'https://www.youtube.com/watch?v=n5dsI9qQXwY',source:'Renaissance Periodization'}},
-ohext:{page:{url:'https://musclewiki.com/exercise/dumbbell-overhead-tricep-extension',source:'MuscleWiki'},video:{url:'https://www.youtube.com/watch?v=YbX7Wd8jQ-Q',source:'ScottHermanFitness'}},
+ohext:{page:{url:'https://musclewiki.com/exercise/dumbbell-overhead-tricep-extension',source:'MuscleWiki'},video:{url:'https://www.youtube.com/watch?v=fYqswDVbJDg',source:'ScottHermanFitness'}},
 kickback:{page:{url:'https://musclewiki.com/exercise/dumbbell-tricep-kickback',source:'MuscleWiki'},video:{url:'https://www.youtube.com/watch?v=rTsNG5c568k',source:'ATHLEAN-X'}},
 pushup:{page:{url:'https://musclewiki.com/exercise/push-up',source:'MuscleWiki'},video:{url:'https://www.youtube.com/watch?v=IODxDxX7oi4',source:'Calisthenicmovement'}},
 row:{page:{url:'https://musclewiki.com/exercise/dumbbell-row-bilateral',source:'MuscleWiki'},video:{url:'https://www.youtube.com/watch?v=6TSP1TRMUzs',source:'ScottHermanFitness'}},
@@ -958,7 +1059,7 @@ skullcrusher:{page:{url:'https://musclewiki.com/exercise/dumbbell-skullcrusher',
 diamondpushup:{page:{url:'https://musclewiki.com/exercise/diamond-push-ups',source:'MuscleWiki'},video:{url:'https://www.youtube.com/watch?v=J0DnG1_S92I',source:'ScottHermanFitness'}},
 sumo:{page:{url:'https://musclewiki.com/exercise/dumbbell-sumo-squat',source:'MuscleWiki'},video:{url:'https://www.youtube.com/watch?v=E_VDwURp8as',source:'Mind Pump TV'}},
 stepup:{page:{url:'https://musclewiki.com/exercise/dumbbell-step-up',source:'MuscleWiki'},video:{url:'https://www.youtube.com/watch?v=rt61c8HkzXg',source:'Mind Pump TV'}},
-slrdl:{page:{url:'https://musclewiki.com/exercise/single-legged-romanian-deadlifts',source:'MuscleWiki'},video:{url:'https://www.youtube.com/watch?v=Zfr6wizR8rs',source:'Squat University'}},
+slrdl:{page:{url:'https://musclewiki.com/exercise/dumbbell-single-leg-stiff-leg-deadlift',source:'MuscleWiki'},video:{url:'https://www.youtube.com/watch?v=Zfr6wizR8rs',source:'Squat University'}},
 crunch:{page:{url:'https://musclewiki.com/exercise/crunches',source:'MuscleWiki'},video:{url:'https://www.youtube.com/watch?v=lX--crZaY_c',source:'Barbell Logic'}},
 sideplank:{page:{url:'https://musclewiki.com/exercise/elbow-side-plank',source:'MuscleWiki'},video:{url:'https://www.youtube.com/watch?v=C89EKtI8a3o',source:'Squat University'}},
 deadbug:{page:{url:'https://musclewiki.com/exercise/dead-bug',source:'MuscleWiki'},video:{url:'https://www.youtube.com/watch?v=0XVbn86Btj0',source:'Squat University'}}
@@ -993,46 +1094,65 @@ const CARE_READS = [
 const WORKOUTS = {
   push:{name:'Push Day', focus:'Chest · Shoulders · Triceps', c:'--push',
         ex:['floorpress','shoulderpress','fly','lateral','ohext','kickback','pushup']},
-  pull:{name:'Pull Day', focus:'Upper back · Lower back · Biceps', c:'--pull',
-        ex:['row','rdl','onearmrow','revfly','curl','hammer']},
-  legs:{name:'Legs + Core', focus:'Quads · Glutes · Calves · Abs', c:'--legs',
-        ex:['goblet','lunge','bulgarian','bridge','calf','twist','legraise','plank']},
+  pull:{name:'Pull Day', focus:'Hamstrings & glutes · Upper back · Biceps', c:'--pull',
+        ex:['rdl','onearmrow','revfly','curl','hammer','row']},
+  legs:{name:'Legs + Core', focus:'Quads · Hamstrings · Glutes · Calves · Core', c:'--legs',
+        ex:['goblet','slrdl','bulgarian','bridge','calf','sideplank','deadbug','plank']},
+  upperA:{name:'Upper Body A', focus:'Chest · Back · Shoulders · Arms', c:'--push',
+        ex:['row','floorpress','revfly','shoulderpress','curl','ohext']},
+  lowerA:{name:'Lower Body A', focus:'Quads · Hamstrings · Glutes · Core', c:'--legs',
+        ex:['goblet','rdl','bulgarian','bridge','calf','plank']},
+  upperB:{name:'Upper Body B', focus:'Back · Chest · Shoulders · Arms', c:'--pull',
+        ex:['onearmrow','squeeze','arnold','lateral','hammer','skullcrusher']},
+  lowerB:{name:'Lower Body B', focus:'Hamstrings · Quads · Glutes · Core', c:'--legs',
+        ex:['sumo','slrdl','stepup','calf','sideplank','deadbug']},
+  fullA:{name:'Full Body A', focus:'Legs · Chest · Back · Shoulders · Arms · Core', c:'--push',
+        ex:['goblet','floorpress','row','lateral','curl','plank']},
+  fullB:{name:'Full Body B', focus:'Hinge · Shoulders · Back · Legs · Arms · Core', c:'--pull',
+        ex:['rdl','shoulderpress','onearmrow','bulgarian','ohext','sideplank']},
+  fullC:{name:'Full Body C', focus:'Legs · Chest · Back · Glutes · Arms · Core', c:'--legs',
+        ex:['lunge','fly','revfly','bridge','hammer','deadbug']},
   chest:{name:'Chest Day', focus:'Chest, every angle', c:'--push',
         ex:['floorpress','squeeze','fly','pullover','pushup']},
-  backday:{name:'Back Day', focus:'Upper back · Lower back · Lats · Traps', c:'--pull',
-        ex:['row','onearmrow','revfly','shrug','rdl','superman']},
+  backday:{name:'Back Day', focus:'Hamstrings & glutes · Upper back · Lats · Traps', c:'--pull',
+        ex:['rdl','onearmrow','revfly','shrug','row','birddog']},
   legsday:{name:'Legs Day', focus:'Quads · Glutes · Hamstrings · Calves', c:'--legs',
-        ex:['goblet','sumo','lunge','stepup','bulgarian','bridge','calf']},
+        ex:['goblet','sumo','slrdl','stepup','bulgarian','bridge','calf']},
   shouldersday:{name:'Shoulders + Abs', focus:'All three delts · Core', c:'--shoul',
-        ex:['shoulderpress','arnold','lateral','frontraise','crunch','legraise','plank']},
+        ex:['shoulderpress','arnold','lateral','revfly','mcgillcurl','deadbug','plank']},
   armsday:{name:'Arms Day', focus:'Biceps · Triceps · Forearms', c:'--arms',
         ex:['curl','hammer','concentration','ohext','skullcrusher','kickback','diamondpushup']},
   coreday:{name:'Core + Mobility', focus:'Abs · Obliques · Stability', c:'--core',
         ex:['twist','deadbug','sideplank','birddog']},
   rest:{name:'Rest Day', focus:'Recovery', c:'--restc', ex:[]}
 };
+/* Plans. Each muscle: ppl6 and ul4 twice a week, full3 two to three times, bro5 once. Keys are saved in Drive, so never rename them. */
 const SCHEDULES = {
   ppl6:  ['push','pull','legs','push','pull','legs','rest'],
-  full3: ['push','rest','pull','rest','legs','rest','rest'],
+  ul4:   ['upperA','lowerA','rest','upperB','lowerB','rest','rest'],
+  full3: ['fullA','rest','fullB','rest','fullC','rest','rest'],
   bro5:  ['chest','backday','legsday','shouldersday','armsday','coreday','rest']
 };
 const MODE_LABELS = {
-  ppl6:'6-day · Push / Pull / Legs ×2',
-  full3:'3-day · Mon / Wed / Fri (beginner)',
-  bro5:'5-day · One body part per day'
+  ppl6:'6-day · Push / Pull / Legs · each muscle twice a week',
+  ul4:'4-day · Upper / Lower · Wed, Sat, Sun free',
+  full3:'3-day · Full body A / B / C · Mon / Wed / Fri',
+  bro5:'6-day · One body part per day + core Saturday'
 };
+const MODE_SHORT = {ppl6:'Push / Pull / Legs', ul4:'Upper / Lower', full3:'Full body', bro5:'Body part'};
 const DAY_NAMES = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 const DAY_SHORT = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-const STRIP_LABEL = {push:'Push', pull:'Pull', legs:'Legs + core', chest:'Chest', backday:'Back',
-  legsday:'Legs', shouldersday:'Shldrs + abs', armsday:'Arms', coreday:'Core', rest:'Rest'};
+const STRIP_LABEL = {push:'Push', pull:'Pull', legs:'Legs + Core', chest:'Chest', backday:'Back',
+  legsday:'Legs', shouldersday:'Delts + abs', armsday:'Arms', coreday:'Core', rest:'Rest',
+  upperA:'Upper A', lowerA:'Lower A', upperB:'Upper B', lowerB:'Lower B', fullA:'Full A', fullB:'Full B', fullC:'Full C'};
 const LIB_GROUPS = [
   ['Chest', '--push', 'Presses, flys, and push-up varieties', ['floorpress','squeeze','fly','pullover','pushup']],
   ['Upper back', '--pull', 'Rows, flys, and trap work', ['row','onearmrow','revfly','shrug','renegade']],
-  ['Lower back', '--pull', 'Hinges and spinal-stability work', ['rdl','slrdl','goodmorning','superman','birddog']],
-  ['Shoulders', '--shoul', 'Presses and raises for all three delts', ['shoulderpress','arnold','lateral','frontraise']],
+  ['Hinge & lower back', '--pull', 'Hip hinges (hamstrings and glutes do the work, the lower back holds still) and spinal-stability moves', ['rdl','slrdl','goodmorning','superman','birddog']],
+  ['Shoulders', '--shoul', 'Presses and raises for the front and side delts; the rear delts live under Upper back (reverse fly)', ['shoulderpress','arnold','lateral','frontraise']],
   ['Biceps', '--arms', 'Curl varieties for biceps and forearms', ['curl','hammer','concentration','reversecurl']],
   ['Triceps', '--arms', 'Extensions and close-grip pressing', ['ohext','skullcrusher','kickback','diamondpushup']],
-  ['Legs', '--legs', 'Squats, lunges, hinges, and calves', ['goblet','sumo','lunge','stepup','bulgarian','bridge','calf']],
+  ['Legs', '--legs', 'Squats, lunges, bridges and calves; the hinges are under Hinge & lower back', ['goblet','sumo','lunge','stepup','bulgarian','bridge','calf']],
   ['Abs', '--core', 'Flexion, rotation, and anti-movement core work', ['crunch','twist','legraise','deadbug','plank','sideplank']],
   ['Back care', '--care', 'Stretches, asanas, and spine-safe core for people who sit all day', ['pelvictilt','catcow','childpose','cobra','kneechest','supinetwist','figure4','hamstring','hipflexor','openbook','bwbridge','mcgillcurl','standext','doorway']]
 ];
@@ -1041,10 +1161,10 @@ const MUSCLE_COLOR = {}; LIB_GROUPS.forEach(([title,cvar])=>{ MUSCLE_COLOR[title
 function muscleColorVar(mus){ return MUSCLE_COLOR[mus] || '--muted'; }
 /* ---------- back-care routines & spine notes ---------- */
 const CARE = [
-  {id:'reset', name:'Spine Reset', when:'Every day · about 12 minutes · first thing in the morning, or the moment you get home',
-   desc:'The core of the back-pain fix: eleven gentle floor moves that undo a day of sitting — free the hips, decompress the spine, wake up the glutes. Nothing here should hurt. If a move does, skip it today and come back to it next week.',
-   ex:['pelvictilt','catcow','childpose','cobra','kneechest','supinetwist','figure4','hamstring','hipflexor','openbook','bwbridge']},
-  {id:'big3', name:'Core That Protects the Back', when:'3 times a week · about 8 minutes · after any workout, or on rest days',
+  {id:'reset', name:'Spine Reset', when:'Every day · about 15 minutes · after a shower or a few minutes on your feet, or when you get home. Not straight out of bed: the discs are fullest then and dislike sustained bending.',
+   desc:'The core of the back-pain fix: eleven gentle floor moves that undo a day of sitting — free the hips, decompress the spine, wake up the glutes. Every bending move is followed by an extension move. Nothing here should hurt; if a move does, skip it today and come back to it next week. If you feel worse ten minutes later, do Sphinx instead.',
+   ex:['pelvictilt','catcow','kneechest','childpose','cobra','figure4','hamstring','hipflexor','supinetwist','openbook','bwbridge']},
+  {id:'big3', name:'Core That Protects the Back', when:'Every day if you can, at least 3 times a week · about 12 minutes · after a workout or the Spine Reset, never straight out of bed. Side plank and dead bug are already built into Legs day.',
    desc:'Dr Stuart McGill\'s "Big 3" (curl-up, side plank, bird dog) plus the dead bug. They build endurance in the muscles that hold your spine still — which is what stops it being irritated by every chair and every lift.',
    ex:['mcgillcurl','sideplank','birddog','deadbug']},
   {id:'desk', name:'Desk Break', when:'Every 30–45 minutes of sitting · 90 seconds · no mat, no changing',
@@ -1057,8 +1177,10 @@ const SPINE = {
   goodmorning:'The most demanding move here for a sore lower back. Bodyweight only until you are pain-free for two weeks, then add load slowly.',
   row:'Brace your abs before every rep. If your lower back tires before your upper back does, switch to the one-arm row with a hand on a chair.',
   onearmrow:'The friendlier row on a sore day — the support hand on a chair or bench takes the load off the spine.',
+  revfly:'The same bent-over hold as the row. Rest your chest on your thighs sitting on a chair, or go one arm at a time with the free hand on the chair; the support unloads your lower back.',
+  kickback:'One arm at a time with the other hand on a chair, like the one-arm row, so the free hand carries the trunk.',
   renegade:'Skip during a flare-up: the twisting and bracing under load is exactly what an irritated back dislikes.',
-  superman:'Small lift, long neck. If it pinches at the top, shorten the range or swap for bird dog.',
+  superman:'This loads the lower back more than any dumbbell move here, because arms and legs lift together. While your back is sore do bird dog instead, or lift the opposite arm and leg only. Long neck, small lift.',
   goblet:'Chest up, and stop at the depth where your lower back stays flat — that may be higher than parallel at first.',
   sumo:'Keep the torso tall and the weight close. Stop where your lower back stays flat.',
   twist:'Loaded twisting is a common back irritant. Do it slowly with a light weight, or swap for side plank until you are pain-free.',
@@ -1093,7 +1215,7 @@ const EXM = {
   slrdl:{p:['hamstrings','glutes'], s:['lowerback','calves']},
   goodmorning:{p:['hamstrings','lowerback'], s:['glutes']},
   superman:{p:['lowerback'], s:['glutes','upperback']},
-  birddog:{p:['lowerback','abs'], s:['glutes','upperback']},
+  birddog:{p:['lowerback','glutes'], s:['abs','upperback']},
   shoulderpress:{p:['frontdelts','sidedelts'], s:['triceps','traps']},
   arnold:{p:['frontdelts','sidedelts'], s:['triceps']},
   lateral:{p:['sidedelts'], s:['traps']},
@@ -1193,20 +1315,52 @@ function sGet(k, fb){ try{ const v = localStorage.getItem(k); return v===null? f
 function sSet(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 let mode='ppl6', progress={}, complete={}, customEx={}, logs={}, standEvery=0;
 const STORE = DriveStore.open({file:'dumbbell-dojo.json', cacheKey:'dd.doc', empty:()=>({v:1, app:'dumbbell-dojo', items:{}}),
-  onChange:(doc, src)=>{ hydrate(); if(src==='remote' && BOOTED){ renderStrip(); renderToday(); renderWeek(); renderCare(); } }});
+  onChange:(doc, src)=>{ const prevStand=standEvery; hydrate(); if(src==='remote' && BOOTED){ renderStrip(); renderToday(); renderWeek(); renderCare(); if(standEvery!==prevStand) applyStand(standEvery, true); } }});
 let BOOTED=false;
 function itemVal(k, fb){ const it=STORE.doc.items[k]; return (it && !it.deleted && it.v!==undefined) ? it.v : fb; }
 function collect(prefix){ const out={}; Object.keys(STORE.doc.items).forEach(k=>{ if(k.startsWith(prefix)){ const it=STORE.doc.items[k]; if(it && !it.deleted && it.v!==undefined) out[k.slice(prefix.length)]=it.v; } }); return out; }
-function hydrate(){ mode=itemVal('mode','ppl6'); if(!SCHEDULES[mode]) mode='ppl6'; progress=collect('progress:'); complete=collect('complete:'); customEx=collect('customex:'); logs=collect('log:'); standEvery=itemVal('stand',0); }
+function hydrate(){ mode=itemVal('mode','ppl6'); if(!SCHEDULES[mode]) mode='ppl6'; progress=cleanProgress(collect('progress:')); complete=collect('complete:'); customEx=cleanCustom(collect('customex:')); logs=cleanLogs(collect('log:')); const st=+itemVal('stand',0); standEvery=[0,30,45,60].includes(st)? st : 0; }
 function saveKey(k, v){ STORE.mutate(d=>{ d.items[k] = (v===undefined||v===null) ? {id:k, deleted:true, updatedAt:Date.now()} : {id:k, v:v, updatedAt:Date.now()}; }); }
-function importDojo(o){ const now=Date.now(); let n=0; STORE.mutate(d=>{ const put=(k,v)=>{ d.items[k]={id:k, v:v, updatedAt:now}; n++; };
-  if(o.mode) put('mode', o.mode); if(o.stand!=null) put('stand', o.stand);
-  Object.entries(o.progress||{}).forEach(([k,v])=>put('progress:'+k, v)); Object.entries(o.complete||{}).forEach(([k,v])=>put('complete:'+k, v));
-  Object.entries(o.customex||o.customEx||{}).forEach(([k,v])=>put('customex:'+k, v)); Object.entries(o.log||o.logs||{}).forEach(([k,v])=>put('log:'+k, v)); }); return n; }
-function exportDojo(){ return {format:'dumbbell-dojo-export', v:1, exportedAt:new Date().toISOString(), mode, stand:standEvery, progress, complete, customex:customEx, log:logs}; }
+/* Backups. A v2 file carries every item with its timestamp and its tombstones, so a merge can keep whichever side is newer;
+   a v1 file (mode, progress, log, ...) is stamped with its export date. how='merge' keeps the newer of file and Drive per key;
+   how='replace' makes the file the truth and tombstones everything it does not contain, so every device follows it. */
+function readBackup(o){
+  if(!o || typeof o!=='object' || Array.isArray(o)) return {err:'not-json'};
+  let items=null;
+  if(o.format==='dumbbell-dojo-export' && o.items && typeof o.items==='object') items=o.items;
+  else if(o.app==='dumbbell-dojo' && o.items && typeof o.items==='object') items=o.items;
+  else if(o.format==='dumbbell-dojo-export' || ('mode' in o) || o.progress || o.log || o.logs || o.complete || o.customex || o.customEx){
+    const stamp=Date.parse(o.exportedAt)||Date.now(); items={};
+    const put=(k,v)=>{ items[k]={id:k, v:v, updatedAt:stamp}; };
+    if(o.mode) put('mode', o.mode); if(o.stand!=null) put('stand', o.stand);
+    Object.entries(o.progress||{}).forEach(([k,v])=>put('progress:'+k, v)); Object.entries(o.complete||{}).forEach(([k,v])=>put('complete:'+k, v));
+    Object.entries(o.customex||o.customEx||{}).forEach(([k,v])=>put('customex:'+k, v)); Object.entries(o.log||o.logs||{}).forEach(([k,v])=>put('log:'+k, v));
+  } else return {err:'not-dojo', app:String(o.app||o.format||'')};
+  const clean={};
+  Object.keys(items).forEach(k=>{ const it=items[k]; if(!it||typeof it!=='object') return;
+    if(!(k==='mode'||k==='stand'||/^(progress|complete|customex|log):/.test(k))) return;
+    if(k==='mode' && !it.deleted && !SCHEDULES[it.v]) return;
+    if(k==='stand' && !it.deleted && ![0,30,45,60].includes(+it.v)) return;
+    clean[k]= it.deleted? {id:k, deleted:true, updatedAt:+it.updatedAt||Date.now()} : {id:k, v:it.v, updatedAt:+it.updatedAt||Date.now()}; });
+  return {items:clean};
+}
+function importDojo(o, how){
+  const r=readBackup(o); if(r.err) return r;
+  const clean=r.items, now=Date.now(), empty=!Object.keys(STORE.doc.items).length; let newer=0, kept=0, removed=0;
+  if(!Object.keys(clean).length) return {n:0, kept:0, removed:0, err:'empty'};
+  STORE.mutate(d=>{
+    Object.keys(clean).forEach(k=>{ const cur=d.items[k], inc=clean[k];
+      if(how==='replace'){ d.items[k]=Object.assign({}, inc, {updatedAt:now}); newer++; }
+      else if(empty || !cur || (+inc.updatedAt||0)>(+cur.updatedAt||0)){ d.items[k]=inc; newer++; }
+      else kept++; });
+    if(how==='replace') Object.keys(d.items).forEach(k=>{ if(!clean[k] && !d.items[k].deleted){ d.items[k]={id:k, deleted:true, updatedAt:now}; removed++; } });
+  });
+  return {n:newer, kept, removed};
+}
+function exportDojo(){ return {format:'dumbbell-dojo-export', v:2, exportedAt:new Date().toISOString(), app:'dumbbell-dojo', items:STORE.doc.items}; }
 (function migrateOld(){ if(Object.keys(STORE.doc.items).length) return;
   const o={mode:sGet('dd-mode',null), progress:sGet('dd-progress',null), complete:sGet('dd-complete',null), customex:sGet('dd-customex',null), log:sGet('dd-log',null), stand:sGet('dd-stand',null)};
-  if(o.mode || o.progress || o.log || o.complete || o.customex) importDojo(o); })();
+  if(o.mode || o.progress || o.log || o.complete || o.customex) importDojo(o, 'merge'); })();
 hydrate();
 function todayKey(d){ d=d||new Date();
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
@@ -1214,36 +1368,69 @@ function weekdayIdx(d){ d=d||new Date(); return (d.getDay()+6)%7; }
 function dateForWeekday(idx){ const now=new Date(); const d=new Date(now); d.setDate(now.getDate()+idx-weekdayIdx(now)); return d; }
 let selectedDay = weekdayIdx();
 let pickerFilter = 'all';
-function dayCustom(idx){ return customEx[idx] || {add:[], remove:[]}; }
+function dayCustom(idx){ const c=customEx[idx]; return {add:(c&&Array.isArray(c.add)?c.add:[]), remove:(c&&Array.isArray(c.remove)?c.remove:[]), swap:(c&&c.swap&&typeof c.swap==='object'?c.swap:{})}; }
+/* Persistence seams. The build swaps each body for a Drive write; the source keeps localStorage. */
 function saveCustom(idx){ saveKey('customex:'+idx, customEx[idx]||null); }
+function persistProgress(dk){ saveKey('progress:'+dk, progress[dk]||null); }
+function persistComplete(dk){ saveKey('complete:'+dk, complete[dk]||null); }
+function persistLog(exId){ saveKey('log:'+exId, logs[exId]||null); }
+function persistMode(){ saveKey('mode',mode); }
+function persistStand(min){ saveKey('stand',min); }
+/* Data from Drive or a backup may be malformed or name an exercise that no longer exists: keep only what the views can use. */
+function cleanCustom(o){ const out={}; Object.keys(o||{}).forEach(k=>{ const c=o[k]; if(!c||typeof c!=='object'||!/^[0-6]$/.test(String(k))) return;
+  const add=(Array.isArray(c.add)?c.add:[]).filter(id=>EXR[id]), remove=(Array.isArray(c.remove)?c.remove:[]).filter(id=>EXR[id]), swap={};
+  Object.keys(c.swap&&typeof c.swap==='object'?c.swap:{}).forEach(f=>{ if(EXR[f]&&EXR[c.swap[f]]) swap[f]=c.swap[f]; });
+  if(add.length||remove.length||Object.keys(swap).length) out[k]={add, remove, swap}; }); return out; }
+function cleanLogs(o){ const out={}; Object.keys(o||{}).forEach(id=>{ if(!EXR[id]||!Array.isArray(o[id])) return; const arr=o[id].filter(e=>e&&typeof e.d==='string'&&typeof e.v==='string'); if(arr.length) out[id]=arr; }); return out; }
+function cleanProgress(o){ const out={}; Object.keys(o||{}).forEach(dk=>{ const p=o[dk]; if(!p||typeof p!=='object') return; const q={}; Object.keys(p).forEach(id=>{ if(p[id]) q[id]=p[id]; }); if(Object.keys(q).length) out[dk]=q; }); return out; }
 function effectiveList(idx){
   const type = SCHEDULES[mode][idx];
-  const base = type==='rest' ? [] : WORKOUTS[type].ex.slice();
   const cu = dayCustom(idx);
-  const list = base.filter(id=>!cu.remove.includes(id));
-  cu.add.forEach(id=>{ if(!list.includes(id)) list.push(id); });
+  const base = (type==='rest' ? [] : WORKOUTS[type].ex.slice()).map(id=>cu.swap[id]||id);
+  const list = base.filter(id=>EXR[id] && !cu.remove.includes(id));
+  cu.add.forEach(id=>{ if(EXR[id] && !list.includes(id)) list.push(id); });
   return {type, list};
 }
 function commitCustom(idx, cu){
-  if(cu.add.length===0 && cu.remove.length===0) delete customEx[idx];
-  else customEx[idx]=cu;
+  const swap=cu.swap||{};
+  if(cu.add.length===0 && cu.remove.length===0 && Object.keys(swap).length===0) delete customEx[idx];
+  else customEx[idx]={add:cu.add, remove:cu.remove, swap};
   saveCustom(idx);
+  recomputeComplete(idx);
   renderToday(); renderStrip();
 }
 function addToDay(idx, exId){
-  const cu = customEx[idx] || {add:[], remove:[]};
+  const cu = dayCustom(idx);
   const ri = cu.remove.indexOf(exId);
   if(ri>-1) cu.remove.splice(ri,1);
   else if(!cu.add.includes(exId)) cu.add.push(exId);
   commitCustom(idx, cu);
 }
 function removeFromDay(idx, exId){
-  const cu = customEx[idx] || {add:[], remove:[]};
+  const cu = dayCustom(idx);
   const ai = cu.add.indexOf(exId);
   if(ai>-1) cu.add.splice(ai,1);
   else if(!cu.remove.includes(exId)) cu.remove.push(exId);
   commitCustom(idx, cu);
 }
+/* Swap keeps the slot: the replacement takes the original's place in the order. */
+function swapOnDay(idx, fromId, toId){
+  const cu = dayCustom(idx);
+  const ai = cu.add.indexOf(fromId);
+  if(ai>-1) cu.add[ai]=toId;
+  else { const origin = Object.keys(cu.swap).find(k=>cu.swap[k]===fromId) || fromId; if(toId===origin) delete cu.swap[origin]; else cu.swap[origin]=toId; }
+  cu.remove = cu.remove.filter(id=>id!==toId);
+  commitCustom(idx, cu);
+}
+function recomputeComplete(dayIdx){
+  const dk=todayKey(dateForWeekday(dayIdx)); const list=effectiveList(dayIdx).list;
+  const fin = list.length>0 && list.every(x=>(progress[dk]&&progress[dk][x])||EXR[x].opt);
+  const was=!!complete[dk];
+  if(fin) complete[dk]=true; else delete complete[dk];
+  if(fin!==was) persistComplete(dk);
+  return fin;
+}
+function setMode(m){ if(!SCHEDULES[m]||m===mode) return; mode=m; persistMode(); for(let i=0;i<7;i++) recomputeComplete(i); renderStrip(); renderWeek(); renderToday(); }
 
 /* ============================================================
    3D renderer
@@ -1289,8 +1476,12 @@ function lerp3(a,b,t){ return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2
 let anims=[]; let visible=new Set();
 const io = ('IntersectionObserver' in window)? new IntersectionObserver(es=>{
   es.forEach(e=>{ const a=anims.find(x=>x.canvas===e.target); if(!a) return;
-    if(e.isIntersecting) visible.add(a); else visible.delete(a); });
+    if(e.isIntersecting){ visible.add(a); ensureLoop(); } else visible.delete(a); });
 },{rootMargin:'80px'}) : null;
+/* Canvases are created only when their card scrolls into view; 78 at boot was 58 MB of backing store on a phone. */
+const boxIO = ('IntersectionObserver' in window)? new IntersectionObserver(es=>{
+  es.forEach(e=>{ if(!e.isIntersecting) return; const box=e.target; boxIO.unobserve(box); if(box.dataset.made) return; box.dataset.made='1'; makeAnim(box.getAttribute('data-anim'), box); });
+},{rootMargin:'240px'}) : null;
 
 function makeAnim(exId, box){
   const ex = EXR[exId];
@@ -1407,14 +1598,126 @@ function tick(now){
     if(a.osc) a.yaw = a.yawBase + 0.3*Math.sin((now+a.phase)*0.00045);
     draw(a, s);
   });
-  requestAnimationFrame(tick);
+  if(visible.size) requestAnimationFrame(tick); else loopOn=false;
 }
-if(!REDUCED) requestAnimationFrame(tick);
+let loopOn=false;
+function ensureLoop(){ if(REDUCED||loopOn) return; loopOn=true; requestAnimationFrame(tick); }
+
+/* ============================================================
+   Do & Don't: side-view stick figures (120 × 120, floor at y=104)
+   drawn from a handful of joints, so a whole pair is a few lines.
+   ============================================================ */
+function figSVG(f, kind){
+  const L=(a,b)=>`<path d="M${a[0]} ${a[1]} L${b[0]} ${b[1]}"/>`;
+  const sh=f.sh||f.neck;
+  let out=`<svg class="ddfig" viewBox="0 0 120 120" aria-hidden="true"><line class="floor" x1="6" y1="104" x2="114" y2="104"/>${(f.props||[]).join('')}`;
+  out+=`<g class="body" style="stroke:var(${kind==='do'?'--good':'--care'})">`;
+  out+= f.bend ? `<path d="M${f.neck[0]} ${f.neck[1]} Q${f.bend[0]} ${f.bend[1]} ${f.hip[0]} ${f.hip[1]}"/>` : L(f.neck,f.hip);
+  (f.legs||[]).forEach(([k,a,t])=>{ out+=L(f.hip,k)+L(k,a)+(t?L(a,t):''); });
+  (f.arms||[]).forEach(([e,w])=>{ out+=L(sh,e)+L(e,w); });
+  out+=`<circle cx="${f.head[0]}" cy="${f.head[1]}" r="6"/></g>`;
+  if(f.mark) out+=`<circle class="mark" cx="${f.mark[0]}" cy="${f.mark[1]}" r="8"/>`;
+  return out+'</svg>';
+}
+const DB=(x,y)=>`<rect class="db" x="${x}" y="${y}" width="15" height="6" rx="2"/>`;
+const CHAIR='<path class="prop" d="M34 70 H64 M38 70 V44 M40 70 V102 M60 70 V102"/>';
+const CHAIR_L='<path class="prop" d="M8 70 H36 M12 70 V44 M14 70 V102 M32 70 V102"/>';
+const DESK='<path class="prop" d="M72 60 H112 M76 60 V102 M108 60 V102"/>';
+const SCREEN='<rect class="prop" x="88" y="24" width="18" height="26" rx="2"/><path class="prop" d="M97 50 V60 M90 60 H104"/>';
+const LAPTOP='<path class="prop" d="M76 60 H98 M78 60 L82 44 H100"/>';
+const BED='<rect class="propfill" x="6" y="94" width="108" height="8" rx="2"/>';
+const STAND={head:[60,20], neck:[60,30], hip:[60,62], legs:[[[60,84],[60,104],[70,104]]]};
+const SIT={neck:[48,36], hip:[46,70], legs:[[[66,72],[66,104],[76,104]]]};
+const DOS=[
+ {title:'Lifting', pairs:[
+  {t:'Picking anything heavy off the floor',
+   do:{fig:{head:[80,42], neck:[74,48], hip:[48,64], legs:[[[54,86],[52,104],[62,104]]], arms:[[[74,68],[72,86]]], props:[DB(65,88)]},
+       cap:'Hinge from the hips, back flat, load close to the legs.', why:'The same move as the Romanian deadlift: hamstrings and glutes lift, the lower back only holds still.'},
+   dont:{fig:{head:[82,54], neck:[76,58], hip:[50,64], bend:[70,40], legs:[[[52,86],[52,104],[62,104]]], arms:[[[78,74],[76,90]]], props:[DB(69,92)], mark:[62,50]},
+       cap:'Round the back and lift with it.', why:'A rounded spine under load is the single most common way a desk back gets set off. Light things can be picked up any way you like.'}},
+  {t:'Rows and every bent-over exercise',
+   do:{fig:{head:[82,42], neck:[74,48], hip:[48,64], legs:[[[54,86],[52,104],[62,104]]], arms:[[[70,58],[74,72]]], props:[DB(67,72)]},
+       cap:'Hips back, chest to the floor, spine one straight line; pull the elbow past the ribs.', why:'Brace before every rep. When the lower back tires first, switch to the one-arm row with a hand on a chair.'},
+   dont:{fig:{head:[84,40], neck:[78,46], hip:[50,64], bend:[70,30], legs:[[[52,86],[52,104],[62,104]]], arms:[[[80,62],[78,78]]], props:[DB(71,80)], mark:[64,44]},
+       cap:'Hump the upper back and stand up as you pull.', why:'Momentum from the back does the lift instead of the lats, and the lumbar spine takes the load.'}},
+  {t:'Squats',
+   do:{fig:{head:[70,44], neck:[66,52], hip:[42,74], legs:[[[64,80],[58,104],[70,104]]], arms:[[[66,66],[74,58]]], props:['<rect class="db" x="72" y="50" width="6" height="14" rx="2"/>']},
+       cap:'Chest up, whole foot on the floor, stop where the lower back stays flat.', why:'That depth may be above parallel at first. Depth grows with hip mobility; the Spine Reset works on exactly that.'},
+   dont:{fig:{head:[68,50], neck:[64,58], hip:[40,82], bend:[42,66], legs:[[[66,80],[58,98],[70,104]]], arms:[[[66,70],[74,62]]], props:['<rect class="db" x="72" y="54" width="6" height="14" rx="2"/>'], mark:[46,78]},
+       cap:'Tuck the tailbone at the bottom or let the heels lift.', why:'The tucked pelvis rounds the lumbar spine under load; a lifted heel usually means the depth is beyond your ankles for now.'}},
+  {t:'Pressing overhead',
+   do:{fig:{head:[60,20], neck:[60,30], hip:[60,62], legs:[[[60,84],[60,104],[70,104]]], arms:[[[68,24],[68,8]]], props:[DB(60,3)]},
+       cap:'Ribs down, glutes and abs braced, stand tall.', why:'The trunk stays a column, so the shoulders lift the weight and the lower back does not have to.'},
+   dont:{fig:{head:[52,20], neck:[54,30], hip:[62,62], bend:[44,48], legs:[[[60,84],[60,104],[70,104]]], arms:[[[58,20],[52,6]]], props:[DB(44,1)], mark:[56,56]},
+       cap:'Lean back and arch to finish the rep.', why:'The arch turns a shoulder press into a lower-back extension under load. If you need it, the weight is too heavy or the shoulder too tight.'}},
+  {t:'Curls and raises',
+   do:{fig:{head:[60,20], neck:[60,30], hip:[60,62], legs:[[[60,84],[60,104],[70,104]]], arms:[[[62,48],[78,40]]], props:[DB(74,36)]},
+       cap:'Elbows pinned to the sides, torso still, slow on the way down.', why:'The biceps does the work, and the lowering half is where most of the growth comes from.'},
+   dont:{fig:{head:[52,20], neck:[54,30], hip:[62,62], bend:[44,48], legs:[[[60,84],[60,104],[70,104]]], arms:[[[72,40],[82,28]]], props:[DB(78,24)], mark:[56,56]},
+       cap:'Swing the weight up with a lean-back.', why:'Momentum from the hips and an arched lower back move the dumbbell; the muscle you wanted to train gets less, the spine gets more.'}},
+  {t:'Lateral raise (from the front)',
+   do:{fig:{head:[60,18], neck:[60,28], hip:[60,60], legs:[[[52,82],[52,104],[46,104]],[[68,82],[68,104],[74,104]]], arms:[[[44,32],[28,34]],[[76,32],[92,34]]], props:[DB(16,31), DB(89,31)]},
+       cap:'To shoulder height, elbows soft and leading, light weight.', why:'Above shoulder height the traps take over. Raises need small weights and slow lowering, not bigger jumps.'},
+   dont:{fig:{head:[60,20], neck:[60,30], hip:[60,60], legs:[[[52,82],[52,104],[46,104]],[[68,82],[68,104],[74,104]]], arms:[[[46,22],[34,10]],[[74,22],[86,10]]], props:[DB(22,6), DB(83,6)], mark:[72,27]},
+       cap:'Shrug the shoulders up and swing the arms above the line.', why:'Neck and traps do the lifting, which is exactly the tension a desk day already built.'}}]},
+ {title:'At the desk', pairs:[
+  {t:'Sitting',
+   do:{fig:{head:[52,24], neck:[50,34], hip:[46,70], legs:[[[66,72],[66,104],[76,104]]], arms:[[[58,52],[74,58]]], props:[CHAIR, DESK, SCREEN]},
+       cap:'Back into the chair, feet flat, screen top at eye level.', why:'A rolled towel in the lower-back curve does the job of an expensive chair. Raise the laptop on books and add a separate keyboard.'},
+   dont:{fig:{head:[64,42], neck:[58,48], hip:[44,72], bend:[40,54], legs:[[[66,72],[66,104],[76,104]]], arms:[[[62,66],[78,60]]], props:[CHAIR, DESK, LAPTOP], mark:[60,46]},
+       cap:'Slump toward a low laptop screen.', why:'The head drifts forward, the upper back rounds and the neck carries the weight of a bowling ball hung out front.'}},
+  {t:'How long you sit',
+   do:{fig:{head:[60,20], neck:[60,30], hip:[60,62], legs:[[[68,82],[76,104],[86,104]],[[50,84],[44,104],[54,104]]], arms:[[[54,48],[64,56]],[[68,46],[58,56]]], props:[CHAIR_L, '<text x="74" y="24">45 min</text>']},
+       cap:'Stand up every 30–45 minutes; walk to the water, come back and sit differently.', why:'The best posture is the next posture. Spine Bell or the reminder on the Back care tab does the nagging.'},
+   dont:{fig:{head:[52,24], neck:[50,34], hip:[46,70], legs:[[[66,72],[66,104],[76,104]]], arms:[[[58,52],[74,58]]], props:[CHAIR, DESK, SCREEN, '<text x="66" y="18">3 h +</text>'], mark:[46,70]},
+       cap:'Sit through a whole morning, however good the chair.', why:'The same tissues carry one load for hours. A perfect chair held for three hours still hurts; a bad chair left every half hour usually does not.'}},
+  {t:'Phones',
+   do:{fig:{head:[60,20], neck:[60,30], hip:[60,62], legs:[[[60,84],[60,104],[70,104]]], arms:[[[70,46],[74,30]]], props:['<rect class="prop" x="73" y="19" width="7" height="12" rx="1.5"/>']},
+       cap:'Lift the phone to eye level.', why:'Ten seconds looks silly; ten years of looking down does not feel silly at all.'},
+   dont:{fig:{head:[66,30], neck:[60,36], hip:[60,62], legs:[[[60,84],[60,104],[70,104]]], arms:[[[68,50],[74,58]]], props:['<rect class="prop" x="73" y="54" width="7" height="12" rx="1.5"/>'], mark:[63,34]},
+       cap:'Read with the chin on the chest.', why:'Every 15 degrees of forward tilt roughly doubles the load on the neck.'}}]},
+ {title:'Mornings and nights', pairs:[
+  {t:'First thing after waking',
+   do:{fig:{head:[60,20], neck:[60,30], hip:[58,62], legs:[[[68,82],[76,104],[86,104]],[[50,84],[44,104],[54,104]]], arms:[[[54,48],[64,56]],[[68,46],[58,56]]]},
+       cap:'Walk around, shower, then do the Spine Reset.', why:'The discs are fullest straight out of bed and dislike sustained bending for the first half hour or so.'},
+   dont:{fig:{head:[68,94], neck:[66,84], hip:[52,56], bend:[72,62], legs:[[[52,80],[52,104],[62,104]]], arms:[[[64,92],[60,102]]], props:['<rect class="propfill" x="6" y="88" width="30" height="12" rx="2"/><rect class="propfill" x="8" y="82" width="12" height="6" rx="2"/>'], mark:[58,64]},
+       cap:'Fold forward to touch your toes as soon as you get up.', why:'Deep bending on full discs is the classic morning tweak for a sitting-sore back.'}},
+  {t:'Sleeping',
+   do:{fig:{head:[20,80], neck:[30,82], hip:[62,84], legs:[[[78,90],[90,100],[96,98]],[[80,82],[92,92],[98,90]]], arms:[[[40,90],[50,96]]], props:[BED, '<rect class="propfill" x="10" y="80" width="18" height="10" rx="3"/>', '<rect class="propfill" x="76" y="84" width="12" height="8" rx="3"/>']},
+       cap:'On your side with a pillow between the knees, or on your back with one under the knees.', why:'Both keep the pelvis level and the lower back in its neutral curve for eight hours.'},
+   dont:{fig:{head:[20,88], neck:[30,88], hip:[66,88], legs:[[[82,88],[98,88],[104,84]]], arms:[[[38,80],[26,72]]], props:[BED], mark:[48,86]},
+       cap:'Sleep on your stomach.', why:'The lower back hangs in extension and the neck stays twisted to one side all night.'}}]},
+ {title:'Training decisions', pairs:[
+  {t:'Making progress',
+   do:{glyph:'+1 rep', cap:'Add a rep or two each week until every set hits the top of the range, then the smallest weight step.', why:'The Log box on each card tells you which of the two to do next time.'},
+   dont:{glyph:'+5 kg', cap:'Jump weight the day you first scrape the bottom of the range.', why:'Form goes first, then a joint. Adding reps is progress too.'}},
+  {t:'Pain',
+   do:{glyph:'burn ✓', cap:'A burn in the muscle during a set and soreness the next day: carry on.', why:'That is the training effect. Sore muscles can be trained.'},
+   dont:{glyph:'sharp ✗', cap:'A sharp pinch in a joint or the spine, or pain running down a leg: stop that exercise.', why:'Swap the day for the Spine Reset (button at the top of Today). See a doctor if it persists or any red flag on the Back care tab applies.'}},
+  {t:'Sport weeks',
+   do:{glyph:'4-day', cap:'Switch to the Upper / Lower plan in a badminton or cricket week and count a match as a leg day.', why:'Nothing heavy the day before a match, no overhead pressing on match day.'},
+   dont:{glyph:'6 + 2', cap:'Stack six lifting sessions on top of two matches and wonder why the back is angry.', why:'Recovery is where the strength arrives. A missed session on a match week is the plan working, not failing.'}}]}
+];
+function renderDos(){
+  if(!rendered.has('dos')) return;
+  const root=document.getElementById('view-dos');
+  root.innerHTML=`
+    <div class="dayhead" style="--tc:var(--care)">
+      <h1>Do <span class="accent">&amp; Don't</span></h1>
+      <div class="sub">The positions that help a sitting-sore back and the ones that hurt it. Green is the habit; pink is the mistake, with the sore spot ringed.</div>
+    </div>
+    ${DOS.map(sec=>`<h2 class="dd-h">${esc(sec.title)}</h2>${sec.pairs.map(p=>`<div class="dd-pair"><div class="dd-t">${esc(p.t)}</div>
+      <div class="dd-card do">${p.do.fig? figSVG(p.do.fig,'do') : `<div class="dd-glyph do">${esc(p.do.glyph)}</div>`}<div class="dd-txt"><b>Do</b> ${esc(p.do.cap)}<span>${esc(p.do.why)}</span></div></div>
+      <div class="dd-card dont">${p.dont.fig? figSVG(p.dont.fig,'dont') : `<div class="dd-glyph dont">${esc(p.dont.glyph)}</div>`}<div class="dd-txt"><b>Don't</b> ${esc(p.dont.cap)}<span>${esc(p.dont.why)}</span></div></div>
+    </div>`).join('')}`).join('')}
+    <p class="wk-note">General guidance for a common, non-specific back that sits too much; not a diagnosis. If any red flag on the Back care tab applies, see a doctor first.</p>`;
+}
 
 /* ============================================================
    Views
    ============================================================ */
-const views=['today','week','library','guide','care'];
+const views=['today','week','library','guide','care','dos'];
+const rendered=new Set(['today','week','guide']);   // library, care and dos render on first visit
 function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 function ytUrl(q){ return 'https://www.youtube.com/results?search_query='+encodeURIComponent(q); }
 function refLinks(exId){
@@ -1437,61 +1740,94 @@ function setLog(exId, dk, v){
   arr.sort((a,b)=>a.d<b.d?-1:1);
   if(arr.length>30) arr.splice(0, arr.length-30);
   if(arr.length) logs[exId]=arr; else delete logs[exId];
-  saveKey('log:'+exId, logs[exId]||null);
+  persistLog(exId);
 }
 function restSeconds(ex){ const r=parseInt(ex.rest,10); return isNaN(r)? 0 : r; }
 function estMinutes(list){
   let s=0;
-  list.forEach(id=>{ const ex=EXR[id]; const m=/^(\d+)\s*×/.exec(ex.sets); const sets=m? parseInt(m[1],10) : 1;
-    s += sets*(ex.rxLabel? 45 : 40) + Math.max(0,sets-1)*restSeconds(ex) + 30; });
+  list.forEach(id=>{ const ex=EXR[id]; if(!ex) return;
+    if(ex.rxLabel){ s += 65; return; }                       // a back-care dose is one timed block, not N sets
+    const m=/^(\d+)\s*×/.exec(ex.sets); let sets=m? parseInt(m[1],10) : 1;
+    if(/\/\s*side/i.test(ex.sets)) sets*=2;                   // 3 × 10 / side is six working sets
+    s += sets*40 + Math.max(0,sets-1)*restSeconds(ex) + 45; }); // 45 s to change plates between exercises
   return Math.round((s+300)/60);
 }
+function progressHint(ex, last){
+  if(!last) return '';
+  const m=/(\d+(?:[.,]\d+)?)\s*(?:kg|lb)?\s*(?:each)?\s*[x×*]\s*(\d+)/i.exec(last.v), r=/(\d+)\s*[–-]\s*(\d+)/.exec(ex.sets||'');
+  if(!m||!r) return '';
+  const reps=+m[2], bot=+r[1], top=+r[2];
+  if(reps>=top) return `Hit ${reps} last time: add the smallest weight step and aim for ${bot}.`;
+  return `Aim for ${reps+1} reps with the same weight this time.`;
+}
 function exCardHTML(exId, idx, colorVar, dateKey, removable){
-  const ex=EXR[exId];
+  const ex=EXR[exId]; if(!ex) return '';
   const mm=exMuscles(exId);
   const done = dateKey && progress[dateKey] && progress[dateKey][exId];
   const rs = restSeconds(ex);
+  const hm = ex.rxLabel ? /(\d+)(?:\s*[–-]\s*\d+)?\s*s\b/.exec(ex.sets||'') : null;
+  const hold = hm ? parseInt(hm[1],10) : 0;
   const last = dateKey? logLast(exId, dateKey) : null;
+  const hist = (logs[exId]||[]).slice(-5).reverse();
   const showLog = dateKey && !ex.rxLabel;
-  return `
-  <article class="ex-card" style="--tc:var(${colorVar})">
-    <div class="anim-box" data-anim="${exId}">
-      <div class="vbtns"><button data-v="three">¾</button><button data-v="front">front</button><button data-v="side">side</button></div>
-      <span class="hint">drag to rotate ⟲</span>
-    </div>
-    <div class="ex-body">
+  const compact = !!(dateKey && removable);                       // Today cards keep the essentials up front
+  const pref = compact ? sGet('dd-more:'+exId, null) : null;
+  const open = compact ? (pref===null ? (logs[exId]||[]).length<3 : !!pref) : true;
+  const top = `
       <div class="ex-top">
         <span class="ex-num">${String(idx+1).padStart(2,'0')}</span>
         <h3 class="ex-name">${esc(ex.name)}</h3>
         ${ex.alt? `<span class="ex-alt">${esc(ex.alt)}</span>`:''}
         <span class="chip">${esc(ex.mus)}</span>
         ${ex.opt? '<span class="opt-tag">optional finisher</span>':''}
-        ${removable? `<button class="rmbtn" data-rm="${exId}" title="Remove ${escA(ex.name)} from ${escA(DAY_NAMES[selectedDay])}">Remove</button>`:''}
+        ${removable? `<button class="rmbtn" type="button" data-rm="${exId}" title="Remove ${escA(ex.name)} from ${escA(DAY_NAMES[selectedDay])}">Remove</button>`:''}
       </div>
       ${muscleMapHTML(mm.p, mm.s, ex.rxLabel?'Targets':'Works')}
       <div class="rx">
         <span><span class="lbl">${esc(ex.rxLabel||'Sets × reps')}</span><b>${esc(ex.sets)}</b></span>
         ${rs? `<span><span class="lbl">Rest</span><b>${esc(ex.rest)}</b></span>`:''}
-      </div>
+      </div>`;
+  const cuesHtml = `
       <ol class="cues">${ex.cues.map(c=>'<li>'+esc(c)+'</li>').join('')}</ol>
       <p class="avoid"><b>Avoid:</b> ${esc(ex.avoid)}</p>
-      ${SPINE[exId]? `<p class="spine"><b>Sore back?</b> ${esc(SPINE[exId])}</p>`:''}
-      ${showLog? `<div class="logwrap">
+      ${SPINE[exId]? `<p class="spine"><b>Sore back?</b> ${esc(SPINE[exId])}</p>`:''}`;
+  const logHtml = showLog? `<div class="logwrap">
         <span class="lbl">Log</span>
-        <input class="loginp" data-log="${exId}" placeholder="e.g. 12 kg × 10" value="${escA(logToday(exId,dateKey))}" aria-label="Weight and reps used for ${escA(ex.name)}" maxlength="40">
+        <input class="loginp" data-log="${exId}" placeholder="12 kg each × 10" value="${escA(logToday(exId,dateKey))}" aria-label="Weight and reps used for ${escA(ex.name)}" maxlength="40">
         ${last? `<span class="loglast">last: <b>${esc(last.v)}</b> · ${fmtDate(last.d)}</span>` : '<span class="loglast">first time — note the weight you used</span>'}
-      </div>`:''}
+        ${last && progressHint(ex,last)? `<span class="loghint">${esc(progressHint(ex,last))}</span>`:''}
+        ${hist.length>1? `<details class="loghist"><summary>History</summary><ul>${hist.map(e=>`<li><b>${esc(e.v)}</b><span>${fmtDate(e.d)}</span></li>`).join('')}</ul></details>`:''}
+      </div>`:'';
+  const actions = `
       <div class="ex-actions">
-        ${dateKey? `<button class="donebtn" data-ex="${exId}" aria-pressed="${done?'true':'false'}">${done?'Done ✓':'Mark done'}</button>`:''}
-        ${dateKey && rs? `<button class="restbtn" data-rest="${rs}" title="Start the rest timer">Rest ${rs} s ▶</button>`:''}
+        ${dateKey? `<button class="donebtn" type="button" data-ex="${exId}" aria-pressed="${done?'true':'false'}">${done?'Done ✓':'Mark done'}</button>`:''}
+        ${dateKey && rs? `<button class="restbtn" type="button" data-rest="${rs}" title="Start the rest timer">Rest ${rs} s ▶</button>`:''}
+        ${dateKey && hold? `<button class="restbtn" type="button" data-rest="${hold}" title="Count the hold">Hold ${hold} s ▶</button>`:''}
+        ${removable? `<button class="swapbtn" type="button" data-swap="${exId}" title="Swap for another exercise from the same group">Swap ⇄</button>`:''}
         ${refLinks(exId)}
-      </div>
+      </div>`;
+  const anim = `
+    <div class="anim-box" data-anim="${exId}">
+      <div class="vbtns"><button type="button" data-v="three">¾</button><button type="button" data-v="front">front</button><button type="button" data-v="side">side</button></div>
+      <span class="hint">drag to rotate ⟲</span>
+    </div>`;
+  if(compact) return `
+  <article class="ex-card compact" style="--tc:var(${colorVar})" data-exid="${exId}">
+    <div class="ex-body">${top}${logHtml}${actions}
+      <details class="more" data-more="${exId}"${open?' open':''}><summary>How to do it</summary>
+        <div class="more-in">${anim}<div class="how-text">${cuesHtml}</div></div>
+      </details>
     </div>
   </article>`;
+  return `
+  <article class="ex-card" style="--tc:var(${colorVar})" data-exid="${exId}">
+    ${anim}
+    <div class="ex-body">${top}${cuesHtml}${logHtml}${actions}</div>
+  </article>`;
 }
-function mountAnims(root){
+function mountAnims(root, eager){ // eager: build the canvases now (Today's few cards); otherwise when the card scrolls into view
   anims = anims.filter(a=>{ if(a.canvas.isConnected) return true; if(io) io.unobserve(a.canvas); visible.delete(a); return false; });
-  root.querySelectorAll('[data-anim]').forEach(b=>makeAnim(b.getAttribute('data-anim'), b));
+  root.querySelectorAll('[data-anim]').forEach(b=>{ if(b.dataset.made) return; if(boxIO && !eager) boxIO.observe(b); else { b.dataset.made='1'; makeAnim(b.getAttribute('data-anim'), b); } });
 }
 function mountDone(root, dk, onChange){
   root.querySelectorAll('.donebtn').forEach(btn=>{
@@ -1499,9 +1835,9 @@ function mountDone(root, dk, onChange){
       const id=btn.getAttribute('data-ex');
       progress[dk]=progress[dk]||{};
       const nowOn=!progress[dk][id];
-      if(nowOn) progress[dk][id]=true; else delete progress[dk][id];
+      if(nowOn) progress[dk][id]=Date.now(); else delete progress[dk][id];   // a timestamp, so the session summary can say how long it took
       if(Object.keys(progress[dk]).length===0) delete progress[dk];
-      saveKey('progress:'+dk, progress[dk]||null);
+      persistProgress(dk);
       btn.setAttribute('aria-pressed', nowOn?'true':'false');
       btn.textContent=nowOn?'Done ✓':'Mark done';
       if(onChange) onChange(id, nowOn);
@@ -1521,6 +1857,7 @@ function mountCardExtras(root, dk){
   });
   root.querySelectorAll('.restbtn').forEach(b=>b.addEventListener('click', ()=>startTimer(parseInt(b.getAttribute('data-rest'),10))));
   root.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click', ()=>showView(b.getAttribute('data-goto'))));
+  root.querySelectorAll('details.more').forEach(d=>d.addEventListener('toggle', ()=>{ sSet('dd-more:'+d.getAttribute('data-more'), d.open); if(d.open) mountAnims(d); }));
 }
 
 function pickerHTML(dayIdx, currentList){
@@ -1553,6 +1890,32 @@ function mountPicker(root, dayIdx){
   });
 }
 
+function sameTypeInfo(dayIdx){ // 'Push 2/2 this week · same list as Monday'
+  const t=SCHEDULES[mode][dayIdx]; if(t==='rest') return null;
+  const idxs=SCHEDULES[mode].map((x,i)=>x===t?i:-1).filter(i=>i>=0); if(idxs.length<2) return null;
+  const k=idxs.indexOf(dayIdx)+1, first=idxs[0];
+  const same = JSON.stringify(effectiveList(dayIdx).list)===JSON.stringify(effectiveList(first).list);
+  return {k, n:idxs.length, first, same};
+}
+function doneCountText(dk, list){ const n=list.filter(x=>progress[dk]&&progress[dk][x]).length; return `${n} of ${list.length} done`; }
+function renderSummary(root, dk, list, fin){
+  const box=root.querySelector('#summary'); if(!box) return;
+  if(!fin){ box.className='summary'; box.innerHTML=''; return; }
+  const p=progress[dk]||{}, n=list.filter(x=>p[x]).length;
+  const stamps=list.map(x=>p[x]).filter(v=>typeof v==='number'&&v>1e12);
+  const span=stamps.length>1? Math.round((Math.max(...stamps)-Math.min(...stamps))/60000) : 0;
+  const logged=list.filter(x=>logToday(x,dk)).length;
+  box.className='summary show';
+  box.innerHTML=`<b>Workout complete — good work. 💪</b><span>${n} of ${list.length} done${logged?` · ${logged} weight${logged===1?'':'s'} logged`:''}${span?` · ${span} min from first tick`:''}</span>`;
+}
+let toastT=null;
+function toast(msg, undo){
+  let t=document.getElementById('toast'); if(!t){ t=document.createElement('div'); t.id='toast'; t.className='toast'; document.body.appendChild(t); }
+  t.textContent=msg;
+  if(undo){ const b=document.createElement('button'); b.type='button'; b.textContent='Undo'; b.addEventListener('click', ()=>{ t.classList.remove('show'); undo(); }); t.appendChild(b); }
+  t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'), 5000);
+}
+let pickerOpen=false;
 function renderToday(){
   const root=document.getElementById('view-today');
   const wd=weekdayIdx();
@@ -1563,22 +1926,31 @@ function renderToday(){
   const dk=todayKey(dateForWeekday(dayIdx));
   const dateLabel=dateForWeekday(dayIdx).toLocaleDateString(undefined,{day:'numeric', month:'long'});
   const cu=dayCustom(dayIdx);
-  const hasCustom = cu.add.length>0 || cu.remove.length>0;
-  const jumpBtn = isRealToday? '' : `<button class="jumpbtn" id="jumptoday">Jump to today →</button>`;
+  const hasCustom = cu.add.length>0 || cu.remove.length>0 || Object.keys(cu.swap).length>0;
+  const jumpBtn = isRealToday? '' : `<button class="jumpbtn" type="button" id="jumptoday">Jump to today →</button>`;
   const todayPill = isRealToday? '<span class="todaypill">Today</span>' : '';
 
+  const isFlare = list.length>0 && list.every(id=>EXR[id].rxLabel);
   const isCustomSession = type==='rest' && list.length>0;
-  const headerColor = type==='rest' ? (isCustomSession? '--core':'--restc') : wo.c;
-  const headerName = isCustomSession? 'Custom Session' : (type==='rest'? 'Rest Day' : wo.name);
+  const headerColor = isFlare ? '--care' : type==='rest' ? (isCustomSession? '--core':'--restc') : wo.c;
+  const headerName = isFlare ? 'Spine Reset' : isCustomSession? 'Custom Session' : (type==='rest'? 'Rest Day' : wo.name);
   const nameHtml = esc(headerName).replace(' ', ' <span class="accent">')+'</span>';
-  const focusPart = type!=='rest' ? ' · '+esc(wo.focus) : '';
+  const focusPart = isFlare ? ' · flare-up day, the workout waits' : type!=='rest' ? ' · '+esc(wo.focus) : '';
   const estPart = list.length? ` · ≈ ${estMinutes(list)} min` : '';
-  const sub = `${esc(DAY_NAMES[dayIdx])}${todayPill} · ${dateLabel}${focusPart} · ${list.length} exercise${list.length===1?'':'s'}${estPart}`;
+  const sub = `${esc(DAY_NAMES[dayIdx])}${todayPill} · ${dateLabel}${focusPart} · ${list.length} exercise${list.length===1?'':'s'}${estPart}${list.length? ` · <span id="subdone">${doneCountText(dk,list)}</span>`:''}`;
+  const rp = isFlare? null : sameTypeInfo(dayIdx);
+  const ordText = rp ? `<b>${['1st','2nd','3rd'][rp.k-1]||rp.k+'th'} ${esc(STRIP_LABEL[type])} of ${rp.n} this week.</b> ${rp.k>1 ? (rp.same ? `Same list as ${DAY_NAMES[rp.first]}: the second session is on purpose, a muscle is ready again after two to three days.` : `${DAY_NAMES[rp.first]}'s list, with your changes.`) : `It comes round again on ${DAY_NAMES[SCHEDULES[mode].indexOf(type, dayIdx+1)]}.`}` : '';
+  const flareBtn = (type!=='rest' && !isFlare) ? `<button class="flarebtn" type="button" id="flarebtn" title="Replace today's exercises with the Spine Reset">Sore back today? Do the Spine Reset instead</button>` : '';
+  const resetDone=CARE[0].ex.filter(id=>progress[todayKey()]&&progress[todayKey()][id]).length, resetN=CARE[0].ex.length;
   const careCta = `
       <div class="carecta">
-        <div><b>Sitting most of the day?</b> Do the 12-minute Spine Reset before or after this — it is the part of the plan that fixes back pain.</div>
-        <button class="carebtn" data-goto="care">Open Back care →</button>
+        <div>${resetDone>=resetN? '<b>Spine Reset done today ✓</b> That is the part of the plan that fixes back pain.' : `<b>Sitting most of the day?</b> Do the Spine Reset after this workout or later today; the 5-minute warm-up above is what to do before you lift.${resetDone? ` <span class="loglast">Spine Reset today · ${resetDone} of ${resetN} ✓</span>`:''}`}</div>
+        <button class="carebtn" type="button" data-goto="care">Open Back care →</button>
       </div>`;
+  const warmBullet = type==='push' || type==='chest' || type==='shouldersday' || type==='armsday' || type==='upperA' || type==='upperB'
+      ? '10 arm circles each way, 10 wall scapular push-ups, 10 cat–cows, then one light set of the first press'
+      : (type==='pull' || type==='backday') ? '6–8 gentle cat–cows, 10 hip hinges, 10 shoulder-blade squeezes, then one light set of rows'
+      : '6–8 gentle cat–cows, 30 seconds of hip-flexor stretch per side, 10 glute bridges, 10 bodyweight squats';
 
   let bodyHtml='';
   if(list.length===0){
@@ -1591,104 +1963,135 @@ function renderToday(){
           : `You removed every exercise from ${esc(DAY_NAMES[dayIdx])}. Add some below, or reset to the default ${esc(wo.name)}.`}</p>
         ${isNaturalRest? `<ul>
             <li>Take a 20–30 minute walk.</li>
-            <li>Do the <b>Spine Reset</b> from the Back care tab — 12 minutes on the floor is the best thing you can do for a stiff back today.</li>
-            <li>Aim for 7–9 hours of sleep and eat enough protein (~1.6 g per kg of bodyweight).</li>
+            <li>Do the <b>Spine Reset</b> from the Back care tab — 15 minutes on the floor is the best thing you can do for a stiff back today.</li>
+            <li>Played badminton or cricket? That was your session. Aim for 7–9 hours of sleep and eat enough protein (~1.6 g per kg of bodyweight).</li>
           </ul>
-          <p>Want to train anyway? Add exercises below and this becomes a light custom session.</p>` : ''}
+          <p>Want to train anyway? Open <b>Train anyway</b> below and this becomes a light custom session.</p>` : ''}
       </div>
-      ${isNaturalRest? careCta.replace('margin','') : ''}`;
-  } else {
-    const allDone = list.every(id => (progress[dk]&&progress[dk][id]) || EXR[id].opt);
+      ${isNaturalRest? careCta : ''}`;
+  } else if(isFlare){
     bodyHtml = `
-      <div class="banner ${allDone && complete[dk]?'show':''}" id="donebanner">Workout complete — good work. See you next session. 💪</div>
-      <div class="warm">
-        <h2>Warm-up first · 5 minutes</h2>
+      <div class="restcard" style="border-color:var(--care)">
+        <h2>Flare-up day</h2>
+        <p>Today is the Spine Reset instead of the workout. Tick the moves as you go; the session counts as done when the list is finished.
+        When the back settles, tap <b>Reset ${esc(DAY_NAMES[dayIdx])} to default</b> below to get the workout back.</p>
+      </div>
+      <div class="exlist">${list.map((id,i)=>exCardHTML(id,i,headerColor,dk,true)).join('')}</div>
+      <div id="summary" class="summary"></div>`;
+  } else {
+    bodyHtml = `
+      <details class="warm" id="warmbox"${sGet('dd-warm',true)?' open':''}>
+        <summary><h2>Warm-up first · 5 minutes</h2></summary>
         <ol>
           <li>60 seconds of marching or jumping jacks to raise your heart rate</li>
-          <li>10 cat–cows, 10 arm circles each way, 10 bodyweight squats, 10 hip hinges</li>
-          <li>Do your first set of each exercise light — about half your working weight</li>
+          <li>${warmBullet}</li>
+          <li>Do the first set of the first one or two exercises light — about half your working weight</li>
         </ol>
-      </div>
+      </details>
       ${careCta}
-      <div class="exlist">${list.map((id,i)=>exCardHTML(id,i,headerColor,dk,true)).join('')}</div>`;
+      <div class="exlist">${list.map((id,i)=>exCardHTML(id,i,headerColor,dk,true)).join('')}</div>
+      <div id="summary" class="summary"></div>`;
   }
 
   const dm=listMuscles(list);
   root.innerHTML=`
     <div class="dayhead withmap" style="--tc:var(${headerColor})">
       <div class="dh-t"><h1>${nameHtml}</h1>
-      <div class="sub">${sub}${jumpBtn}</div></div>
-      ${list.length? muscleMapHTML(dm.p, dm.s, 'Today') : ''}
+      <div class="sub">${sub}${jumpBtn}</div>
+      ${ordText? `<div class="sub ord">${ordText}</div>`:''}
+      ${flareBtn? `<div class="sub">${flareBtn}</div>`:''}</div>
+      ${list.length? muscleMapHTML(dm.p, dm.s, isFlare?'Targets':'Today') : ''}
     </div>
     ${bodyHtml}
-    ${hasCustom? `<p class="wk-note"><button class="resetbtn" id="resetday">Reset ${esc(DAY_NAMES[dayIdx])} to default</button></p>`:''}
-    ${pickerHTML(dayIdx, list)}`;
-  mountAnims(root);
+    ${hasCustom? `<p class="wk-note"><button class="resetbtn" type="button" id="resetday">Reset ${esc(DAY_NAMES[dayIdx])} to default</button></p>`:''}
+    <details class="pickwrap" id="pickwrap"${pickerOpen?' open':''}><summary>${type==='rest'&&!list.length? 'Train anyway — add exercises' : 'Add an exercise'}</summary>${pickerHTML(dayIdx, list)}</details>`;
+  mountAnims(root, true);
 
-  mountDone(root, dk, ()=>{
-    const fin=list.every(x=>(progress[dk]&&progress[dk][x])||EXR[x].opt);
-    if(fin) complete[dk]=true; else delete complete[dk];
-    saveKey('complete:'+dk, complete[dk]||null);
-    const banner=document.getElementById('donebanner');
-    if(banner) banner.classList.toggle('show',fin);
+  mountDone(root, dk, (id, nowOn)=>{
+    const fin=recomputeComplete(dayIdx);
+    renderSummary(root, dk, list, fin);
+    const sd=root.querySelector('#subdone'); if(sd) sd.textContent=doneCountText(dk, list);
     renderStrip();
+    if(fin){ const box=root.querySelector('#summary'); if(box) box.scrollIntoView({block:'center', behavior:REDUCED?'auto':'smooth'}); }
+    else if(nowOn && isRealToday){ const rs=restSeconds(EXR[id]); if(rs && !EXR[id].rxLabel) startTimer(rs); }
   });
+  renderSummary(root, dk, list, !!complete[dk] && list.length>0 && list.every(x=>(progress[dk]&&progress[dk][x])||EXR[x].opt));
   mountCardExtras(root, dk);
   root.querySelectorAll('.rmbtn').forEach(btn=>{
-    btn.addEventListener('click', ()=> removeFromDay(dayIdx, btn.getAttribute('data-rm')));
+    btn.addEventListener('click', ()=>{ const id=btn.getAttribute('data-rm'); removeFromDay(dayIdx, id); toast(`Removed ${EXR[id].name} from every ${DAY_NAMES[dayIdx]}`, ()=>addToDay(dayIdx, id)); });
   });
+  root.querySelectorAll('.swapbtn').forEach(b=>b.addEventListener('click', ()=>{
+    const from=b.getAttribute('data-swap'); const card=b.closest('.ex-card'); const old=card.querySelector('.swapsel'); if(old){ old.remove(); return; }
+    const grp=LIB_GROUPS.find(g=>g[3].includes(from)); const cands=(grp?grp[3]:[]).filter(id=>id!==from && !list.includes(id));
+    const sel=document.createElement('select'); sel.className='swapsel'; sel.setAttribute('aria-label','Swap '+EXR[from].name+' for');
+    sel.innerHTML='<option value="">Swap for…</option>'+cands.map(id=>`<option value="${id}">${esc(EXR[id].name)}</option>`).join('');
+    sel.addEventListener('change', ()=>{ if(sel.value) swapOnDay(dayIdx, from, sel.value); });
+    b.after(sel); sel.focus();
+  }));
   const jt=document.getElementById('jumptoday');
   if(jt) jt.addEventListener('click', ()=>{ selectedDay=wd; renderToday(); renderStrip(); });
   const rb=document.getElementById('resetday');
-  if(rb) rb.addEventListener('click', ()=>{ delete customEx[dayIdx]; saveCustom(dayIdx); renderToday(); renderStrip(); });
-
+  if(rb) rb.addEventListener('click', ()=>{ delete customEx[dayIdx]; saveCustom(dayIdx); recomputeComplete(dayIdx); renderToday(); renderStrip(); });
+  const fb=document.getElementById('flarebtn');
+  if(fb) fb.addEventListener('click', ()=>{ commitCustom(dayIdx, {add:CARE[0].ex.slice(), remove:list.slice(), swap:{}}); toast(`${DAY_NAMES[dayIdx]} is now the Spine Reset. Reset the day when your back settles.`); });
+  const wb=document.getElementById('warmbox'); if(wb) wb.addEventListener('toggle', ()=>sSet('dd-warm', wb.open));
+  const pw=document.getElementById('pickwrap'); if(pw) pw.addEventListener('toggle', ()=>{ pickerOpen=pw.open; });
   mountPicker(root, dayIdx);
 }
 
+function weekStreak(){ // consecutive scheduled sessions completed, counting back from the last scheduled day (today does not break it)
+  let n=0; const now=new Date();
+  for(let i=0;i<180;i++){ const d=new Date(now); d.setDate(now.getDate()-i); const list=effectiveList(weekdayIdx(d)).list; if(!list.length) continue;
+    if(complete[todayKey(d)]) n++; else if(i===0) continue; else break; }
+  return n;
+}
 function renderWeek(){
   const root=document.getElementById('view-week');
-  const wd=weekdayIdx();
-  const sessions=SCHEDULES[mode].filter(t=>t!=='rest').length;
-  let doneCount=0;
-  for(let i=0;i<7;i++) if(SCHEDULES[mode][i]!=='rest' && complete[todayKey(dateForWeekday(i))]) doneCount++;
+  const wd=weekdayIdx(); const sched=SCHEDULES[mode];
+  const days=sched.map((t,i)=>({t, i, list:effectiveList(i).list, dk:todayKey(dateForWeekday(i))}));
+  const sessions=days.filter(d=>d.list.length).length;
+  const doneDays=days.filter(d=>d.list.length && complete[d.dk]);
+  const trained=[]; doneDays.forEach(d=>trained.push(...d.list)); const tm=listMuscles(trained); const streak=weekStreak();
   root.innerHTML=`
-    <div class="dayhead">
-      <h1>Week <span class="accent">Plan</span></h1>
-      <div class="sub">This week: ${doneCount} of ${sessions} sessions done</div>
+    <div class="dayhead withmap">
+      <div class="dh-t"><h1>Week <span class="accent">Plan</span></h1>
+      <div class="sub">This week: ${doneDays.length} of ${sessions} sessions done${streak? ` · streak: ${streak} session${streak===1?'':'s'}`:''}</div></div>
+      ${trained.length? muscleMapHTML(tm.p, tm.s, 'Trained this week') : ''}
     </div>
     <div class="modegroup" role="group" aria-label="Plan mode">
       <span class="lab">Plan:</span>
-      ${Object.keys(SCHEDULES).map(m=>`<button class="modebtn" data-mode="${m}" aria-pressed="${mode===m}">${MODE_LABELS[m]}</button>`).join('')}
+      ${Object.keys(SCHEDULES).map(m=>`<button class="modebtn" type="button" data-mode="${m}" aria-pressed="${mode===m}">${MODE_LABELS[m]}</button>`).join('')}
     </div>
     <div class="weekgrid">
-      ${SCHEDULES[mode].map((t,i)=>{
-        const wo=WORKOUTS[t];
-        const isToday=i===wd;
-        const isDone=t!=='rest'&&complete[todayKey(dateForWeekday(i))];
-        return `<div class="wk-card ${isToday?'today':''}" style="--tc:var(${wo.c})">
-          <h3><span class="dot"></span>${DAY_NAMES[i]}${isDone?' <span style="color:var(--good)">✓</span>':''}${isToday?' · today':''}${t==='rest'?'':mmMini(listMuscles(effectiveList(i).list))}</h3>
-          <div class="focus">${t==='rest'?'Recovery — walk & stretch':esc(wo.name)+' — '+esc(wo.focus)}</div>
-          ${t==='rest'?'':'<ul>'+wo.ex.map(id=>'<li>'+esc(EXR[id].name)+'</li>').join('')+'</ul>'}
+      ${days.map(({t,i,list,dk})=>{
+        const wo=WORKOUTS[t]; const isToday=i===wd; const isDone=list.length>0&&complete[dk]; const cu=dayCustom(i);
+        const edited=cu.add.length||cu.remove.length||Object.keys(cu.swap).length;
+        const isFlare=list.length>0&&list.every(id=>EXR[id].rxLabel); const custom=t==='rest'&&list.length>0;
+        const color=isFlare?'--care':custom?'--core':wo.c;
+        const title=isFlare?'Spine Reset (flare-up day)':custom?'Custom Session':t==='rest'?'Recovery — walk & stretch':esc(wo.name)+' — '+esc(wo.focus);
+        return `<div class="wk-card ${isToday?'today':''}" style="--tc:var(${color})" role="button" tabindex="0" data-day="${i}" aria-label="${DAY_NAMES[i]}: ${escA(isFlare?'Spine Reset':custom?'Custom session':t==='rest'?'Rest':wo.name)}${isDone?', done':''}${isToday?', today':''}">
+          <h3><span class="dot"></span>${DAY_NAMES[i]}${isDone?' <span class="wkdone">✓</span>':''}${isToday?' · today':''}${list.length?mmMini(listMuscles(list)):''}</h3>
+          <div class="focus">${title}</div>
+          ${list.length?'<ul>'+list.map(id=>'<li>'+esc(EXR[id].name)+(wo.ex.includes(id)?'':' <span class="added" title="not in the base plan">+</span>')+'</li>').join('')+'</ul>':''}
+          ${edited?'<div class="edited">edited · reset from the Today tab</div>':''}
         </div>`;
       }).join('')}
     </div>
-    <p class="wk-note"><b>Which plan?</b> Start with the 3-day plan if you're new — every muscle gets worked with a rest day
-    between sessions. The 6-day Push/Pull/Legs doubles the frequency once you're conditioned. The 5-day body-part split gives
-    each area its own dedicated day with more varieties per muscle. All three cover every muscle group; progress carries over
-    if you switch.</p>`;
-  root.querySelectorAll('.modebtn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      mode=btn.getAttribute('data-mode');
-      saveKey('mode',mode);
-      renderWeek(); renderToday(); renderStrip();
-    });
-  });
-  root.querySelectorAll('.wk-card').forEach((card,i)=>{
-    card.addEventListener('click', ()=>{ selectedDay=i; renderToday(); renderStrip(); showView('today'); });
+    <p class="wk-note"><b>Which plan?</b> <b>Push / Pull / Legs</b> trains every muscle twice a week in six sessions of 40–55 minutes and is the default.
+    <b>Upper / Lower</b> keeps the twice-a-week rhythm in four sessions and leaves Wednesday, Saturday and Sunday free: use it in weeks with
+    badminton or cricket, or when your back is flaring up. <b>Full body</b> is the three-session option, each muscle two to three times a week.
+    <b>One body part per day</b> trains each muscle once a week with 13–16 sets in one go; keep it only if you strongly prefer it.
+    Progress carries over if you switch. <b>Sport rule:</b> a match counts as a leg day, so no Legs the day before and no overhead pressing on match day.</p>`;
+  root.querySelectorAll('.modebtn').forEach(btn=>btn.addEventListener('click', ()=>setMode(btn.getAttribute('data-mode'))));
+  const go=card=>{ selectedDay=parseInt(card.getAttribute('data-day'),10); renderToday(); renderStrip(); showView('today'); };
+  root.querySelectorAll('.wk-card').forEach(card=>{
+    card.addEventListener('click', ()=>go(card));
+    card.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(card); } });
   });
 }
 
 function renderLibrary(){
+  if(!rendered.has('library')) return;
   const root=document.getElementById('view-library');
   root.innerHTML=`
     <div class="dayhead">
@@ -1715,19 +2118,20 @@ function renderGuide(){
       <h2>Reading the 3D demonstrations</h2>
       <p>Every exercise card has a 3D figure performing the movement on loop. <b>Drag it with your finger or mouse to rotate
       around the figure</b> — check the side view for back position on hinges and squats, and the front view for elbow and
-      knee paths. The orange pieces are the dumbbells. The ¾ / front / side buttons jump to those angles.</p>
+      knee paths. The orange pieces are the dumbbells (bodyweight and stretch cards have none). The ¾ / front / side buttons jump to those angles.</p>
       <p>The figure shows the movement path; it can't see <i>your</i> body. So for each new exercise: watch the linked
       professional guide once, start with a light weight for the first week, and occasionally film yourself from the side —
       comparing your video to the demonstration is the fastest form fix there is.</p>
 
-      <h2>The three plans</h2>
+      <h2>The four plans</h2>
       <ul>
-        <li><b>3-day (beginner)</b> — Push / Pull / Legs, one each on Mon / Wed / Fri, rest between.</li>
-        <li><b>6-day</b> — the same cycle twice per week, Sunday off.</li>
-        <li><b>5-day body-part split</b> — a dedicated day per area: Chest, Back, Legs, Shoulders + Abs, Arms, plus a light core day Saturday.</li>
+        <li><b>6-day Push / Pull / Legs</b> — the default. Push Mon and Thu, Pull Tue and Fri, Legs + Core Wed and Sat: every muscle twice a week, 72 hours apart, which is why the same session appears twice.</li>
+        <li><b>4-day Upper / Lower</b> — Upper Mon and Thu, Lower Tue and Fri. Still twice a week per muscle, three free days. The plan for weeks with badminton, cricket or a sore back.</li>
+        <li><b>3-day Full body A / B / C</b> — Mon / Wed / Fri, six exercises a session covering the whole body, each muscle two to three times a week.</li>
+        <li><b>6-day body-part split</b> — a dedicated day per area: Chest, Back, Legs, Shoulders + Abs, Arms, plus a core day Saturday. Each muscle once a week.</li>
       </ul>
       <p>Pick one on the Week tab. <b>Swapping varieties:</b> any exercise can be replaced by another from the same muscle
-      group in the All Exercises tab — same sets and reps. Rotate varieties every 4–6 weeks to keep progressing.</p>
+      group with the <b>Swap</b> button on its card, same sets and reps. Rotate varieties every 4–6 weeks to keep progressing.</p>
 
       <h2>Picking the right weight</h2>
       <p>Choose a weight where you could do <b>2–3 more reps</b> than the target before form breaks. If the target is 8–12
@@ -1738,12 +2142,15 @@ function renderGuide(){
       <ol>
         <li>Keep the weight and add a rep or two each week until you hit the <b>top</b> of the rep range on <b>all</b> sets.</li>
         <li>Then increase the weight by the smallest step, which drops you back to the bottom of the range.</li>
-        <li>Repeat forever. Jot your weights in a notebook after each session.</li>
+        <li>Repeat. Type each weight into the <b>Log</b> box on the card and the card tells you what to aim for next time.</li>
+        <li>When the pair is maxed out and 15+ reps are easy: raise the range to 15–25 reps with 2–3 reps in reserve, go one-sided (Bulgarian split squat, single-leg RDL, one-arm row, step-up), or lower for three seconds and pause one second at the bottom.</li>
       </ol>
+      <p>For raises, flys and kickbacks the smallest weight step is often too big: first add reps up to 20, then slow the lowering to three seconds, then take the jump and accept dropping to 8–10 reps. Every 6–8 weeks, or when two sessions in a row feel worse than the last, take one week at half the sets.</p>
 
       <h2>Rest between sets</h2>
       <p>Use the timer at the bottom of the Today tab. Big movements (squats, presses, rows, deadlifts) earn 90–120 seconds.
-      Small ones (curls, raises, abs) need 45–60. Resting too little costs you reps on the next set.</p>
+      Small ones (curls, raises, abs) need 45–60. Resting too little costs you reps on the next set; if you lose more than two reps between
+      set one and set four, rest 120 seconds instead of 90.</p>
 
       <h2>When to stop</h2>
       <p>Sore muscles are fine to train — sharp pain in a joint is not. If something <i>hurts</i> (not burns — hurts), stop
@@ -1752,60 +2159,99 @@ function renderGuide(){
 
       <h2>Training with a sore back</h2>
       <p>Back pain from sitting is the most common reason people stop a home programme — and stopping is the wrong move. The
-      <b>Back care</b> tab has a 12-minute daily Spine Reset (stretches and asanas), a spine-protecting core routine, a 90-second desk
-      break with a stand-up reminder, and desk-setup advice. Exercises in the plan that load the lower back carry a
-      <b>"Sore back?"</b> note with the adjustment to make. On a bad day, swap the workout for the Spine Reset.</p>
+      <b>Back care</b> tab has a 15-minute daily Spine Reset (stretches and asanas), a spine-protecting core routine, a 90-second desk
+      break with a stand-up reminder, and desk-setup advice. The <b>Do &amp; Don't</b> tab shows the positions that hurt and the ones that help. Exercises in the plan that load the lower back carry a
+      <b>"Sore back?"</b> note with the adjustment to make. On a bad day, tap <b>Sore back today</b> at the top of the Today tab and the session
+      becomes the Spine Reset.</p>
 
       <h2>Logging your weights</h2>
       <p>Every exercise card on the Today tab has a <b>Log</b> box — type what you used (for example <i>12 kg × 10</i>) and press
-      Enter. Next time, the card shows your last entry, so "add a rep or add weight" needs no notebook. The <b>Rest</b> button on each
-      card starts the timer with that exercise's rest time.</p>
+      Enter. Next time, the card shows your last entry and a hint: at the top of the rep range it says add the smallest weight step, below it
+      says aim for one more rep. Open <b>History</b> on the card for the last five entries. Marking an exercise done starts its rest timer.</p>
 
       <p class="fine">This plan is general fitness guidance for healthy adults, not medical advice. If you have an injury, a
       heart condition, or any medical concern, check with a doctor before starting.</p>
       <h2>Your data</h2>
-      <p>Ticks, logs, plan choice and custom days are saved to <b>Personal Apps/dumbbell-dojo.json</b> in your Google Drive when you are signed in (top of the page), and cached in this browser so the page works offline. Every device you sign in from sees the same log.</p>
-      <p><button class="tbtn" id="ddExport" type="button">Download my data (JSON)</button> <label class="tbtn" style="cursor:pointer">Import a backup <input type="file" id="ddImport" accept=".json,application/json" hidden></label> <span class="loglast" id="ddImportMsg"></span></p>
+      <p>Ticks, logs, plan choice and custom days are saved to <b>Personal Apps/dumbbell-dojo.json</b> in your Google Drive when you are signed in (top of the page). An open tab keeps working offline and saves to Drive when back online. Every device you sign in from sees the same log.</p>
+      <p class="ex-actions"><button class="tbtn" id="ddExport" type="button">Download my data (JSON)</button> <button class="tbtn" id="ddMergeBtn" type="button">Merge a backup</button> <button class="tbtn" id="ddReplaceBtn" type="button">Replace everything with a backup</button><input type="file" id="ddImport" accept=".json,application/json" hidden><input type="file" id="ddReplace" accept=".json,application/json" hidden></p>
+      <p class="loglast">Merge keeps whichever is newer, the file or Drive, key by key; it cannot undo a deletion made after the backup. Replace makes the file the truth on every device: anything not in it is removed.</p>
+      <p id="ddConfirm" hidden></p><p class="loglast" id="ddImportMsg"></p>
     </div>`;
   const ex=document.getElementById('ddExport'); if(ex) ex.addEventListener('click', ()=>{
     const blob=new Blob([JSON.stringify(exportDojo(),null,2)],{type:'application/json'}); const a=document.createElement('a');
     a.href=URL.createObjectURL(blob); a.download='dumbbell-dojo-'+todayKey()+'.json'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); });
-  const im=document.getElementById('ddImport'); if(im) im.addEventListener('change', ()=>{ const f=im.files&&im.files[0]; if(!f) return; const rd=new FileReader();
-    rd.onload=()=>{ try{ const o=JSON.parse(rd.result); const n=importDojo(o); hydrate(); renderStrip(); renderToday(); renderWeek(); renderCare(); document.getElementById('ddImportMsg').textContent='Imported '+n+' records.'; }catch(e){ document.getElementById('ddImportMsg').textContent='That file is not a Dumbbell Dojo export.'; } im.value=''; };
-    rd.readAsText(f); });
+  const msg=document.getElementById('ddImportMsg'), conf=document.getElementById('ddConfirm');
+  function afterImport(r, how){
+    hydrate(); for(let i=0;i<7;i++) recomputeComplete(i); renderStrip(); renderToday(); renderWeek(); renderCare(); applyStand(standEvery, true);
+    msg.textContent = r.err==='not-json' ? 'That file is not JSON.' : r.err==='not-dojo' ? (r.app? 'That is the '+r.app+' file, not a Dumbbell Dojo backup. Nothing imported.' : 'That is not a Dumbbell Dojo backup. Nothing imported.')
+      : r.err==='empty' ? 'That backup holds no usable records.' : how==='replace' ? `Replaced: ${r.n} record${r.n===1?'':'s'} restored, ${r.removed} removed.` : `Merged: ${r.n} newer record${r.n===1?'':'s'} taken from the file, ${r.kept} kept because Drive was newer.`; }
+  function readFile(f, cb){ const rd=new FileReader(); rd.onload=()=>{ let o=null; try{ o=JSON.parse(rd.result); }catch(e){ cb({err:'not-json'}); return; } cb(null, o); }; rd.readAsText(f); }
+  const im=document.getElementById('ddImport'), rp=document.getElementById('ddReplace');
+  document.getElementById('ddMergeBtn').addEventListener('click', ()=>im.click());
+  document.getElementById('ddReplaceBtn').addEventListener('click', ()=>rp.click());
+  im.addEventListener('change', ()=>{ const f=im.files&&im.files[0]; if(!f) return; readFile(f, (err,o)=>{ afterImport(err? err : importDojo(o,'merge'), 'merge'); }); im.value=''; });
+  rp.addEventListener('change', ()=>{ const f=rp.files&&rp.files[0]; if(!f) return; readFile(f, (err,o)=>{ if(err){ afterImport(err,'replace'); return; }
+    const pre=readBackup(o); if(pre.err){ afterImport(pre,'replace'); return; }
+    conf.hidden=false; conf.textContent='Replace everything on every device with "'+f.name+'" ('+Object.keys(pre.items).length+' records)? ';
+    const yes=document.createElement('button'); yes.type='button'; yes.className='tbtn'; yes.textContent='Yes, replace';
+    const no=document.createElement('button'); no.type='button'; no.className='tbtn stop'; no.textContent='Cancel';
+    yes.addEventListener('click', ()=>{ conf.hidden=true; afterImport(importDojo(o,'replace'),'replace'); }); no.addEventListener('click', ()=>{ conf.hidden=true; });
+    conf.appendChild(yes); conf.appendChild(document.createTextNode(' ')); conf.appendChild(no); }); rp.value=''; });
 }
 
+function renderPlanBar(){
+  const bar=document.getElementById('planbar'); if(!bar) return;
+  bar.innerHTML=`<span class="lab">Plan</span>${Object.keys(SCHEDULES).map(m=>`<button type="button" class="pbtn" data-mode="${m}" aria-pressed="${mode===m}" title="${escA(MODE_LABELS[m])}">${esc(MODE_SHORT[m])}</button>`).join('')}<button type="button" class="pbtn more" data-goto="week">what they mean →</button>`;
+  bar.querySelectorAll('.pbtn[data-mode]').forEach(b=>b.addEventListener('click', ()=>setMode(b.getAttribute('data-mode'))));
+  bar.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click', ()=>showView(b.getAttribute('data-goto'))));
+}
 function renderStrip(){
   const strip=document.getElementById('weekstrip');
-  const wd=weekdayIdx();
-  strip.innerHTML=SCHEDULES[mode].map((t,i)=>{
-    const isDone=t!=='rest'&&complete[todayKey(dateForWeekday(i))];
+  const wd=weekdayIdx(); const sched=SCHEDULES[mode];
+  strip.innerHTML=sched.map((t,i)=>{
+    const list=effectiveList(i).list;
+    const isDone=list.length>0&&complete[todayKey(dateForWeekday(i))];
+    const n=sched.filter(x=>x===t).length, k=sched.slice(0,i+1).filter(x=>x===t).length, rep=t!=='rest'&&n>1;
     const cls=[i===wd?'today':'', i===selectedDay?'selected':''].filter(Boolean).join(' ');
-    return `<button class="daychip ${cls}" style="--tc:var(${WORKOUTS[t].c})" data-day="${i}" aria-label="${DAY_NAMES[i]}: ${STRIP_LABEL[t]}">
+    return `<button class="daychip ${cls}" type="button" style="--tc:var(${WORKOUTS[t].c})" data-day="${i}" aria-pressed="${i===selectedDay}"${i===wd?' aria-current="date"':''} aria-label="${DAY_NAMES[i]}: ${STRIP_LABEL[t]}${rep?' '+k+' of '+n:''}${isDone?', done':''}${i===wd?', today':''}">
       <span class="d"><span class="dot"></span>${DAY_SHORT[i]}${isDone?' <span class="done">✓</span>':''}</span>
-      <span class="w">${STRIP_LABEL[t]}</span>
+      <span class="w">${STRIP_LABEL[t]}${rep?`<small>${k}/${n}</small>`:''}</span>
     </button>`;
   }).join('');
   strip.querySelectorAll('.daychip').forEach(c=>c.addEventListener('click',()=>{
     selectedDay=parseInt(c.getAttribute('data-day'),10);
     renderToday(); renderStrip(); showView('today');
   }));
+  const sel=strip.querySelector('.daychip.selected');
+  if(sel && strip.scrollWidth>strip.clientWidth+4){ strip.scrollLeft = Math.max(0, sel.offsetLeft - (strip.clientWidth - sel.offsetWidth)/2); }
+  renderPlanBar();
 }
 
 function showView(v){
+  if(!views.includes(v)) v='today';
+  if(!rendered.has(v)){ rendered.add(v); try{ if(v==='library') renderLibrary(); else if(v==='care') renderCare(); else if(v==='dos') renderDos(); }catch(e){ console.error(e); } }
   views.forEach(name=>{ document.getElementById('view-'+name).hidden=(name!==v); });
   document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected', t.getAttribute('data-view')===v?'true':'false'));
-  document.getElementById('timerbar').style.display=(v==='today')?'':'none';
+  currentView=v; updateBar();
   window.scrollTo({top:0});
 }
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>showView(t.getAttribute('data-view'))));
+document.querySelector('nav[role="tablist"]').addEventListener('keydown', e=>{
+  if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft') return;
+  const tabs=[...document.querySelectorAll('.tab')], i=tabs.indexOf(document.activeElement); if(i<0) return;
+  e.preventDefault(); const nx=tabs[(i+(e.key==='ArrowRight'?1:tabs.length-1))%tabs.length]; nx.focus(); showView(nx.getAttribute('data-view'));
+});
 
 /* ---------- rest timer ---------- */
-let timerEnd=0, timerInt=null;
-const tdisplay=document.getElementById('tdisplay');
-/* Bell: audio is unlocked on a tap (Rest button / Test bell), the chime repeats
-   every 3 s up to 5 times or until you tap the timer bar, phones vibrate, and the
-   screen stays awake while a rest is counting. Same bell as Spine Bell. */
+/* The bell: audio is unlocked by the tap that starts a rest, the chime repeats every 3 s up to
+   5 times or until you tap the bar, the phone vibrates while the page is on screen, and the
+   screen stays awake while a rest counts. A hidden or locked phone cannot ring from the
+   background: the countdown is remembered and picked up when you return, a notification goes
+   out through sw.js where allowed, and on Android the bar offers a link that hands the countdown
+   to the phone's own Clock app. 'GO!' stays on the bar until you tap it. */
+let timerEnd=0, timerInt=null, barOver=false, currentView='today';
+const tdisplay=document.getElementById('tdisplay'), tstatus=document.getElementById('tstatus');
+const IS_ANDROID=/Android/i.test(navigator.userAgent), IS_MOBILE=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 let AC=null, bellVol=sGet('dd-vol',70), bellRep=null, bellCount=0, wl=null;
 function ensureAudio(){ try{ if(!AC){ const Ctx=window.AudioContext||window.webkitAudioContext; AC=new Ctx(); } if(AC.state==='suspended') AC.resume(); }catch(e){} }
 function tone(f,t0,dur,g){
@@ -1818,39 +2264,67 @@ function tone(f,t0,dur,g){
 function chime(){ ensureAudio(); if(!AC) return; const v=(bellVol/100)*0.7; if(v<=0) return; const t=AC.currentTime+0.02; [523,659,784,1047].forEach((f,i)=>tone(f,t+i*0.17,0.9,v)); }
 function buzz(p){ if(navigator.vibrate){ try{ navigator.vibrate(p); }catch(e){} } }
 function beep(){ chime(); buzz([300,120,300]); }
-function ringUntilTap(){ stopRinging(); bellCount=0; beep(); bellRep=setInterval(()=>{ bellCount++; if(bellCount>=5){ stopRinging(); return; } beep(); },3000); }
+let bellStart=0;
+function ringUntilTap(){ stopRinging(); bellCount=0; bellStart=Date.now(); beep(); bellRep=setInterval(()=>{ bellCount++; if(bellCount>=5 || Date.now()-bellStart>16000){ stopRinging(); return; } beep(); },3000); }
 function stopRinging(){ if(bellRep){ clearInterval(bellRep); bellRep=null; } }
 function wake(on){ try{ if(on&&'wakeLock' in navigator){ if(!wl){ navigator.wakeLock.request('screen').then(l=>{ wl=l; l.addEventListener('release',()=>{ wl=null; }); }).catch(()=>{}); } } else if(!on&&wl){ wl.release().catch(()=>{}); wl=null; } }catch(e){} }
+/* Android Chrome refuses page-level notifications; sw.js (shared with Spine Bell and Tally Board) shows them instead. */
+let SWREG=null;
+if('serviceWorker' in navigator){ try{ navigator.serviceWorker.register('sw.js').catch(()=>{}); navigator.serviceWorker.ready.then(r=>{ SWREG=r; }).catch(()=>{}); }catch(e){} }
+function notify(title, body){
+  if(!('Notification' in window)||Notification.permission!=='granted') return;
+  const o={body, tag:'dojo-rest', renotify:true, vibrate:[300,120,300], data:{url:location.href}};
+  if(SWREG&&SWREG.showNotification){ SWREG.showNotification(title,o).catch(()=>{ try{ new Notification(title,o); }catch(e){} }); return; }
+  try{ new Notification(title,o); }catch(e){}
+}
+function alertsUI(){ const b=document.getElementById('talerts'); if(!('Notification' in window)){ b.hidden=true; return; }
+  b.textContent = Notification.permission==='granted' ? 'Alerts on' : Notification.permission==='denied' ? 'Alerts blocked' : 'Alerts: enable'; b.disabled = Notification.permission!=='default'; }
+document.getElementById('talerts').addEventListener('click', ()=>{ try{ Notification.requestPermission().then(alertsUI); }catch(e){} });
+function intentUrl(sec,label){ return 'intent:#Intent;action=android.intent.action.SET_TIMER;i.android.intent.extra.alarm.LENGTH='+Math.max(1,Math.round(sec))+';S.android.intent.extra.alarm.MESSAGE='+encodeURIComponent(label)+';end'; }
+const clockLink=document.getElementById('tclock');
+function updateClockLink(){ if(!IS_ANDROID){ clockLink.hidden=true; return; } clockLink.hidden=!timerInt; if(timerInt) clockLink.href=intentUrl((timerEnd-Date.now())/1000,'Dumbbell Dojo: rest over'); }
+clockLink.addEventListener('click', ()=>{ if(timerInt) clockLink.href=intentUrl((timerEnd-Date.now())/1000,'Dumbbell Dojo: rest over'); });
 document.getElementById('tvol').value=bellVol;
 document.getElementById('tvol').addEventListener('input', e=>{ bellVol=parseInt(e.target.value,10)||0; sSet('dd-vol',bellVol); });
 document.getElementById('ttest').addEventListener('click', ()=>{ ensureAudio(); beep(); });
-document.getElementById('timerbar').addEventListener('click', stopRinging);
-document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible' && timerInt) wake(true); });
+document.getElementById('tgear').addEventListener('click', ()=>{ const st=document.getElementById('tsettings'); st.hidden=!st.hidden; document.getElementById('tgear').setAttribute('aria-expanded', String(!st.hidden)); setBarPadding(); });
+document.getElementById('timerbar').addEventListener('click', e=>{ stopRinging(); if(barOver && !e.target.closest('button,a,input')) clearOver(); });
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible'){ if(timerInt||standInt) wake(true); if(timerInt) tickRest(); } });
 function fmt(ms){ const s=Math.max(0,Math.ceil(ms/1000)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
-function stopTimer(msg){ clearInterval(timerInt); timerInt=null; tdisplay.classList.remove('running'); tdisplay.textContent=msg||'--:--'; }
+function clearOver(){ barOver=false; tdisplay.classList.remove('over'); if(!timerInt) tdisplay.textContent='--:--'; document.title='Dumbbell Dojo'; try{ sessionStorage.removeItem('dd-rest-end'); }catch(e){} updateBar(); }
+function stopTimer(msg){ clearInterval(timerInt); timerInt=null; tdisplay.classList.remove('running'); tdisplay.textContent=msg||'--:--'; updateClockLink(); }
+function restOver(){ stopTimer('GO!'); tdisplay.classList.add('over'); barOver=true; wake(false); ringUntilTap(); notify('Rest over','Next set. Tap to come back to Dumbbell Dojo.'); tstatus.textContent='Rest over'; document.title='GO! · Dumbbell Dojo'; updateBar(); }
+function tickRest(){ const left=timerEnd-Date.now(); if(left<=0){ if(timerInt) restOver(); } else tdisplay.textContent=fmt(left); }
 function startTimer(sec){
-  ensureAudio(); stopRinging(); wake(true);
-  timerEnd=Date.now()+sec*1000;
-  clearInterval(timerInt);
-  tdisplay.classList.add('running'); tdisplay.classList.remove('over');
-  timerInt=setInterval(()=>{
-    const left=timerEnd-Date.now();
-    if(left<=0){
-      stopTimer('GO!'); tdisplay.classList.add('over'); wake(false); ringUntilTap();
-      setTimeout(()=>{ if(!timerInt){ tdisplay.textContent='--:--'; tdisplay.classList.remove('over'); } },6000);
-    }else tdisplay.textContent=fmt(left);
-  },200);
-  tdisplay.textContent=fmt(timerEnd-Date.now());
+  ensureAudio(); stopRinging(); wake(true); barOver=false; tdisplay.classList.remove('over'); tstatus.textContent='';
+  timerEnd=Date.now()+sec*1000; try{ sessionStorage.setItem('dd-rest-end', String(timerEnd)); }catch(e){}
+  clearInterval(timerInt); tdisplay.classList.add('running');
+  timerInt=setInterval(tickRest,200); tickRest(); updateClockLink(); updateBar();
   document.getElementById('timerbar').classList.add('flash');
   setTimeout(()=>document.getElementById('timerbar').classList.remove('flash'), 600);
+}
+function resumeRest(){ // a tab that was discarded or reloaded mid-rest picks the countdown back up
+  let end=0; try{ end=+sessionStorage.getItem('dd-rest-end')||0; }catch(e){} if(!end) return;
+  const left=end-Date.now();
+  if(left>0) startTimer(Math.ceil(left/1000));
+  else if(Date.now()-end<120000){ tdisplay.textContent='GO!'; tdisplay.classList.add('over'); barOver=true; tstatus.textContent='Rest ended while this page was away'; updateBar(); }
+  else { try{ sessionStorage.removeItem('dd-rest-end'); }catch(e){} }
 }
 document.querySelectorAll('.tbtn[data-sec]').forEach(btn=>{
   btn.addEventListener('click',()=>startTimer(parseInt(btn.getAttribute('data-sec'),10)));
 });
-document.getElementById('tstop').addEventListener('click',()=>{ stopTimer(); stopRinging(); wake(false); tdisplay.classList.remove('over'); });
+document.getElementById('tstop').addEventListener('click',()=>{ stopTimer(); stopRinging(); wake(false); clearOver(); });
+/* keep the page content clear of the fixed bar whatever height it wraps to, and show the bar on any tab while a rest is running */
+function setBarPadding(){ const bar=document.getElementById('timerbar'); const h=bar.style.display==='none'? 0 : bar.offsetHeight; document.body.style.paddingBottom=(h? h+16 : 24)+'px'; document.documentElement.style.setProperty('--barh', h+'px'); }
+function updateBar(){ const bar=document.getElementById('timerbar'); bar.style.display=(currentView==='today'||timerInt||barOver)?'':'none'; setBarPadding(); }
+if('ResizeObserver' in window){ new ResizeObserver(()=>setBarPadding()).observe(document.getElementById('timerbar')); }
+document.addEventListener('focusin', e=>{ if(IS_MOBILE && e.target.classList && e.target.classList.contains('loginp')) document.getElementById('timerbar').classList.add('typing'); });
+document.addEventListener('focusout', e=>{ if(e.target.classList && e.target.classList.contains('loginp')) document.getElementById('timerbar').classList.remove('typing'); });
+alertsUI();
 
 /* ---------- Back care view ---------- */
 function renderCare(){
+  if(!rendered.has('care')) return;
   const root=document.getElementById('view-care');
   const dk=todayKey();
   const routineHTML = r=>{
@@ -1885,25 +2359,25 @@ function renderCare(){
     </div>
     <div class="care-intro">
       <h2>Why sitting hurts — and what fixes it</h2>
-      <p>Long hours in a chair do four things: the hip flexors at the front of the hips shorten and tug the pelvis forward, the glutes
-      switch off, the discs sit under one steady pressure for hours, and the upper back rounds so the head drifts forward. The small
-      muscles that hold the spine still get tired, and a tired spine complains — a dull ache across the lower back, stiffness when you
-      stand up, tightness that eases once you move. That pattern is called <b>non-specific mechanical back pain</b>, and the good news
-      is that it responds to movement, not rest.</p>
+      <p>Sitting still, not posture, is the problem. In a chair the same tissues carry one load for hours, the hips stiffen, the upper back rounds
+      so the head drifts forward, and the small muscles that hold the spine still get tired. A tired, sensitised back complains the moment you
+      move: a dull ache across the lower back, stiffness when you stand up, tightness that eases once you get going. That pattern is called
+      <b>non-specific mechanical back pain</b>, and the good news is that it responds to movement, not rest.</p>
       <p>Three things fix it, in this order of importance: <b>1. Sit less at a stretch</b> (the Desk Break and its reminder).
-      <b>2. Restore the range you lost</b> (the daily Spine Reset — stretches and asanas that reverse the chair). <b>3. Build endurance
-      in the muscles that protect the spine</b> (the Big 3 core, plus the glutes and back you are already training with dumbbells).</p>
+      <b>2. Walk daily and build endurance in the muscles that protect the spine</b> (the Big 3 core, plus the glutes and back you are already
+      training with dumbbells). <b>3. Restore the range you lost</b> (the daily Spine Reset — stretches and asanas that reverse the chair).</p>
       <p>Give it <b>two to six weeks of daily consistency</b>. Most people feel the morning stiffness go first, then the ache. Keep going
-      after it stops hurting — the chair has not gone anywhere.</p>
+      after it stops hurting — the chair has not gone anywhere. Flare-ups are pain, not damage: drop the dose for a few days and keep moving.</p>
     </div>
     <div class="flag">
       <h2>See a doctor first if any of these apply</h2>
       <ul>
+        <li><b>Go to A&amp;E now</b> if you have numbness around the back passage, genitals or buttocks; trouble starting to pee or feeling it, or losing bladder or bowel control; weakness or numbness in both legs; or new sexual problems. This is cauda equina syndrome and hours matter.</li>
         <li>Pain, numbness, tingling, or weakness running down a leg below the knee</li>
-        <li>Any change in bladder or bowel control, or numbness around the groin or inner thighs — <b>urgent, same day</b></li>
-        <li>Pain that started after a fall or accident, or that wakes you at night and does not ease with a change of position</li>
+        <li>Pain that started after a fall or accident, or after even a minor strain if you are over 50 or take long-term steroid tablets</li>
+        <li>Constant pain that is getting worse, or pain that is worst at night and does not ease with a change of position</li>
         <li>Fever, unexplained weight loss, or a history of cancer or osteoporosis alongside the pain</li>
-        <li>Pain that has not improved at all after six weeks of this routine</li>
+        <li>Pain that is getting worse, or has not started to improve after a few weeks of this routine</li>
       </ul>
       <p>None of those? Then what follows is the standard advice for back pain from a sedentary life — the same things a physiotherapist
       would start you on. It is general guidance, not a diagnosis.</p>
@@ -1927,8 +2401,8 @@ function renderCare(){
         <li><b>Walk 20–30 minutes a day</b> (7,000–8,000 steps is a good target). Walking is the gentlest, best-proven back-pain treatment there is.</li>
         <li><b>Never sit longer than 45 minutes</b> without standing. Use the reminder above.</li>
         <li><b>Sleep on your side with a pillow between the knees</b>, or on your back with a pillow under the knees. Avoid sleeping on your stomach.</li>
-        <li><b>Lift anything from the floor with a hip hinge</b> — the same move as the Romanian deadlift — not by rounding the back.</li>
-        <li><b>Do the Spine Reset even on good days.</b> It takes 12 minutes; the pain took months to build.</li>
+        <li><b>Lift heavy or awkward things with a hip hinge</b>, the same move as the Romanian deadlift, load close to the body. Light things: bend however is comfortable; a back that bends is a normal back.</li>
+        <li><b>Do the Spine Reset even on good days.</b> It takes 15 minutes; the pain took months to build.</li>
         <li>A warm shower before stretching makes the stiffest mornings much easier.</li>
       </ul>
 
@@ -1962,21 +2436,28 @@ function renderCare(){
   renderRemind();
 }
 
-/* ---------- stand-up reminder ---------- */
+/* ---------- stand-up reminder (laptop tab; a phone should use Spine Bell) ---------- */
 let standNext=0, standInt=null;
 function renderRemind(){
   const box=document.getElementById('remindbox'); if(!box) return;
   box.innerHTML=`<span class="lab">Remind me to stand every:</span>
-    ${[0,30,45,60].map(m=>`<button class="rbtn" data-min="${m}" aria-pressed="${standEvery===m}">${m? m+' min':'Off'}</button>`).join('')}
-    <span class="note">Works while this page is open in a tab — it rings until you tap and shows a banner. Keep the tab open on a desk day.</span>`;
-  box.querySelectorAll('.rbtn').forEach(b=>b.addEventListener('click', ()=>{ standStart(parseInt(b.getAttribute('data-min'),10)); renderRemind(); }));
+    ${[0,30,45,60].map(m=>`<button class="rbtn" type="button" data-min="${m}" aria-pressed="${standEvery===m}">${m? m+' min':'Off'}</button>`).join('')}
+    <span class="note">Chimes five times and shows a banner while this page is open in a laptop browser tab. On a phone use <a href="spine-bell.html">Spine Bell</a> instead: it keeps the screen awake, sends a banner, and can hand the timer to the Clock app.</span>`;
+  box.querySelectorAll('.rbtn').forEach(b=>b.addEventListener('click', ()=>{ ensureAudio(); standStart(parseInt(b.getAttribute('data-min'),10)); }));
 }
-function standStart(min){
-  standEvery=min; saveKey('stand',min);
+function standStart(min){ standEvery=min; persistStand(min); applyStand(min, true); renderRemind(); }
+/* applyStand only runs the interval; it never writes, so a reload or a change from another device cannot re-save an old setting */
+function applyStand(min, fresh){
+  standEvery=min;
   clearInterval(standInt); standInt=null;
   document.title='Dumbbell Dojo';
   document.getElementById('standbanner').classList.remove('show');
-  if(min>0){ standNext=Date.now()+min*60000; standInt=setInterval(standTick,1000); }
+  if(min>0){
+    const saved=fresh? 0 : (+sGet('dd-standnext',0)||0);
+    standNext = (!fresh && saved>Date.now()) ? saved : Date.now()+min*60000;
+    sSet('dd-standnext', standNext);
+    standInt=setInterval(standTick,1000);
+  } else sSet('dd-standnext', 0);
   standTick();
 }
 function standTick(){
@@ -1992,14 +2473,20 @@ function standTick(){
 document.getElementById('standpill').addEventListener('click', ()=>showView('care'));
 document.getElementById('standdone').addEventListener('click', ()=>{
   stopRinging(); document.getElementById('standbanner').classList.remove('show'); document.title='Dumbbell Dojo';
-  standNext=Date.now()+standEvery*60000; standTick();
+  standNext=Date.now()+standEvery*60000; sSet('dd-standnext', standNext); standTick();
 });
-document.getElementById('standoff').addEventListener('click', ()=>{ stopRinging(); standStart(0); renderRemind(); });
+document.getElementById('standoff').addEventListener('click', ()=>{ stopRinging(); standStart(0); });
 
 /* ---------- boot ---------- */
 DriveStore.mountStatus(document.getElementById('sync'), STORE);
-renderStrip(); renderToday(); renderWeek(); renderLibrary(); renderGuide(); renderCare(); showView('today'); BOOTED=true;
-if(standEvery) standStart(standEvery);
+[renderStrip, renderToday, renderWeek, renderGuide].forEach(f=>{ try{ f(); }catch(e){ console.error(e); } }); showView('today'); BOOTED=true;
+if(standEvery) applyStand(standEvery, false);
+resumeRest();
+/* A tab left open past midnight must not write ticks to yesterday: re-render when the date changes. */
+let bootDay=todayKey();
+function dayRollover(){ const now=todayKey(); if(now===bootDay) return; bootDay=now; selectedDay=weekdayIdx(); renderStrip(); renderToday(); renderWeek(); renderCare(); }
+setInterval(dayRollover, 60000);
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') dayRollover(); });
 </script>
 
 </body></html>

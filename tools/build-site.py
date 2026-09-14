@@ -122,51 +122,98 @@ dj = rep(dj, '<title>Dumbbell Dojo</title>', '<title>Dumbbell Dojo</title>\n<scr
 dj = rep(dj, '<div class="tagline">home strength · a pair of dumbbells · every muscle, every variety</div>',
          '<div class="tagline">home strength · a pair of dumbbells · every muscle, every variety</div>\n    <div id="sync"></div>')
 old_store = dj[dj.index('/* ---------- storage (safe) ---------- */'):dj.index('function todayKey(d){')]
-dj = dj.replace(old_store, r'''/* ---------- storage: one JSON file in Google Drive, cached in this browser ---------- */
+dj = dj.replace(old_store, r"""/* ---------- storage: one JSON file in Google Drive, cached in this browser ---------- */
 function sGet(k, fb){ try{ const v = localStorage.getItem(k); return v===null? fb : JSON.parse(v); }catch(e){ return fb; } }
 function sSet(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 let mode='ppl6', progress={}, complete={}, customEx={}, logs={}, standEvery=0;
 const STORE = DriveStore.open({file:'dumbbell-dojo.json', cacheKey:'dd.doc', empty:()=>({v:1, app:'dumbbell-dojo', items:{}}),
-  onChange:(doc, src)=>{ hydrate(); if(src==='remote' && BOOTED){ renderStrip(); renderToday(); renderWeek(); renderCare(); } }});
+  onChange:(doc, src)=>{ const prevStand=standEvery; hydrate(); if(src==='remote' && BOOTED){ renderStrip(); renderToday(); renderWeek(); renderCare(); if(standEvery!==prevStand) applyStand(standEvery, true); } }});
 let BOOTED=false;
 function itemVal(k, fb){ const it=STORE.doc.items[k]; return (it && !it.deleted && it.v!==undefined) ? it.v : fb; }
 function collect(prefix){ const out={}; Object.keys(STORE.doc.items).forEach(k=>{ if(k.startsWith(prefix)){ const it=STORE.doc.items[k]; if(it && !it.deleted && it.v!==undefined) out[k.slice(prefix.length)]=it.v; } }); return out; }
-function hydrate(){ mode=itemVal('mode','ppl6'); if(!SCHEDULES[mode]) mode='ppl6'; progress=collect('progress:'); complete=collect('complete:'); customEx=collect('customex:'); logs=collect('log:'); standEvery=itemVal('stand',0); }
+function hydrate(){ mode=itemVal('mode','ppl6'); if(!SCHEDULES[mode]) mode='ppl6'; progress=cleanProgress(collect('progress:')); complete=collect('complete:'); customEx=cleanCustom(collect('customex:')); logs=cleanLogs(collect('log:')); const st=+itemVal('stand',0); standEvery=[0,30,45,60].includes(st)? st : 0; }
 function saveKey(k, v){ STORE.mutate(d=>{ d.items[k] = (v===undefined||v===null) ? {id:k, deleted:true, updatedAt:Date.now()} : {id:k, v:v, updatedAt:Date.now()}; }); }
-function importDojo(o){ const now=Date.now(); let n=0; STORE.mutate(d=>{ const put=(k,v)=>{ d.items[k]={id:k, v:v, updatedAt:now}; n++; };
-  if(o.mode) put('mode', o.mode); if(o.stand!=null) put('stand', o.stand);
-  Object.entries(o.progress||{}).forEach(([k,v])=>put('progress:'+k, v)); Object.entries(o.complete||{}).forEach(([k,v])=>put('complete:'+k, v));
-  Object.entries(o.customex||o.customEx||{}).forEach(([k,v])=>put('customex:'+k, v)); Object.entries(o.log||o.logs||{}).forEach(([k,v])=>put('log:'+k, v)); }); return n; }
-function exportDojo(){ return {format:'dumbbell-dojo-export', v:1, exportedAt:new Date().toISOString(), mode, stand:standEvery, progress, complete, customex:customEx, log:logs}; }
+/* Backups. A v2 file carries every item with its timestamp and its tombstones, so a merge can keep whichever side is newer;
+   a v1 file (mode, progress, log, ...) is stamped with its export date. how='merge' keeps the newer of file and Drive per key;
+   how='replace' makes the file the truth and tombstones everything it does not contain, so every device follows it. */
+function readBackup(o){
+  if(!o || typeof o!=='object' || Array.isArray(o)) return {err:'not-json'};
+  let items=null;
+  if(o.format==='dumbbell-dojo-export' && o.items && typeof o.items==='object') items=o.items;
+  else if(o.app==='dumbbell-dojo' && o.items && typeof o.items==='object') items=o.items;
+  else if(o.format==='dumbbell-dojo-export' || ('mode' in o) || o.progress || o.log || o.logs || o.complete || o.customex || o.customEx){
+    const stamp=Date.parse(o.exportedAt)||Date.now(); items={};
+    const put=(k,v)=>{ items[k]={id:k, v:v, updatedAt:stamp}; };
+    if(o.mode) put('mode', o.mode); if(o.stand!=null) put('stand', o.stand);
+    Object.entries(o.progress||{}).forEach(([k,v])=>put('progress:'+k, v)); Object.entries(o.complete||{}).forEach(([k,v])=>put('complete:'+k, v));
+    Object.entries(o.customex||o.customEx||{}).forEach(([k,v])=>put('customex:'+k, v)); Object.entries(o.log||o.logs||{}).forEach(([k,v])=>put('log:'+k, v));
+  } else return {err:'not-dojo', app:String(o.app||o.format||'')};
+  const clean={};
+  Object.keys(items).forEach(k=>{ const it=items[k]; if(!it||typeof it!=='object') return;
+    if(!(k==='mode'||k==='stand'||/^(progress|complete|customex|log):/.test(k))) return;
+    if(k==='mode' && !it.deleted && !SCHEDULES[it.v]) return;
+    if(k==='stand' && !it.deleted && ![0,30,45,60].includes(+it.v)) return;
+    clean[k]= it.deleted? {id:k, deleted:true, updatedAt:+it.updatedAt||Date.now()} : {id:k, v:it.v, updatedAt:+it.updatedAt||Date.now()}; });
+  return {items:clean};
+}
+function importDojo(o, how){
+  const r=readBackup(o); if(r.err) return r;
+  const clean=r.items, now=Date.now(), empty=!Object.keys(STORE.doc.items).length; let newer=0, kept=0, removed=0;
+  if(!Object.keys(clean).length) return {n:0, kept:0, removed:0, err:'empty'};
+  STORE.mutate(d=>{
+    Object.keys(clean).forEach(k=>{ const cur=d.items[k], inc=clean[k];
+      if(how==='replace'){ d.items[k]=Object.assign({}, inc, {updatedAt:now}); newer++; }
+      else if(empty || !cur || (+inc.updatedAt||0)>(+cur.updatedAt||0)){ d.items[k]=inc; newer++; }
+      else kept++; });
+    if(how==='replace') Object.keys(d.items).forEach(k=>{ if(!clean[k] && !d.items[k].deleted){ d.items[k]={id:k, deleted:true, updatedAt:now}; removed++; } });
+  });
+  return {n:newer, kept, removed};
+}
+function exportDojo(){ return {format:'dumbbell-dojo-export', v:2, exportedAt:new Date().toISOString(), app:'dumbbell-dojo', items:STORE.doc.items}; }
 (function migrateOld(){ if(Object.keys(STORE.doc.items).length) return;
   const o={mode:sGet('dd-mode',null), progress:sGet('dd-progress',null), complete:sGet('dd-complete',null), customex:sGet('dd-customex',null), log:sGet('dd-log',null), stand:sGet('dd-stand',null)};
-  if(o.mode || o.progress || o.log || o.complete || o.customex) importDojo(o); })();
+  if(o.mode || o.progress || o.log || o.complete || o.customex) importDojo(o, 'merge'); })();
 hydrate();
-''')
-dj = rep(dj, "function saveCustom(){ sSet('dd-customex', customEx); }", "function saveCustom(idx){ saveKey('customex:'+idx, customEx[idx]||null); }")
-dj = rep(dj, "  if(cu.add.length===0 && cu.remove.length===0) delete customEx[idx];\n  else customEx[idx]=cu;\n  saveCustom();", "  if(cu.add.length===0 && cu.remove.length===0) delete customEx[idx];\n  else customEx[idx]=cu;\n  saveCustom(idx);")
-dj = rep(dj, "if(rb) rb.addEventListener('click', ()=>{ delete customEx[dayIdx]; saveCustom(); renderToday(); renderStrip(); });", "if(rb) rb.addEventListener('click', ()=>{ delete customEx[dayIdx]; saveCustom(dayIdx); renderToday(); renderStrip(); });")
-dj = rep(dj, "  if(arr.length) logs[exId]=arr; else delete logs[exId];\n  sSet('dd-log',logs);", "  if(arr.length) logs[exId]=arr; else delete logs[exId];\n  saveKey('log:'+exId, logs[exId]||null);")
-dj = rep(dj, "      if(Object.keys(progress[dk]).length===0) delete progress[dk];\n      sSet('dd-progress',progress);", "      if(Object.keys(progress[dk]).length===0) delete progress[dk];\n      saveKey('progress:'+dk, progress[dk]||null);")
-dj = rep(dj, "    if(fin) complete[dk]=true; else delete complete[dk];\n    sSet('dd-complete',complete);", "    if(fin) complete[dk]=true; else delete complete[dk];\n    saveKey('complete:'+dk, complete[dk]||null);")
-dj = rep(dj, "      mode=btn.getAttribute('data-mode');\n      sSet('dd-mode',mode);", "      mode=btn.getAttribute('data-mode');\n      saveKey('mode',mode);")
-dj = rep(dj, "  standEvery=min; sSet('dd-stand',min);", "  standEvery=min; saveKey('stand',min);")
+""")
+# persistence seams: the source keeps localStorage, the site writes one Drive item per key
+dj = rep(dj, "function saveCustom(idx){ sSet('dd-customex', customEx); }", "function saveCustom(idx){ saveKey('customex:'+idx, customEx[idx]||null); }")
+dj = rep(dj, "function persistProgress(dk){ sSet('dd-progress',progress); }", "function persistProgress(dk){ saveKey('progress:'+dk, progress[dk]||null); }")
+dj = rep(dj, "function persistComplete(dk){ sSet('dd-complete',complete); }", "function persistComplete(dk){ saveKey('complete:'+dk, complete[dk]||null); }")
+dj = rep(dj, "function persistLog(exId){ sSet('dd-log',logs); }", "function persistLog(exId){ saveKey('log:'+exId, logs[exId]||null); }")
+dj = rep(dj, "function persistMode(){ sSet('dd-mode',mode); }", "function persistMode(){ saveKey('mode',mode); }")
+dj = rep(dj, "function persistStand(min){ sSet('dd-stand',min); }", "function persistStand(min){ saveKey('stand',min); }")
 dj = rep(dj, "heart condition, or any medical concern, check with a doctor before starting. Progress data lives only in this browser\n      on this device.</p>",
-         "heart condition, or any medical concern, check with a doctor before starting.</p>\n      <h2>Your data</h2>\n      <p>Ticks, logs, plan choice and custom days are saved to <b>Personal Apps/dumbbell-dojo.json</b> in your Google Drive when you are signed in (top of the page), and cached in this browser so the page works offline. Every device you sign in from sees the same log.</p>\n      <p><button class=\"tbtn\" id=\"ddExport\" type=\"button\">Download my data (JSON)</button> <label class=\"tbtn\" style=\"cursor:pointer\">Import a backup <input type=\"file\" id=\"ddImport\" accept=\".json,application/json\" hidden></label> <span class=\"loglast\" id=\"ddImportMsg\"></span></p>")
-dj = rep(dj, "      <p class=\"fine\">This plan is general fitness guidance", "      <p class=\"fine\">This plan is general fitness guidance")
-dj = rep(dj, "    </div>`;\n}\n\nfunction renderStrip(){", r'''    </div>`;
+         "heart condition, or any medical concern, check with a doctor before starting.</p>\n      <h2>Your data</h2>\n      <p>Ticks, logs, plan choice and custom days are saved to <b>Personal Apps/dumbbell-dojo.json</b> in your Google Drive when you are signed in (top of the page). An open tab keeps working offline and saves to Drive when back online. Every device you sign in from sees the same log.</p>\n      <p class=\"ex-actions\"><button class=\"tbtn\" id=\"ddExport\" type=\"button\">Download my data (JSON)</button> <button class=\"tbtn\" id=\"ddMergeBtn\" type=\"button\">Merge a backup</button> <button class=\"tbtn\" id=\"ddReplaceBtn\" type=\"button\">Replace everything with a backup</button><input type=\"file\" id=\"ddImport\" accept=\".json,application/json\" hidden><input type=\"file\" id=\"ddReplace\" accept=\".json,application/json\" hidden></p>\n      <p class=\"loglast\">Merge keeps whichever is newer, the file or Drive, key by key; it cannot undo a deletion made after the backup. Replace makes the file the truth on every device: anything not in it is removed.</p>\n      <p id=\"ddConfirm\" hidden></p><p class=\"loglast\" id=\"ddImportMsg\"></p>")
+dj = rep(dj, "    </div>`;\n}\n\nfunction renderPlanBar(){", r"""    </div>`;
   const ex=document.getElementById('ddExport'); if(ex) ex.addEventListener('click', ()=>{
     const blob=new Blob([JSON.stringify(exportDojo(),null,2)],{type:'application/json'}); const a=document.createElement('a');
     a.href=URL.createObjectURL(blob); a.download='dumbbell-dojo-'+todayKey()+'.json'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); });
-  const im=document.getElementById('ddImport'); if(im) im.addEventListener('change', ()=>{ const f=im.files&&im.files[0]; if(!f) return; const rd=new FileReader();
-    rd.onload=()=>{ try{ const o=JSON.parse(rd.result); const n=importDojo(o); hydrate(); renderStrip(); renderToday(); renderWeek(); renderCare(); document.getElementById('ddImportMsg').textContent='Imported '+n+' records.'; }catch(e){ document.getElementById('ddImportMsg').textContent='That file is not a Dumbbell Dojo export.'; } im.value=''; };
-    rd.readAsText(f); });
+  const msg=document.getElementById('ddImportMsg'), conf=document.getElementById('ddConfirm');
+  function afterImport(r, how){
+    hydrate(); for(let i=0;i<7;i++) recomputeComplete(i); renderStrip(); renderToday(); renderWeek(); renderCare(); applyStand(standEvery, true);
+    msg.textContent = r.err==='not-json' ? 'That file is not JSON.' : r.err==='not-dojo' ? (r.app? 'That is the '+r.app+' file, not a Dumbbell Dojo backup. Nothing imported.' : 'That is not a Dumbbell Dojo backup. Nothing imported.')
+      : r.err==='empty' ? 'That backup holds no usable records.' : how==='replace' ? `Replaced: ${r.n} record${r.n===1?'':'s'} restored, ${r.removed} removed.` : `Merged: ${r.n} newer record${r.n===1?'':'s'} taken from the file, ${r.kept} kept because Drive was newer.`; }
+  function readFile(f, cb){ const rd=new FileReader(); rd.onload=()=>{ let o=null; try{ o=JSON.parse(rd.result); }catch(e){ cb({err:'not-json'}); return; } cb(null, o); }; rd.readAsText(f); }
+  const im=document.getElementById('ddImport'), rp=document.getElementById('ddReplace');
+  document.getElementById('ddMergeBtn').addEventListener('click', ()=>im.click());
+  document.getElementById('ddReplaceBtn').addEventListener('click', ()=>rp.click());
+  im.addEventListener('change', ()=>{ const f=im.files&&im.files[0]; if(!f) return; readFile(f, (err,o)=>{ afterImport(err? err : importDojo(o,'merge'), 'merge'); }); im.value=''; });
+  rp.addEventListener('change', ()=>{ const f=rp.files&&rp.files[0]; if(!f) return; readFile(f, (err,o)=>{ if(err){ afterImport(err,'replace'); return; }
+    const pre=readBackup(o); if(pre.err){ afterImport(pre,'replace'); return; }
+    conf.hidden=false; conf.textContent='Replace everything on every device with "'+f.name+'" ('+Object.keys(pre.items).length+' records)? ';
+    const yes=document.createElement('button'); yes.type='button'; yes.className='tbtn'; yes.textContent='Yes, replace';
+    const no=document.createElement('button'); no.type='button'; no.className='tbtn stop'; no.textContent='Cancel';
+    yes.addEventListener('click', ()=>{ conf.hidden=true; afterImport(importDojo(o,'replace'),'replace'); }); no.addEventListener('click', ()=>{ conf.hidden=true; });
+    conf.appendChild(yes); conf.appendChild(document.createTextNode(' ')); conf.appendChild(no); }); rp.value=''; });
 }
 
-function renderStrip(){''')
+function renderPlanBar(){""")
 dj = rep(dj, "/* ---------- boot ---------- */\nrenderStrip(); renderToday(); renderWeek(); renderLibrary(); renderGuide(); renderCare(); showView('today');",
-         "/* ---------- boot ---------- */\nDriveStore.mountStatus(document.getElementById('sync'), STORE);\nrenderStrip(); renderToday(); renderWeek(); renderLibrary(); renderGuide(); renderCare(); showView('today'); BOOTED=true;")
-assert "sSet('dd-" not in dj.replace("sSet('dd-vol'", ''), 'stale sSet'
+         "/* ---------- boot ---------- */\nDriveStore.mountStatus(document.getElementById('sync'), STORE);\n[renderStrip, renderToday, renderWeek, renderGuide].forEach(f=>{ try{ f(); }catch(e){ console.error(e); } }); showView('today'); BOOTED=true;")
+chk = dj
+for ok in ["sSet('dd-vol'", "sSet('dd-more:'", "sSet('dd-warm'", "sSet('dd-standnext'"]:
+    chk = chk.replace(ok, '')
+assert "sSet('dd-" not in chk, 'stale sSet'
 wr('docs/dumbbell-dojo.html', dj)
 
 # ---------------------------------------------------------------- Tally Board

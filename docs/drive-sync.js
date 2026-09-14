@@ -20,7 +20,7 @@
   var DRIVE = 'https://www.googleapis.com/drive/v3';
   var UPLOAD = 'https://www.googleapis.com/upload/drive/v3';
   var TOKEN_KEY = 'drivesync.token';
-  var TOMBSTONE_DAYS = 45;
+  var TOMBSTONE_DAYS = 3650; // a device left closed longer than this could resurrect deletions; tombstones are ~60 bytes, so keep them for years
 
   function loadJSON(k, d) { try { var v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } }
   function saveJSON(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
