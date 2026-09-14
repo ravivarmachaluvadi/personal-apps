@@ -214,7 +214,6 @@
   .tclock{font:600 12.5px 'IBM Plex Mono',monospace; color:var(--accent); color:color-mix(in srgb, var(--accent) var(--text-mix), var(--ink)); text-decoration:underline dotted; text-underline-offset:3px}
   .tbtn.gear{padding:8px 10px}
   .timerbar.typing{display:none!important}
-  @media (max-width:520px){ .tlabel{display:none} .tdisplay{min-width:72px; font-size:26px} .tbtn{padding:8px 10px; font-size:13px} .timerbar{padding:8px 10px; gap:6px} }
   /* ---- Do & Don't tab ---- */
   .dd-h{font-family:'Barlow Condensed',sans-serif; text-transform:uppercase; font-size:24px; letter-spacing:.04em; margin:28px 0 8px}
   .dd-pair{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:0 0 16px}
@@ -307,6 +306,7 @@
   .tvol{display:inline-flex; align-items:center; gap:6px; margin-left:auto}
   .tvol input{width:84px; accent-color:var(--accent)}
   @media (max-width:520px){ .tvol input{width:64px} }
+  @media (max-width:520px){ .tlabel{display:none} .tdisplay{min-width:72px; font-size:26px} .tbtn{padding:8px 10px; font-size:13px} .timerbar{padding:8px 10px; gap:6px} }
 
   /* ---- back care, logging, reminders ---- */
   .standpill{margin-left:auto; border:1px solid var(--line); background:var(--surface); color:var(--muted);
