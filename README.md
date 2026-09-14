@@ -81,7 +81,8 @@ On a phone: open the site, sign in, and use *Add to Home Screen*.
   deletions.
 - **Rest timer**: the countdown survives a reload (`sessionStorage`), "GO!" stays until tapped, a notification goes through `sw.js`
   when Alerts are enabled, and on Android a link hands the countdown to the Clock app. The bar follows a running rest onto other tabs.
-- **Rendering**: All exercises, Back care and Do & Don't render on first visit; 3D canvases are created when a card scrolls into view.
+- **Rendering**: All exercises, Back care and Do & Don't render on first visit. Today's 3D canvases are built at once (`mountAnims(root, true)`);
+  everywhere else a card's canvas is built when it scrolls into view, and the animation loop stops when nothing is visible.
 - **Do & Don't tab**: `DOS` holds the pairs and `figSVG` draws the side-view figures from a few joint coordinates.
 
 ## Sign-in details worth knowing
