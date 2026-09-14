@@ -127,7 +127,7 @@ function sGet(k, fb){ try{ const v = localStorage.getItem(k); return v===null? f
 function sSet(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 let mode='ppl6', progress={}, complete={}, customEx={}, logs={}, standEvery=0;
 const STORE = DriveStore.open({file:'dumbbell-dojo.json', cacheKey:'dd.doc', empty:()=>({v:1, app:'dumbbell-dojo', items:{}}),
-  onChange:(doc, src)=>{ const prevStand=standEvery; hydrate(); if(src==='remote' && BOOTED){ renderStrip(); renderToday(); renderWeek(); renderCare(); if(standEvery!==prevStand) applyStand(standEvery, true); } }});
+  onChange:(doc, src)=>{ const prevStand=standEvery; hydrate(); if(src==='remote' && BOOTED){ renderStrip(); safeRenderToday(); renderWeek(); renderCare(); if(standEvery!==prevStand) applyStand(standEvery, true); } }});
 let BOOTED=false;
 function itemVal(k, fb){ const it=STORE.doc.items[k]; return (it && !it.deleted && it.v!==undefined) ? it.v : fb; }
 function collect(prefix){ const out={}; Object.keys(STORE.doc.items).forEach(k=>{ if(k.startsWith(prefix)){ const it=STORE.doc.items[k]; if(it && !it.deleted && it.v!==undefined) out[k.slice(prefix.length)]=it.v; } }); return out; }
@@ -190,9 +190,10 @@ dj = rep(dj, "    </div>`;\n}\n\nfunction renderPlanBar(){", r"""    </div>`;
     a.href=URL.createObjectURL(blob); a.download='dumbbell-dojo-'+todayKey()+'.json'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); });
   const msg=document.getElementById('ddImportMsg'), conf=document.getElementById('ddConfirm');
   function afterImport(r, how){
-    hydrate(); for(let i=0;i<7;i++) recomputeComplete(i); renderStrip(); renderToday(); renderWeek(); renderCare(); applyStand(standEvery, true);
-    msg.textContent = r.err==='not-json' ? 'That file is not JSON.' : r.err==='not-dojo' ? (r.app? 'That is the '+r.app+' file, not a Dumbbell Dojo backup. Nothing imported.' : 'That is not a Dumbbell Dojo backup. Nothing imported.')
-      : r.err==='empty' ? 'That backup holds no usable records.' : how==='replace' ? `Replaced: ${r.n} record${r.n===1?'':'s'} restored, ${r.removed} removed.` : `Merged: ${r.n} newer record${r.n===1?'':'s'} taken from the file, ${r.kept} kept because Drive was newer.`; }
+    if(r.err){ msg.textContent = r.err==='not-json' ? 'That file is not JSON.' : r.err==='not-dojo' ? (r.app? 'That is the '+r.app+' file, not a Dumbbell Dojo backup. Nothing imported.' : 'That is not a Dumbbell Dojo backup. Nothing imported.')
+      : 'That backup holds no usable records.'; return; }   // nothing was written, so change nothing on screen
+    hydrate(); for(let i=0;i<7;i++) recomputeComplete(i); renderStrip(); safeRenderToday(); renderWeek(); renderCare(); applyStand(standEvery, true);
+    msg.textContent = how==='replace' ? `Replaced: ${r.n} record${r.n===1?'':'s'} restored, ${r.removed} removed.` : `Merged: ${r.n} newer record${r.n===1?'':'s'} taken from the file, ${r.kept} kept because Drive was newer.`; }
   function readFile(f, cb){ const rd=new FileReader(); rd.onload=()=>{ let o=null; try{ o=JSON.parse(rd.result); }catch(e){ cb({err:'not-json'}); return; } cb(null, o); }; rd.readAsText(f); }
   const im=document.getElementById('ddImport'), rp=document.getElementById('ddReplace');
   document.getElementById('ddMergeBtn').addEventListener('click', ()=>im.click());
@@ -209,7 +210,7 @@ dj = rep(dj, "    </div>`;\n}\n\nfunction renderPlanBar(){", r"""    </div>`;
 
 function renderPlanBar(){""")
 dj = rep(dj, "/* ---------- boot ---------- */\nrenderStrip(); renderToday(); renderWeek(); renderLibrary(); renderGuide(); renderCare(); showView('today');",
-         "/* ---------- boot ---------- */\nDriveStore.mountStatus(document.getElementById('sync'), STORE);\n[renderStrip, renderToday, renderWeek, renderGuide].forEach(f=>{ try{ f(); }catch(e){ console.error(e); } }); showView('today'); BOOTED=true;")
+         "/* ---------- boot ---------- */\nDriveStore.mountStatus(document.getElementById('sync'), STORE);\n[renderStrip, renderWeek, renderGuide].forEach(f=>{ try{ f(); }catch(e){ console.error(e); } }); showView('today'); BOOTED=true;")
 chk = dj
 for ok in ["sSet('dd-vol'", "sSet('dd-more:'", "sSet('dd-warm'", "sSet('dd-standnext'"]:
     chk = chk.replace(ok, '')

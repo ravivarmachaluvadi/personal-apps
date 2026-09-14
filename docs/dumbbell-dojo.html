@@ -1322,7 +1322,7 @@ function sGet(k, fb){ try{ const v = localStorage.getItem(k); return v===null? f
 function sSet(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 let mode='ppl6', progress={}, complete={}, customEx={}, logs={}, standEvery=0;
 const STORE = DriveStore.open({file:'dumbbell-dojo.json', cacheKey:'dd.doc', empty:()=>({v:1, app:'dumbbell-dojo', items:{}}),
-  onChange:(doc, src)=>{ const prevStand=standEvery; hydrate(); if(src==='remote' && BOOTED){ renderStrip(); renderToday(); renderWeek(); renderCare(); if(standEvery!==prevStand) applyStand(standEvery, true); } }});
+  onChange:(doc, src)=>{ const prevStand=standEvery; hydrate(); if(src==='remote' && BOOTED){ renderStrip(); safeRenderToday(); renderWeek(); renderCare(); if(standEvery!==prevStand) applyStand(standEvery, true); } }});
 let BOOTED=false;
 function itemVal(k, fb){ const it=STORE.doc.items[k]; return (it && !it.deleted && it.v!==undefined) ? it.v : fb; }
 function collect(prefix){ const out={}; Object.keys(STORE.doc.items).forEach(k=>{ if(k.startsWith(prefix)){ const it=STORE.doc.items[k]; if(it && !it.deleted && it.v!==undefined) out[k.slice(prefix.length)]=it.v; } }); return out; }
@@ -1522,7 +1522,7 @@ function makeAnim(exId, box){
       a.osc=false; a.userHold=true; if(REDUCED) draw(a,1);
     });
   });
-  if(io) io.observe(canvas); else visible.add(a);
+  if(io) io.observe(canvas); else { visible.add(a); ensureLoop(); }
   if(REDUCED) draw(a, 1);
 }
 
@@ -1925,7 +1925,17 @@ function toast(msg, undo){
 }
 /* the Undo button must leave the tab order with the toast, not linger invisibly */
 function hideToast(){ const t=document.getElementById('toast'); if(!t) return; t.classList.remove('show'); const b=t.querySelector('button'); if(b) b.remove(); }
-let pickerOpen=false;
+let pickerOpen=false, pendingToday=false;
+/* A remote merge arrives on a 90 s poll. Re-rendering Today replaces the log inputs, so an
+   entry being typed would vanish; hold the render until the field is left. */
+function safeRenderToday(){
+  const a=document.activeElement;
+  if(a && a.classList && a.classList.contains('loginp')){ pendingToday=true; return; }
+  pendingToday=false; renderToday();
+}
+document.addEventListener('focusout', e=>{
+  if(pendingToday && e.target.classList && e.target.classList.contains('loginp')) setTimeout(safeRenderToday, 0);
+});
 function renderToday(){
   const root=document.getElementById('view-today');
   const wd=weekdayIdx();
@@ -2093,7 +2103,7 @@ function renderWeek(){
     <b>One body part per day</b> trains each muscle once a week with 13–16 sets in one go; keep it only if you strongly prefer it.
     Progress carries over if you switch. <b>Sport rule:</b> a match counts as a leg day, so no Legs the day before and no overhead pressing on match day. With a Saturday match on the Upper / Lower plan, the match is Friday's Lower session: skip it or move it to Sunday.</p>`;
   root.querySelectorAll('.modebtn').forEach(btn=>btn.addEventListener('click', ()=>setMode(btn.getAttribute('data-mode'))));
-  const go=el=>{ selectedDay=parseInt(el.getAttribute('data-day'),10); renderToday(); renderStrip(); showView('today'); };
+  const go=el=>{ selectedDay=parseInt(el.getAttribute('data-day'),10); renderStrip(); showView('today'); };
   root.querySelectorAll('.wkgo').forEach(b=>b.addEventListener('click', e=>{ e.stopPropagation(); go(b); }));
   root.querySelectorAll('.wk-card').forEach(card=>card.addEventListener('click', ()=>go(card)));
 }
@@ -2190,9 +2200,10 @@ function renderGuide(){
     a.href=URL.createObjectURL(blob); a.download='dumbbell-dojo-'+todayKey()+'.json'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); });
   const msg=document.getElementById('ddImportMsg'), conf=document.getElementById('ddConfirm');
   function afterImport(r, how){
-    hydrate(); for(let i=0;i<7;i++) recomputeComplete(i); renderStrip(); renderToday(); renderWeek(); renderCare(); applyStand(standEvery, true);
-    msg.textContent = r.err==='not-json' ? 'That file is not JSON.' : r.err==='not-dojo' ? (r.app? 'That is the '+r.app+' file, not a Dumbbell Dojo backup. Nothing imported.' : 'That is not a Dumbbell Dojo backup. Nothing imported.')
-      : r.err==='empty' ? 'That backup holds no usable records.' : how==='replace' ? `Replaced: ${r.n} record${r.n===1?'':'s'} restored, ${r.removed} removed.` : `Merged: ${r.n} newer record${r.n===1?'':'s'} taken from the file, ${r.kept} kept because Drive was newer.`; }
+    if(r.err){ msg.textContent = r.err==='not-json' ? 'That file is not JSON.' : r.err==='not-dojo' ? (r.app? 'That is the '+r.app+' file, not a Dumbbell Dojo backup. Nothing imported.' : 'That is not a Dumbbell Dojo backup. Nothing imported.')
+      : 'That backup holds no usable records.'; return; }   // nothing was written, so change nothing on screen
+    hydrate(); for(let i=0;i<7;i++) recomputeComplete(i); renderStrip(); safeRenderToday(); renderWeek(); renderCare(); applyStand(standEvery, true);
+    msg.textContent = how==='replace' ? `Replaced: ${r.n} record${r.n===1?'':'s'} restored, ${r.removed} removed.` : `Merged: ${r.n} newer record${r.n===1?'':'s'} taken from the file, ${r.kept} kept because Drive was newer.`; }
   function readFile(f, cb){ const rd=new FileReader(); rd.onload=()=>{ let o=null; try{ o=JSON.parse(rd.result); }catch(e){ cb({err:'not-json'}); return; } cb(null, o); }; rd.readAsText(f); }
   const im=document.getElementById('ddImport'), rp=document.getElementById('ddReplace');
   document.getElementById('ddMergeBtn').addEventListener('click', ()=>im.click());
@@ -2228,7 +2239,7 @@ function renderStrip(){
   }).join('');
   strip.querySelectorAll('.daychip').forEach(c=>c.addEventListener('click',()=>{
     selectedDay=parseInt(c.getAttribute('data-day'),10);
-    renderToday(); renderStrip(); showView('today');
+    renderStrip(); showView('today');
   }));
   const sel=strip.querySelector('.daychip.selected');
   if(sel && strip.scrollWidth>strip.clientWidth+4){ strip.scrollLeft = Math.max(0, sel.offsetLeft - (strip.clientWidth - sel.offsetWidth)/2); }
@@ -2238,6 +2249,9 @@ function renderStrip(){
 function showView(v){
   if(!views.includes(v)) v='today';
   if(!rendered.has(v)){ rendered.add(v); try{ if(v==='library') renderLibrary(); else if(v==='care') renderCare(); else if(v==='dos') renderDos(); }catch(e){ console.error(e); } }
+  /* Today, Week and Back care all read live tick data, so they are rebuilt on entry rather than
+     left as they were on first visit. All exercises and Do & Don't are static once rendered. */
+  try{ if(v==='today') safeRenderToday(); else if(v==='week') renderWeek(); else if(v==='care') renderCare(); }catch(e){ console.error(e); }
   views.forEach(name=>{ document.getElementById('view-'+name).hidden=(name!==v); });
   document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected', t.getAttribute('data-view')===v?'true':'false'));
   currentView=v; updateBar();
@@ -2439,7 +2453,10 @@ function renderCare(){
   mountDone(root, dk, ()=>{
     CARE.forEach(r=>{ const el=root.querySelector(`[data-rdone="${r.id}"]`); if(!el) return;
       const n=r.ex.filter(id=>progress[dk]&&progress[dk][id]).length; el.textContent = n? `${n} of ${r.ex.length} done today` : ''; });
-    renderToday();
+    /* the Spine Reset can BE today's session (flare-up day), and Legs + Core shares side plank and
+       dead bug with the Big 3, so a tick here can finish or un-finish the day */
+    for(let i=0;i<7;i++) recomputeComplete(i);
+    renderStrip();
   });
   mountCardExtras(root, dk);
   renderRemind();
@@ -2488,7 +2505,7 @@ document.getElementById('standoff').addEventListener('click', ()=>{ stopRinging(
 
 /* ---------- boot ---------- */
 DriveStore.mountStatus(document.getElementById('sync'), STORE);
-[renderStrip, renderToday, renderWeek, renderGuide].forEach(f=>{ try{ f(); }catch(e){ console.error(e); } }); showView('today'); BOOTED=true;
+[renderStrip, renderWeek, renderGuide].forEach(f=>{ try{ f(); }catch(e){ console.error(e); } }); showView('today'); BOOTED=true;
 if(standEvery) applyStand(standEvery, false);
 resumeRest();
 /* A tab left open past midnight must not write ticks to yesterday: re-render when the date changes. */

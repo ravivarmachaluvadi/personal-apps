@@ -1477,7 +1477,7 @@ function makeAnim(exId, box){
       a.osc=false; a.userHold=true; if(REDUCED) draw(a,1);
     });
   });
-  if(io) io.observe(canvas); else visible.add(a);
+  if(io) io.observe(canvas); else { visible.add(a); ensureLoop(); }
   if(REDUCED) draw(a, 1);
 }
 
@@ -1880,7 +1880,17 @@ function toast(msg, undo){
 }
 /* the Undo button must leave the tab order with the toast, not linger invisibly */
 function hideToast(){ const t=document.getElementById('toast'); if(!t) return; t.classList.remove('show'); const b=t.querySelector('button'); if(b) b.remove(); }
-let pickerOpen=false;
+let pickerOpen=false, pendingToday=false;
+/* A remote merge arrives on a 90 s poll. Re-rendering Today replaces the log inputs, so an
+   entry being typed would vanish; hold the render until the field is left. */
+function safeRenderToday(){
+  const a=document.activeElement;
+  if(a && a.classList && a.classList.contains('loginp')){ pendingToday=true; return; }
+  pendingToday=false; renderToday();
+}
+document.addEventListener('focusout', e=>{
+  if(pendingToday && e.target.classList && e.target.classList.contains('loginp')) setTimeout(safeRenderToday, 0);
+});
 function renderToday(){
   const root=document.getElementById('view-today');
   const wd=weekdayIdx();
@@ -2048,7 +2058,7 @@ function renderWeek(){
     <b>One body part per day</b> trains each muscle once a week with 13–16 sets in one go; keep it only if you strongly prefer it.
     Progress carries over if you switch. <b>Sport rule:</b> a match counts as a leg day, so no Legs the day before and no overhead pressing on match day. With a Saturday match on the Upper / Lower plan, the match is Friday's Lower session: skip it or move it to Sunday.</p>`;
   root.querySelectorAll('.modebtn').forEach(btn=>btn.addEventListener('click', ()=>setMode(btn.getAttribute('data-mode'))));
-  const go=el=>{ selectedDay=parseInt(el.getAttribute('data-day'),10); renderToday(); renderStrip(); showView('today'); };
+  const go=el=>{ selectedDay=parseInt(el.getAttribute('data-day'),10); renderStrip(); showView('today'); };
   root.querySelectorAll('.wkgo').forEach(b=>b.addEventListener('click', e=>{ e.stopPropagation(); go(b); }));
   root.querySelectorAll('.wk-card').forEach(card=>card.addEventListener('click', ()=>go(card)));
 }
@@ -2159,7 +2169,7 @@ function renderStrip(){
   }).join('');
   strip.querySelectorAll('.daychip').forEach(c=>c.addEventListener('click',()=>{
     selectedDay=parseInt(c.getAttribute('data-day'),10);
-    renderToday(); renderStrip(); showView('today');
+    renderStrip(); showView('today');
   }));
   const sel=strip.querySelector('.daychip.selected');
   if(sel && strip.scrollWidth>strip.clientWidth+4){ strip.scrollLeft = Math.max(0, sel.offsetLeft - (strip.clientWidth - sel.offsetWidth)/2); }
@@ -2169,6 +2179,9 @@ function renderStrip(){
 function showView(v){
   if(!views.includes(v)) v='today';
   if(!rendered.has(v)){ rendered.add(v); try{ if(v==='library') renderLibrary(); else if(v==='care') renderCare(); else if(v==='dos') renderDos(); }catch(e){ console.error(e); } }
+  /* Today, Week and Back care all read live tick data, so they are rebuilt on entry rather than
+     left as they were on first visit. All exercises and Do & Don't are static once rendered. */
+  try{ if(v==='today') safeRenderToday(); else if(v==='week') renderWeek(); else if(v==='care') renderCare(); }catch(e){ console.error(e); }
   views.forEach(name=>{ document.getElementById('view-'+name).hidden=(name!==v); });
   document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected', t.getAttribute('data-view')===v?'true':'false'));
   currentView=v; updateBar();
@@ -2370,7 +2383,10 @@ function renderCare(){
   mountDone(root, dk, ()=>{
     CARE.forEach(r=>{ const el=root.querySelector(`[data-rdone="${r.id}"]`); if(!el) return;
       const n=r.ex.filter(id=>progress[dk]&&progress[dk][id]).length; el.textContent = n? `${n} of ${r.ex.length} done today` : ''; });
-    renderToday();
+    /* the Spine Reset can BE today's session (flare-up day), and Legs + Core shares side plank and
+       dead bug with the Big 3, so a tick here can finish or un-finish the day */
+    for(let i=0;i<7;i++) recomputeComplete(i);
+    renderStrip();
   });
   mountCardExtras(root, dk);
   renderRemind();
