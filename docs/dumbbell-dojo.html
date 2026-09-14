@@ -54,12 +54,12 @@
     padding:8px 18px; border-radius:999px; font-size:15px; font-weight:600; cursor:pointer}
   .tab[aria-selected="true"]{background:var(--ink); color:var(--bg); border-color:var(--ink)}
 
-  .strip{display:flex; gap:6px; margin:0 0 20px; overflow-x:auto; padding-bottom:4px}
+  .strip{display:flex; gap:6px; margin:0 0 20px; overflow-x:auto; padding:6px 2px 8px}
   .daychip{flex:1 0 76px; border:1px solid var(--line); background:var(--surface); border-radius:8px;
     padding:8px 10px; text-align:left; cursor:pointer; min-width:76px}
   .daychip .d{font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:15px;
     text-transform:uppercase; letter-spacing:.06em; display:flex; align-items:center; gap:6px}
-  .daychip .w{font-size:12.5px; color:var(--muted); white-space:nowrap}
+  .daychip .w{font-size:12.5px; color:var(--muted)}
   .daychip .dot{width:8px; height:8px; border-radius:50%; background:var(--tc,var(--restc)); flex:none}
   .daychip.today{border-color:var(--ink); box-shadow:0 0 0 1px var(--ink)}
   .daychip.selected{border-color:var(--accent); box-shadow:0 0 0 1px var(--accent)}
@@ -68,9 +68,9 @@
   .dayhead{margin:4px 0 16px}
   .dayhead h1{font-family:'Barlow Condensed',sans-serif; font-weight:700; text-transform:uppercase;
     letter-spacing:.03em; font-size:42px; margin:0; line-height:1.05; text-wrap:balance}
-  .dayhead h1 .accent{color:color-mix(in srgb, var(--tc,var(--accent)) var(--text-mix), var(--ink))}
+  .dayhead h1 .accent{color:var(--tc,var(--accent)); color:color-mix(in srgb, var(--tc,var(--accent)) var(--text-mix), var(--ink))}
   .dayhead .sub{color:var(--muted); font-size:15px; margin-top:4px; display:flex; align-items:center; gap:8px; flex-wrap:wrap}
-  .todaypill{background:var(--tc,var(--accent)); color:#14181D; font-size:11px; font-weight:700;
+  .todaypill{background:var(--ink); color:var(--bg); font-size:11px; font-weight:700;
     padding:2px 8px; border-radius:999px; letter-spacing:.04em; text-transform:uppercase}
   .jumpbtn{border:1px solid var(--line); background:var(--surface); color:var(--ink);
     padding:4px 12px; border-radius:999px; font-size:12.5px; font-weight:600; cursor:pointer}
@@ -107,8 +107,10 @@
   .ex-name{font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:24px;
     text-transform:uppercase; letter-spacing:.02em; margin:0}
   .chip{font-size:12px; font-weight:600; letter-spacing:.03em; padding:2px 9px; border-radius:999px;
+    background:var(--panel); color:var(--muted); border:1px solid var(--line);
     background:color-mix(in srgb, var(--tc,var(--muted)) 14%, transparent);
-    color:color-mix(in srgb, var(--tc,var(--muted)) var(--text-mix), var(--ink)); border:1px solid color-mix(in srgb, var(--tc,var(--muted)) 35%, transparent)}
+    color:color-mix(in srgb, var(--tc,var(--muted)) var(--text-mix), var(--ink));
+    border-color:color-mix(in srgb, var(--tc,var(--muted)) 35%, transparent)}
   .rx{display:flex; gap:18px; flex-wrap:wrap; margin:8px 0 10px;
     font-family:'IBM Plex Mono',monospace; font-size:14px; font-variant-numeric:tabular-nums}
   .rx b{font-weight:600}
@@ -116,7 +118,7 @@
   .cues{margin:0 0 8px; padding-left:20px; font-size:14.5px}
   .cues li{margin:3px 0}
   .avoid{font-size:13.5px; color:var(--muted); margin:0 0 12px}
-  .avoid b{color:color-mix(in srgb, var(--accent) var(--text-mix), var(--ink)); font-weight:700}
+  .avoid b{color:var(--accent); color:color-mix(in srgb, var(--accent) var(--text-mix), var(--ink)); font-weight:700}
   .ex-actions{display:flex; gap:6px 16px; align-items:center; flex-wrap:wrap}
   .donebtn{border:1.5px solid var(--line); background:var(--surface); color:var(--ink);
     padding:8px 16px; border-radius:8px; font-size:14.5px; font-weight:600; cursor:pointer}
@@ -133,7 +135,7 @@
   .mm-fig svg{width:40px; height:88px; display:block}
   .mm-k{font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
   .mm-t{font-size:13.5px; line-height:1.35; min-width:0}
-  .mm-t b{display:block; font-weight:700; color:color-mix(in srgb, var(--tc,var(--ink)) var(--text-mix), var(--ink))}
+  .mm-t b{display:block; font-weight:700; color:var(--tc,var(--ink)); color:color-mix(in srgb, var(--tc,var(--ink)) var(--text-mix), var(--ink))}
   .mm-t span{color:var(--muted); font-size:13px}
   .mmr{fill:var(--fig-faint); opacity:.55}
   .mmr.p{fill:var(--tc,var(--accent)); opacity:1}
@@ -147,9 +149,9 @@
   .planbar{display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin:0 0 10px; font-size:13px; color:var(--muted)}
   .planbar .lab{font-size:11px; text-transform:uppercase; letter-spacing:.08em; font-weight:600; margin-right:2px}
   .pbtn{border:1px solid var(--line); background:var(--surface); color:var(--ink); padding:5px 11px; border-radius:999px; font-size:13px; font-weight:600; cursor:pointer}
-  .pbtn[aria-pressed="true"]{border-color:var(--accent); color:var(--accent); box-shadow:0 0 0 1px var(--accent)}
+  .pbtn[aria-pressed="true"]{border-color:var(--accent); color:var(--accent); color:color-mix(in srgb, var(--accent) var(--text-mix), var(--ink)); box-shadow:0 0 0 1px var(--accent)}
   .pbtn.more{border-style:dashed; color:var(--muted); font-weight:500}
-  .daychip .w small{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--faint); margin-left:2px}
+  .daychip .w small{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted); margin-left:3px}
   .daychip:focus-visible{outline:3px solid var(--focusring); outline-offset:2px}
   .ord{display:block; width:100%; font-size:13.5px; color:var(--muted)}
   .ord b{color:var(--ink); font-weight:600}
@@ -203,12 +205,13 @@
   .vbtns button{padding:5px 9px; min-height:26px; font-size:11.5px}
   .jumpbtn,.resetbtn{padding:6px 12px}
   .wk-card{cursor:pointer}
-  .wk-card:focus-visible{outline:3px solid var(--focusring); outline-offset:2px}
+  .wkgo{background:none; border:0; padding:0; font:inherit; color:inherit; cursor:pointer; text-align:left}
+  .wkgo:focus-visible{outline:3px solid var(--focusring); outline-offset:3px; border-radius:3px}
   .wk-card .wkdone{color:var(--good)}
   .wk-card .added{color:var(--accent); font-weight:700}
   .wk-card .edited{font-size:12px; color:var(--muted); font-family:'IBM Plex Mono',monospace; margin-top:6px}
   .sr{position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden}
-  .tclock{font:600 12.5px 'IBM Plex Mono',monospace; color:var(--accent); text-decoration:underline dotted; text-underline-offset:3px}
+  .tclock{font:600 12.5px 'IBM Plex Mono',monospace; color:var(--accent); color:color-mix(in srgb, var(--accent) var(--text-mix), var(--ink)); text-decoration:underline dotted; text-underline-offset:3px}
   .tbtn.gear{padding:8px 10px}
   .timerbar.typing{display:none!important}
   @media (max-width:520px){ .tlabel{display:none} .tdisplay{min-width:72px; font-size:26px} .tbtn{padding:8px 10px; font-size:13px} .timerbar{padding:8px 10px; gap:6px} }
@@ -217,14 +220,14 @@
   .dd-pair{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:0 0 16px}
   .dd-t{grid-column:1/-1; font-family:'Barlow Condensed',sans-serif; text-transform:uppercase; letter-spacing:.05em; font-size:17px; font-weight:700; margin:4px 0 0}
   .dd-card{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:12px 14px; display:flex; gap:14px; align-items:center}
-  .dd-card.do{border-color:color-mix(in srgb, var(--good) 50%, var(--line))}
-  .dd-card.dont{border-color:color-mix(in srgb, var(--care) 50%, var(--line))}
+  .dd-card.do{border-color:var(--good); border-color:color-mix(in srgb, var(--good) 50%, var(--line))}
+  .dd-card.dont{border-color:var(--care); border-color:color-mix(in srgb, var(--care) 50%, var(--line))}
   .dd-card svg,.dd-glyph{width:36%; max-width:132px; flex:none}
   .dd-glyph{font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:20px; text-align:center; padding:22px 6px; border-radius:8px; background:var(--panel); line-height:1.15}
   .dd-glyph.do{color:var(--good)} .dd-glyph.dont{color:var(--care)}
   .dd-txt{font-size:14.5px; min-width:0}
   .dd-txt b{display:inline-block; font-family:'Barlow Condensed',sans-serif; text-transform:uppercase; letter-spacing:.06em; padding:1px 9px; border-radius:999px; margin-right:6px; font-size:13.5px}
-  .do .dd-txt b{background:var(--good); color:var(--accent-ink)} .dont .dd-txt b{background:var(--care); color:#fff}
+  .do .dd-txt b{background:var(--good); color:var(--accent-ink)} .dont .dd-txt b{background:var(--care); color:var(--accent-ink)}
   .dd-txt span{display:block; color:var(--muted); font-size:13px; margin-top:5px}
   @media (max-width:560px){ .dd-pair{grid-template-columns:1fr} }
   .ddfig{display:block; height:auto; background:var(--panel); border-radius:8px}
@@ -235,7 +238,7 @@
   .ddfig .propfill{fill:var(--fig-faint); stroke:none}
   .ddfig .db{fill:var(--accent); stroke:none}
   .ddfig .mark{fill:none; stroke:var(--care); stroke-width:2; stroke-dasharray:3 2}
-  .ddfig text{font:600 11px 'IBM Plex Mono',monospace; fill:var(--muted)}
+  .ddfig text{font:600 14px 'IBM Plex Mono',monospace; fill:var(--muted)}
 
   .restcard{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:22px 24px}
   .restcard h2{font-family:'Barlow Condensed',sans-serif; text-transform:uppercase; font-size:26px; margin:0 0 8px}
@@ -370,6 +373,7 @@
   .remind .note{color:var(--muted); font-size:13px; width:100%}
   .timerbar.flash{box-shadow:0 -4px 24px color-mix(in srgb, var(--accent) 45%, transparent)}
 
+  @media (max-width:560px){ .daychip{flex:1 0 64px; min-width:64px; padding:8px 8px} }
   @media (max-width:660px){
     .ex-card{grid-template-columns:1fr}
     .anim-box{border-right:none; border-bottom:1px solid var(--line)}
@@ -421,8 +425,8 @@
   <button class="tbtn" data-sec="120" type="button">120s</button>
   <button class="tbtn stop" id="tstop" type="button">Stop</button>
   <a class="tclock" id="tclock" href="#" hidden>Clock app ↗</a>
-  <button class="tbtn gear" id="tgear" type="button" aria-label="Bell settings" aria-expanded="false">⚙</button>
-  <span class="tvol" id="tsettings" hidden><input type="range" id="tvol" min="0" max="100" value="70" aria-label="Bell volume"><button class="tbtn" id="ttest" type="button">Test bell</button><button class="tbtn" id="talerts" type="button">Alerts</button></span>
+  <button class="tbtn gear" id="tgear" type="button" aria-label="Bell settings" aria-expanded="false" aria-controls="tsettings">⚙</button>
+  <span class="tvol" id="tsettings" role="group" aria-label="Bell settings" hidden><input type="range" id="tvol" min="0" max="100" value="70" aria-label="Bell volume"><button class="tbtn" id="ttest" type="button">Test bell</button><button class="tbtn" id="talerts" type="button">Alerts</button></span>
 </div>
 
 <script>
@@ -507,7 +511,7 @@ const GOB   = {ua:[0.28,-0.85,0.42], fa:[-0.3,0.62,0.62]};
 const EXR = {
 /* ---------------- CHEST ---------------- */
 floorpress:{name:'Floor Press', mus:'Chest', sets:'4 × 8–12', rest:'120 s', v:'f', ly:1, dur:2.6,
-  cues:['Sit on the floor with the dumbbells on your thighs, then lie back and let your knees kick them up to the start: knees bent, feet flat, upper arms on the floor, forearms vertical. To finish, bring them to your thighs and sit up with them, never over your chest.',
+  cues:['Sit on the floor with the dumbbells on your thighs, then lie back and let your knees kick them up to the start: knees bent, feet flat, upper arms on the floor, forearms vertical. To finish, bring them down to your chest, then onto your thighs, and sit up with them; never drop them to the floor from over your chest or face.',
         'Press both dumbbells straight up over your chest until your arms are fully long.',
         'Lower slowly until your upper arms touch the floor. Pause one second, then press again.'],
   avoid:'Bouncing the elbows off the floor, or flaring the elbows straight out to the sides.',
@@ -759,7 +763,7 @@ sumo:{name:'Sumo Squat', mus:'Legs', sets:'3 × 10–15', rest:'90 s', v:'f', du
       ua:[0.1,-1,0.12], fa:[-0.08,-1,0.1]},
      {hip:[0,42,-2], torso:[0,0.97,0.24], th:[0.72,-0.35,0.3], sh:[-0.05,-1,0], ft:[0.35,-0.3,0.9],
       ua:[0.1,-1,0.12], fa:[-0.08,-1,0.1]}]},
-lunge:{name:'Reverse Lunge', mus:'Legs', sets:'3 × 10 / side', rest:'120 s', v:'s', dur:2.8,
+lunge:{name:'Reverse Lunge', mus:'Legs', sets:'3 × 10 / side', rest:'90 s', v:'s', dur:2.8,
   cues:['Stand tall with dumbbells at your sides. Step one foot back about a metre.',
         'Drop straight down until the back knee hovers just above the floor — both knees near 90°.',
         'Push through the front foot to stand and bring the feet together. Alternate legs.'],
@@ -780,7 +784,7 @@ stepup:{name:'Step-Up', mus:'Legs', sets:'3 × 10 / side', rest:'90 s', v:'s', d
       thR:[0.06,-1,-0.02], shR:[0,-1,0]},
      {hip:[0,80,24], thL:[-0.05,-1,0.1], shL:[0,-1,0.02], ftL:[0,-0.35,1],
       thR:[0.06,-0.8,-0.55], shR:[0,-1,-0.15], ftR:[0,-0.6,0.85]}]},
-bulgarian:{name:'Bulgarian Split Squat', mus:'Legs', sets:'3 × 8–12 / side', rest:'120 s', v:'s', dur:2.8,
+bulgarian:{name:'Bulgarian Split Squat', mus:'Legs', sets:'3 × 8–12 / side', rest:'90 s', v:'s', dur:2.8,
   cues:['Stand a big step in front of a sturdy chair; rest the top of your back foot on it.',
         'Lower straight down until the front thigh is near parallel, torso tall.',
         'Drive through the front foot to stand. All the work belongs to the front leg.'],
@@ -1095,9 +1099,9 @@ const WORKOUTS = {
   push:{name:'Push Day', focus:'Chest · Shoulders · Triceps', c:'--push',
         ex:['floorpress','shoulderpress','fly','lateral','ohext','kickback','pushup']},
   pull:{name:'Pull Day', focus:'Hamstrings & glutes · Upper back · Biceps', c:'--pull',
-        ex:['rdl','onearmrow','revfly','curl','hammer','row']},
+        ex:['rdl','row','onearmrow','revfly','curl','hammer']},
   legs:{name:'Legs + Core', focus:'Quads · Hamstrings · Glutes · Calves · Core', c:'--legs',
-        ex:['goblet','slrdl','bulgarian','bridge','calf','sideplank','deadbug','plank']},
+        ex:['goblet','slrdl','bulgarian','bridge','calf','sideplank','deadbug']},
   upperA:{name:'Upper Body A', focus:'Chest · Back · Shoulders · Arms', c:'--push',
         ex:['row','floorpress','revfly','shoulderpress','curl','ohext']},
   lowerA:{name:'Lower Body A', focus:'Quads · Hamstrings · Glutes · Core', c:'--legs',
@@ -1108,14 +1112,14 @@ const WORKOUTS = {
         ex:['sumo','slrdl','stepup','calf','sideplank','deadbug']},
   fullA:{name:'Full Body A', focus:'Legs · Chest · Back · Shoulders · Arms · Core', c:'--push',
         ex:['goblet','floorpress','row','lateral','curl','plank']},
-  fullB:{name:'Full Body B', focus:'Hinge · Shoulders · Back · Legs · Arms · Core', c:'--pull',
-        ex:['rdl','shoulderpress','onearmrow','bulgarian','ohext','sideplank']},
-  fullC:{name:'Full Body C', focus:'Legs · Chest · Back · Glutes · Arms · Core', c:'--legs',
-        ex:['lunge','fly','revfly','bridge','hammer','deadbug']},
+  fullB:{name:'Full Body B', focus:'Hinge · Shoulders · Back · Quads · Arms · Core', c:'--pull',
+        ex:['rdl','shoulderpress','onearmrow','stepup','ohext','sideplank']},
+  fullC:{name:'Full Body C', focus:'Hamstrings · Chest · Rear delts · Calves · Arms · Core', c:'--legs',
+        ex:['slrdl','fly','revfly','calf','hammer','deadbug']},
   chest:{name:'Chest Day', focus:'Chest, every angle', c:'--push',
         ex:['floorpress','squeeze','fly','pullover','pushup']},
   backday:{name:'Back Day', focus:'Hamstrings & glutes · Upper back · Lats · Traps', c:'--pull',
-        ex:['rdl','onearmrow','revfly','shrug','row','birddog']},
+        ex:['rdl','row','onearmrow','revfly','shrug','birddog']},
   legsday:{name:'Legs Day', focus:'Quads · Glutes · Hamstrings · Calves', c:'--legs',
         ex:['goblet','sumo','slrdl','stepup','bulgarian','bridge','calf']},
   shouldersday:{name:'Shoulders + Abs', focus:'All three delts · Core', c:'--shoul',
@@ -1161,10 +1165,10 @@ const MUSCLE_COLOR = {}; LIB_GROUPS.forEach(([title,cvar])=>{ MUSCLE_COLOR[title
 function muscleColorVar(mus){ return MUSCLE_COLOR[mus] || '--muted'; }
 /* ---------- back-care routines & spine notes ---------- */
 const CARE = [
-  {id:'reset', name:'Spine Reset', when:'Every day · about 15 minutes · after a shower or a few minutes on your feet, or when you get home. Not straight out of bed: the discs are fullest then and dislike sustained bending.',
-   desc:'The core of the back-pain fix: eleven gentle floor moves that undo a day of sitting — free the hips, decompress the spine, wake up the glutes. Every bending move is followed by an extension move. Nothing here should hurt; if a move does, skip it today and come back to it next week. If you feel worse ten minutes later, do Sphinx instead.',
+  {id:'reset', name:'Spine Reset', when:'Every day · about 15 minutes · at least half an hour after getting up (walk, shower, breakfast first), or when you get home. Not straight out of bed: the discs are fullest then and dislike sustained bending.',
+   desc:'The core of the back-pain fix: eleven gentle floor moves that undo a day of sitting — free the hips, decompress the spine, wake up the glutes. Each run of bending moves is followed by one that arches the other way: Sphinx after Knee to Chest and Child\'s Pose, the hip-flexor stretch after Figure-4, the bridge at the end. Nothing here should hurt; if a move does, skip it today and come back to it next week. If you feel worse ten minutes later, do Sphinx instead.',
    ex:['pelvictilt','catcow','kneechest','childpose','cobra','figure4','hamstring','hipflexor','supinetwist','openbook','bwbridge']},
-  {id:'big3', name:'Core That Protects the Back', when:'Every day if you can, at least 3 times a week · about 12 minutes · after a workout or the Spine Reset, never straight out of bed. Side plank and dead bug are already built into Legs day.',
+  {id:'big3', name:'Core That Protects the Back', when:'Every day if you can, at least 3 times a week · about 12 minutes · after a workout or the Spine Reset, never straight out of bed. On the Push / Pull / Legs plan, side plank and dead bug are already in Legs + Core; on the other plans do the whole routine.',
    desc:'Dr Stuart McGill\'s "Big 3" (curl-up, side plank, bird dog) plus the dead bug. They build endurance in the muscles that hold your spine still — which is what stops it being irritated by every chair and every lift.',
    ex:['mcgillcurl','sideplank','birddog','deadbug']},
   {id:'desk', name:'Desk Break', when:'Every 30–45 minutes of sitting · 90 seconds · no mat, no changing',
@@ -1189,7 +1193,10 @@ const SPINE = {
   shoulderpress:'Do not lean back to finish the press — brace your abs, or sit with your back against a wall.',
   pullover:'Keep the ribs down. Arching the lower back under the weight is the classic mistake here.',
   lunge:'Tall torso, short step. A wobble is fine, a lean-back arch is not.',
-  bulgarian:'Keep the torso tall and the front shin near vertical. Hold a wall if balance makes you arch.'
+  bulgarian:'Keep the torso tall and the front shin near vertical. Hold a wall if balance makes you arch.',
+  arnold:'Same rule as the shoulder press: ribs down and abs braced. If you catch yourself leaning back as the weight passes your face, sit with your back against a wall.',
+  frontraise:'Ribs down, no hip bounce. If you have to lean back to finish the raise, the weight is too heavy.',
+  ohext:'Overhead load pulls the ribs up and the lower back into an arch. Brace your abs, or do it seated with your back supported.'
 };
 
 
@@ -1631,10 +1638,10 @@ const SIT={neck:[48,36], hip:[46,70], legs:[[[66,72],[66,104],[76,104]]]};
 const DOS=[
  {title:'Lifting', pairs:[
   {t:'Picking anything heavy off the floor',
-   do:{fig:{head:[80,42], neck:[74,48], hip:[48,64], legs:[[[54,86],[52,104],[62,104]]], arms:[[[74,68],[72,86]]], props:[DB(65,88)]},
+   do:{fig:{head:[74,44], neck:[66,50], hip:[36,64], legs:[[[50,86],[52,104],[62,104]]], arms:[[[64,70],[58,88]]], props:[DB(50,90)]},
        cap:'Hinge from the hips, back flat, load close to the legs.', why:'The same move as the Romanian deadlift: hamstrings and glutes lift, the lower back only holds still.'},
    dont:{fig:{head:[82,54], neck:[76,58], hip:[50,64], bend:[70,40], legs:[[[52,86],[52,104],[62,104]]], arms:[[[78,74],[76,90]]], props:[DB(69,92)], mark:[62,50]},
-       cap:'Round the back and lift with it.', why:'A rounded spine under load is the single most common way a desk back gets set off. Light things can be picked up any way you like.'}},
+       cap:'Round the back and lift with it.', why:'Lifting something heavy with a rounded, unbraced back is a common way to set off a back that has been sitting all day. Light things can be picked up any way you like.'}},
   {t:'Rows and every bent-over exercise',
    do:{fig:{head:[82,42], neck:[74,48], hip:[48,64], legs:[[[54,86],[52,104],[62,104]]], arms:[[[70,58],[74,72]]], props:[DB(67,72)]},
        cap:'Hips back, chest to the floor, spine one straight line; pull the elbow past the ribs.', why:'Brace before every rep. When the lower back tires first, switch to the one-arm row with a hand on a chair.'},
@@ -1652,7 +1659,7 @@ const DOS=[
        cap:'Lean back and arch to finish the rep.', why:'The arch turns a shoulder press into a lower-back extension under load. If you need it, the weight is too heavy or the shoulder too tight.'}},
   {t:'Curls and raises',
    do:{fig:{head:[60,20], neck:[60,30], hip:[60,62], legs:[[[60,84],[60,104],[70,104]]], arms:[[[62,48],[78,40]]], props:[DB(74,36)]},
-       cap:'Elbows pinned to the sides, torso still, slow on the way down.', why:'The biceps does the work, and the lowering half is where most of the growth comes from.'},
+       cap:'Elbows pinned to the sides, torso still, slow on the way down.', why:'The biceps does the work on the way up, and the slow lowering matters at least as much: do not drop the weight.'},
    dont:{fig:{head:[52,20], neck:[54,30], hip:[62,62], bend:[44,48], legs:[[[60,84],[60,104],[70,104]]], arms:[[[72,40],[82,28]]], props:[DB(78,24)], mark:[56,56]},
        cap:'Swing the weight up with a lean-back.', why:'Momentum from the hips and an arched lower back move the dumbbell; the muscle you wanted to train gets less, the spine gets more.'}},
   {t:'Lateral raise (from the front)',
@@ -1675,11 +1682,11 @@ const DOS=[
    do:{fig:{head:[60,20], neck:[60,30], hip:[60,62], legs:[[[60,84],[60,104],[70,104]]], arms:[[[70,46],[74,30]]], props:['<rect class="prop" x="73" y="19" width="7" height="12" rx="1.5"/>']},
        cap:'Lift the phone to eye level.', why:'Ten seconds looks silly; ten years of looking down does not feel silly at all.'},
    dont:{fig:{head:[66,30], neck:[60,36], hip:[60,62], legs:[[[60,84],[60,104],[70,104]]], arms:[[[68,50],[74,58]]], props:['<rect class="prop" x="73" y="54" width="7" height="12" rx="1.5"/>'], mark:[63,34]},
-       cap:'Read with the chin on the chest.', why:'Every 15 degrees of forward tilt roughly doubles the load on the neck.'}}]},
+       cap:'Read with the chin on the chest.', why:'Tilting the head forward 15° roughly doubles the estimated load on the neck; at the 60° phone slouch it is about five times the upright load.'}}]},
  {title:'Mornings and nights', pairs:[
   {t:'First thing after waking',
    do:{fig:{head:[60,20], neck:[60,30], hip:[58,62], legs:[[[68,82],[76,104],[86,104]],[[50,84],[44,104],[54,104]]], arms:[[[54,48],[64,56]],[[68,46],[58,56]]]},
-       cap:'Walk around, shower, then do the Spine Reset.', why:'The discs are fullest straight out of bed and dislike sustained bending for the first half hour or so.'},
+       cap:'Walk around, shower, then do the Spine Reset.', why:'The discs are fullest straight out of bed and dislike sustained bending for the first half hour or so. Walk, shower and eat first, then get on the floor.'},
    dont:{fig:{head:[68,94], neck:[66,84], hip:[52,56], bend:[72,62], legs:[[[52,80],[52,104],[62,104]]], arms:[[[64,92],[60,102]]], props:['<rect class="propfill" x="6" y="88" width="30" height="12" rx="2"/><rect class="propfill" x="8" y="82" width="12" height="6" rx="2"/>'], mark:[58,64]},
        cap:'Fold forward to touch your toes as soon as you get up.', why:'Deep bending on full discs is the classic morning tweak for a sitting-sore back.'}},
   {t:'Sleeping',
@@ -1695,7 +1702,7 @@ const DOS=[
    do:{glyph:'burn ✓', cap:'A burn in the muscle during a set and soreness the next day: carry on.', why:'That is the training effect. Sore muscles can be trained.'},
    dont:{glyph:'sharp ✗', cap:'A sharp pinch in a joint or the spine, or pain running down a leg: stop that exercise.', why:'Swap the day for the Spine Reset (button at the top of Today). See a doctor if it persists or any red flag on the Back care tab applies.'}},
   {t:'Sport weeks',
-   do:{glyph:'4-day', cap:'Switch to the Upper / Lower plan in a badminton or cricket week and count a match as a leg day.', why:'Nothing heavy the day before a match, no overhead pressing on match day.'},
+   do:{glyph:'4-day', cap:'Switch to the Upper / Lower plan in a badminton or cricket week and count a match as a leg day.', why:'No Legs the day before a match, no overhead pressing on match day. With a Saturday match, the match is Friday\'s Lower session: skip it or move it to Sunday.'},
    dont:{glyph:'6 + 2', cap:'Stack six lifting sessions on top of two matches and wonder why the back is angry.', why:'Recovery is where the strength arrives. A missed session on a match week is the plan working, not failing.'}}]}
 ];
 function renderDos(){
@@ -1910,11 +1917,14 @@ function renderSummary(root, dk, list, fin){
 }
 let toastT=null;
 function toast(msg, undo){
-  let t=document.getElementById('toast'); if(!t){ t=document.createElement('div'); t.id='toast'; t.className='toast'; document.body.appendChild(t); }
+  let t=document.getElementById('toast');
+  if(!t){ t=document.createElement('div'); t.id='toast'; t.className='toast'; t.setAttribute('role','status'); t.setAttribute('aria-live','polite'); document.body.appendChild(t); }
   t.textContent=msg;
-  if(undo){ const b=document.createElement('button'); b.type='button'; b.textContent='Undo'; b.addEventListener('click', ()=>{ t.classList.remove('show'); undo(); }); t.appendChild(b); }
-  t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'), 5000);
+  if(undo){ const b=document.createElement('button'); b.type='button'; b.textContent='Undo'; b.addEventListener('click', ()=>{ hideToast(); undo(); }); t.appendChild(b); }
+  t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(hideToast, 5000);
 }
+/* the Undo button must leave the tab order with the toast, not linger invisibly */
+function hideToast(){ const t=document.getElementById('toast'); if(!t) return; t.classList.remove('show'); const b=t.querySelector('button'); if(b) b.remove(); }
 let pickerOpen=false;
 function renderToday(){
   const root=document.getElementById('view-today');
@@ -1977,7 +1987,7 @@ function renderToday(){
         When the back settles, tap <b>Reset ${esc(DAY_NAMES[dayIdx])} to default</b> below to get the workout back.</p>
       </div>
       <div class="exlist">${list.map((id,i)=>exCardHTML(id,i,headerColor,dk,true)).join('')}</div>
-      <div id="summary" class="summary"></div>`;
+      <div id="summary" class="summary" role="status"></div>`;
   } else {
     bodyHtml = `
       <details class="warm" id="warmbox"${sGet('dd-warm',true)?' open':''}>
@@ -1990,7 +2000,7 @@ function renderToday(){
       </details>
       ${careCta}
       <div class="exlist">${list.map((id,i)=>exCardHTML(id,i,headerColor,dk,true)).join('')}</div>
-      <div id="summary" class="summary"></div>`;
+      <div id="summary" class="summary" role="status"></div>`;
   }
 
   const dm=listMuscles(list);
@@ -2069,25 +2079,23 @@ function renderWeek(){
         const isFlare=list.length>0&&list.every(id=>EXR[id].rxLabel); const custom=t==='rest'&&list.length>0;
         const color=isFlare?'--care':custom?'--core':wo.c;
         const title=isFlare?'Spine Reset (flare-up day)':custom?'Custom Session':t==='rest'?'Recovery — walk & stretch':esc(wo.name)+' — '+esc(wo.focus);
-        return `<div class="wk-card ${isToday?'today':''}" style="--tc:var(${color})" role="button" tabindex="0" data-day="${i}" aria-label="${DAY_NAMES[i]}: ${escA(isFlare?'Spine Reset':custom?'Custom session':t==='rest'?'Rest':wo.name)}${isDone?', done':''}${isToday?', today':''}">
-          <h3><span class="dot"></span>${DAY_NAMES[i]}${isDone?' <span class="wkdone">✓</span>':''}${isToday?' · today':''}${list.length?mmMini(listMuscles(list)):''}</h3>
+        return `<div class="wk-card ${isToday?'today':''}" style="--tc:var(${color})" data-day="${i}">
+          <h3><span class="dot"></span><button type="button" class="wkgo" data-day="${i}" aria-label="Open ${DAY_NAMES[i]}: ${escA(isFlare?'Spine Reset':custom?'Custom session':t==='rest'?'Rest':wo.name)}${isDone?', done':''}${isToday?', today':''}">${DAY_NAMES[i]}</button>${isDone?' <span class="wkdone">✓</span>':''}${isToday?' · today':''}${list.length?mmMini(listMuscles(list)):''}</h3>
           <div class="focus">${title}</div>
           ${list.length?'<ul>'+list.map(id=>'<li>'+esc(EXR[id].name)+(wo.ex.includes(id)?'':' <span class="added" title="not in the base plan">+</span>')+'</li>').join('')+'</ul>':''}
           ${edited?'<div class="edited">edited · reset from the Today tab</div>':''}
         </div>`;
       }).join('')}
     </div>
-    <p class="wk-note"><b>Which plan?</b> <b>Push / Pull / Legs</b> trains every muscle twice a week in six sessions of 40–55 minutes and is the default.
-    <b>Upper / Lower</b> keeps the twice-a-week rhythm in four sessions and leaves Wednesday, Saturday and Sunday free: use it in weeks with
-    badminton or cricket, or when your back is flaring up. <b>Full body</b> is the three-session option, each muscle two to three times a week.
+    <p class="wk-note"><b>Which plan?</b> <b>Push / Pull / Legs</b> trains every muscle twice a week in six sessions, 40 minutes for Push up to about an hour for Legs + Core, and is the default.
+    <b>Upper / Lower</b> keeps the twice-a-week rhythm in four sessions of 40–55 minutes and leaves Wednesday, Saturday and Sunday free: use it in weeks with
+    badminton or cricket, or when your back is flaring up. <b>Full body</b> is the three-session option, most muscles two or three times a week.
     <b>One body part per day</b> trains each muscle once a week with 13–16 sets in one go; keep it only if you strongly prefer it.
-    Progress carries over if you switch. <b>Sport rule:</b> a match counts as a leg day, so no Legs the day before and no overhead pressing on match day.</p>`;
+    Progress carries over if you switch. <b>Sport rule:</b> a match counts as a leg day, so no Legs the day before and no overhead pressing on match day. With a Saturday match on the Upper / Lower plan, the match is Friday's Lower session: skip it or move it to Sunday.</p>`;
   root.querySelectorAll('.modebtn').forEach(btn=>btn.addEventListener('click', ()=>setMode(btn.getAttribute('data-mode'))));
-  const go=card=>{ selectedDay=parseInt(card.getAttribute('data-day'),10); renderToday(); renderStrip(); showView('today'); };
-  root.querySelectorAll('.wk-card').forEach(card=>{
-    card.addEventListener('click', ()=>go(card));
-    card.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(card); } });
-  });
+  const go=el=>{ selectedDay=parseInt(el.getAttribute('data-day'),10); renderToday(); renderStrip(); showView('today'); };
+  root.querySelectorAll('.wkgo').forEach(b=>b.addEventListener('click', e=>{ e.stopPropagation(); go(b); }));
+  root.querySelectorAll('.wk-card').forEach(card=>card.addEventListener('click', ()=>go(card)));
 }
 
 function renderLibrary(){
@@ -2127,7 +2135,7 @@ function renderGuide(){
       <ul>
         <li><b>6-day Push / Pull / Legs</b> — the default. Push Mon and Thu, Pull Tue and Fri, Legs + Core Wed and Sat: every muscle twice a week, 72 hours apart, which is why the same session appears twice.</li>
         <li><b>4-day Upper / Lower</b> — Upper Mon and Thu, Lower Tue and Fri. Still twice a week per muscle, three free days. The plan for weeks with badminton, cricket or a sore back.</li>
-        <li><b>3-day Full body A / B / C</b> — Mon / Wed / Fri, six exercises a session covering the whole body, each muscle two to three times a week.</li>
+        <li><b>3-day Full body A / B / C</b> — Mon / Wed / Fri, six exercises a session covering the whole body, most muscles two or three times a week.</li>
         <li><b>6-day body-part split</b> — a dedicated day per area: Chest, Back, Legs, Shoulders + Abs, Arms, plus a core day Saturday. Each muscle once a week.</li>
       </ul>
       <p>Pick one on the Week tab. <b>Swapping varieties:</b> any exercise can be replaced by another from the same muscle
@@ -2213,7 +2221,7 @@ function renderStrip(){
     const isDone=list.length>0&&complete[todayKey(dateForWeekday(i))];
     const n=sched.filter(x=>x===t).length, k=sched.slice(0,i+1).filter(x=>x===t).length, rep=t!=='rest'&&n>1;
     const cls=[i===wd?'today':'', i===selectedDay?'selected':''].filter(Boolean).join(' ');
-    return `<button class="daychip ${cls}" type="button" style="--tc:var(${WORKOUTS[t].c})" data-day="${i}" aria-pressed="${i===selectedDay}"${i===wd?' aria-current="date"':''} aria-label="${DAY_NAMES[i]}: ${STRIP_LABEL[t]}${rep?' '+k+' of '+n:''}${isDone?', done':''}${i===wd?', today':''}">
+    return `<button class="daychip ${cls}" type="button" style="--tc:var(${WORKOUTS[t].c})" data-day="${i}"${i===selectedDay?' aria-current="true"':''} aria-label="${DAY_NAMES[i]}: ${STRIP_LABEL[t]}${rep?' '+k+' of '+n:''}${isDone?', done':''}${i===wd?', today':''}${i===selectedDay?', selected':''}">
       <span class="d"><span class="dot"></span>${DAY_SHORT[i]}${isDone?' <span class="done">✓</span>':''}</span>
       <span class="w">${STRIP_LABEL[t]}${rep?`<small>${k}/${n}</small>`:''}</span>
     </button>`;
@@ -2372,12 +2380,13 @@ function renderCare(){
     <div class="flag">
       <h2>See a doctor first if any of these apply</h2>
       <ul>
-        <li><b>Go to A&amp;E now</b> if you have numbness around the back passage, genitals or buttocks; trouble starting to pee or feeling it, or losing bladder or bowel control; weakness or numbness in both legs; or new sexual problems. This is cauda equina syndrome and hours matter.</li>
+        <li><b>Go to A&amp;E now</b> if you have numbness around the back passage, genitals or buttocks; trouble starting to pee or feeling it, or losing bladder or bowel control; weakness or numbness in both legs; new sexual problems; severe weakness or you cannot walk or stand steadily; chest pain alongside the back pain; or the pain started in a serious accident. These can be signs of cauda equina syndrome or another emergency, and hours matter.</li>
         <li>Pain, numbness, tingling, or weakness running down a leg below the knee</li>
-        <li>Pain that started after a fall or accident, or after even a minor strain if you are over 50 or take long-term steroid tablets</li>
-        <li>Constant pain that is getting worse, or pain that is worst at night and does not ease with a change of position</li>
+        <li>Pain that started after a fall, or after even a minor strain if you are over 50 or take long-term steroid tablets</li>
+        <li>Pain that is worst at night and does not ease with a change of position</li>
+        <li>Pain high in the back between the shoulder blades rather than in the lower back, a lump or a change in the shape of your back, or pain that is much worse when you cough, sneeze or strain</li>
         <li>Fever, unexplained weight loss, or a history of cancer or osteoporosis alongside the pain</li>
-        <li>Pain that is getting worse, or has not started to improve after a few weeks of this routine</li>
+        <li>Pain that has not started to improve after a few weeks of this routine, or that is stopping you doing everyday things</li>
       </ul>
       <p>None of those? Then what follows is the standard advice for back pain from a sedentary life — the same things a physiotherapist
       would start you on. It is general guidance, not a diagnosis.</p>
@@ -2398,7 +2407,7 @@ function renderCare(){
 
       <h2>Daily habits that matter more than any single exercise</h2>
       <ul>
-        <li><b>Walk 20–30 minutes a day</b> (7,000–8,000 steps is a good target). Walking is the gentlest, best-proven back-pain treatment there is.</li>
+        <li><b>Walk 20–30 minutes a day</b> (7,000–8,000 steps is a good target). Walking is the gentlest of the well-proven back-pain treatments, and a regular walk roughly halves the chance of a flare coming back.</li>
         <li><b>Never sit longer than 45 minutes</b> without standing. Use the reminder above.</li>
         <li><b>Sleep on your side with a pillow between the knees</b>, or on your back with a pillow under the knees. Avoid sleeping on your stomach.</li>
         <li><b>Lift heavy or awkward things with a hip hinge</b>, the same move as the Romanian deadlift, load close to the body. Light things: bend however is comfortable; a back that bends is a normal back.</li>
