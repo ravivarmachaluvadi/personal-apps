@@ -1,6 +1,6 @@
 # Personal Apps
 
-Five single-file web apps whose data lives as JSON files in **your own Google Drive**, not in any app's
+Six single-file web apps whose data lives as JSON files in **your own Google Drive**, not in any app's
 database. Open them from a laptop or a phone, sign in with Google once per device, and every device sees the
 same data. The **Continue with Google** button sits in the header of every page; until you tap it on a device,
 that device keeps its data only in its own browser (the header then says *changes waiting*).
@@ -12,8 +12,9 @@ that device keeps its data only in its own browser (the header then says *change
 | Dumbbell Dojo | `docs/dumbbell-dojo.html` | `dumbbell-dojo.json` — ticks (timestamps), weight logs, plan choice, day edits |
 | Tally Board | `docs/tally-board.html` | `tally-board.json` — activities, session log, plans, milestones, notes |
 | Spine Bell | `docs/spine-bell.html` | `spine-bell.json` — per-device counters and the daily diary |
+| Event Log | `docs/event-log.html` | `event-log.json` — event types, one-off and repeating events, settings |
 
-`docs/index.html` is a launcher for all five. `docs/drive-sync.js` is the shared storage layer; `docs/config.js`
+`docs/index.html` is a launcher for all six. `docs/drive-sync.js` is the shared storage layer; `docs/config.js`
 holds the one setting you must fill in (the Google OAuth client ID).
 
 ## How the storage works
@@ -95,6 +96,70 @@ Each activity carries the existing `dates: ["YYYY-MM-DD", …]` plus an optional
 `dates` alone, so an activity saved before this change needs no migration and keeps working untouched.
 Unticking a day also drops that day's `log` entry, so details never outlive the tick they belong to.
 
+## Event Log: plan, tick, archive, look up
+
+Tally Board answers *did a thing happen on a day*. Event Log answers *what is coming, what did I miss, and when
+did that happen* — discrete dated events with a lifecycle. The two do not share data.
+
+### Types
+
+Every event belongs to a type you define yourself: name, 1–3 character code, colour, and how long its resolved
+events stay in the active views. A type marked **log only** is for things you record after the fact (a test
+result); its events are created already done and it cannot carry a repeat.
+
+### The three states, and the one that is not stored
+
+`planned`, `done` and `cancelled` are stored. **`missed` is not** — it is derived as
+`state === 'planned' && date < today`. Nothing writes it, because the only writer a static page could have is
+*whichever device happened to be open at midnight*, which would record which browser you opened rather than a
+fact, and would churn the merge on every device for no information.
+
+### Archiving replaces purging
+
+Resolved and missed events drop out of Today, Calendar and Timeline once they are older than the archive
+window (default 30 days, overridable per type and per event, `Never` allowed), and live on in **History**,
+which is searchable by text, type, state and year. **Nothing is ever deleted automatically.** Deleting is
+always a button you press.
+
+Archiving is derived the same way `missed` is: `isArchived()` is a date comparison evaluated inside each view's
+filter, so changing the window is instant, free and reversible, and the backlog is never rewritten. Events you
+still want in front of you carry a **Keep** pin, which overrides the window and shows them under *Kept here*.
+
+### Repeats
+
+`every N days`, `weekly on chosen weekdays`, `monthly on a day-of-month` (or the last day), and `yearly`. Each
+occurrence is its own record with its own done-or-missed state, generated 180 days ahead by default. Where a
+day does not exist — the 31st in November, 29 February in a common year — you choose **use the last day** or
+**skip the month**; the rule dialog previews the next six dates from the same function the generator uses.
+
+The correctness rule that makes repeats safe to edit:
+
+```
+occurrence id = 'o-' + ruleId + '-' + rule.rev + '-' + date
+```
+
+The id is deterministic, so two devices generating the same occurrence converge on one record instead of
+duplicating it. Editing *when* a rule fires bumps `rev`, which tombstones only the **future, planned,
+untouched, unpinned** occurrences of the old revision and generates the new revision under fresh ids. Anything
+you already ticked, skipped or edited by hand is never touched — history is immutable. A rule you delete
+leaves its history behind; a second button deletes that too.
+
+### Reminders
+
+Both switched **off** by default, in Settings.
+
+- **Browser notifications** reuse `docs/sw.js`. One banner per day per device. They only fire while the page is
+  open — a static page cannot wake itself in the background.
+- **Calendar export** writes an `.ics` (one `VEVENT` per occurrence, never an `RRULE`, stable `UID` so
+  re-importing updates rather than duplicates). Import it and your phone's own calendar owns the alarm, which
+  is the only thing that rings with the phone in your pocket.
+
+### Testing it without waiting real days
+
+Settings → Developer → **Pretend today is**. Stored in `localStorage` only, never in Drive, with a banner while
+it is on. Every view, the archive derivation and the generator all read `today()`, so one date change exercises
+all three.
+
 ## Dumbbell Dojo notes (after the 2026-09-14 review)
 
 - **Plans**: keys `ppl6`, `ul4`, `full3`, `bro5` are stored in Drive, so never rename them. `ppl6` (Push / Pull / Legs, each muscle
@@ -136,7 +201,7 @@ the old `Documents/FromClaude/FromClaude/Personal` folder and are linked from th
 
 ## Repository layout
 
-- `docs/` — the site. `tools/build-site.py` regenerates the five pages from the sources below; run it after
+- `docs/` — the site. `tools/build-site.py` regenerates the six pages from the sources below; run it after
   editing any source. It leaves `docs/data/keycap-atlas.json` alone unless the gitignored `seed/export/` folder
   is present. `docs/sw.js` is the notification service worker (not built, edit in place).
 - `keycap-atlas.html`, `strongroom.html` — page sources (artifact-style fragments; the build adds the storage layer
@@ -145,6 +210,10 @@ the old `Documents/FromClaude/FromClaude/Personal` folder and are linked from th
   from their artifacts, now maintained here); the build swaps their storage code for the Drive layer and moves
   the sign-in control into the header. Dumbbell Dojo's muscle maps (which muscles each exercise and each day
   works, front and back) live in the source as `EXM` and `MM_SHAPES`.
+- `site/event-log.html` — page source, hand-written and Drive-native: it calls `DriveStore` directly and falls
+  back to browser-only storage when `drive-sync.js` is absent, so it opens straight from the filesystem. The
+  build only injects the two script tags, then asserts the store is wired, that the page uses no `innerHTML`,
+  and that no function is declared twice (a duplicate is hoisted over the first and wins silently).
 - `seed/shortcuts.txt`, `seed/build-seed.mjs` — the starter shortcut set and its builder.
 - `seed/ocr-notebook-to-csv.py` — turns OCR text of a scanned password notebook into the vault's import CSV.
 - `seed/text-notebook-to-csv.py` — the same for a notebook already typed as plain text (blank line between

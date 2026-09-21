@@ -4,6 +4,8 @@
       (artifact-style fragments get a real <html><head> and the Drive-backed store)
   site/dumbbell-dojo.html             ->  docs/dumbbell-dojo.html
       (the artifact's browser-only storage becomes per-key Drive sync)
+  site/event-log.html                 ->  docs/event-log.html
+      (already Drive-native; only the config.js/drive-sync.js tags are injected)
   seed/export/keycap/shortcuts/*.json ->  docs/data/keycap-atlas.json (starter set)
 
 Every replacement asserts that its anchor text exists, so a drifted source fails loudly.
@@ -283,6 +285,23 @@ for stale in ['initSync', 'setSync(', 'pushDay', 'DB.doc', 'firstSnap']:
     assert stale not in sb, 'stale reference in spine bell: ' + stale
 wr('docs/spine-bell.html', sb)
 
+# ---------------------------------------------------------------- Event Log
+# Written Drive-native by hand, so there is no storage block to swap: the page calls
+# DriveStore directly and falls back to browser-only storage when drive-sync.js is absent
+# (which is what lets site/event-log.html be opened straight from the filesystem).
+el = rd('site/event-log.html')
+el = rep(el, '<title>Event Log</title>',
+         '<title>Event Log</title>\n<script src="config.js"></script>\n<script src="drive-sync.js"></script>')
+assert "file:'event-log.json'" in el, 'anchor not found: event-log Drive store'
+assert 'cacheKey:\'eventlog.doc\'' in el, 'anchor not found: event-log cache key'
+assert 'innerHTML' not in el, 'event log must build DOM with h(), not innerHTML'
+# a second `function foo(){}` at the same nesting level is hoisted over the first and wins
+# silently; that cost an afternoon once, so the build refuses to ship it
+_decls = re.findall(r'^  function ([A-Za-z_$][\w$]*)\s*\(', el, re.M)
+_dupes = sorted({n for n in _decls if _decls.count(n) > 1})
+assert not _dupes, 'duplicate function declarations in event log (the later one silently wins): ' + ', '.join(_dupes)
+wr('docs/event-log.html', el)
+
 # ---------------------------------------------------------------- starter data
 docs = []
 for f in sorted(glob.glob(os.path.join(ROOT, 'seed', 'export', 'keycap', 'shortcuts', '*.json'))):
@@ -294,6 +313,6 @@ docs.sort(key=lambda d: d.get('order', 0))
 if docs:
     with open(os.path.join(DOCS, 'data', 'keycap-atlas.json'), 'w', encoding='utf-8') as f:
         json.dump({'format': 'keycap-atlas', 'v': 1, 'shortcuts': docs}, f, ensure_ascii=False)
-    print('built docs/: keycap-atlas, strongroom, dumbbell-dojo, tally-board, spine-bell, data/keycap-atlas.json (%d shortcuts)' % len(docs))
+    print('built docs/: keycap-atlas, strongroom, dumbbell-dojo, tally-board, spine-bell, event-log, data/keycap-atlas.json (%d shortcuts)' % len(docs))
 else:
-    print('built docs/: keycap-atlas, strongroom, dumbbell-dojo, tally-board, spine-bell (seed/export absent, data/keycap-atlas.json kept as is)')
+    print('built docs/: keycap-atlas, strongroom, dumbbell-dojo, tally-board, spine-bell, event-log (seed/export absent, data/keycap-atlas.json kept as is)')
