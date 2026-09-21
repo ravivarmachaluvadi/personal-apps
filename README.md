@@ -10,7 +10,7 @@ that device keeps its data only in its own browser (the header then says *change
 | Keycap Atlas | `docs/keycap-atlas.html` | `keycap-atlas.json` — shortcuts and commands, by app and OS |
 | Strongroom | `docs/strongroom.html` | `strongroom-vault.json` — password vault, ciphertext only |
 | Dumbbell Dojo | `docs/dumbbell-dojo.html` | `dumbbell-dojo.json` — ticks (timestamps), weight logs, plan choice, day edits |
-| Tally Board | `docs/tally-board.html` | `tally-board.json` — activities, plans, milestones, notes |
+| Tally Board | `docs/tally-board.html` | `tally-board.json` — activities, session log, plans, milestones, notes |
 | Spine Bell | `docs/spine-bell.html` | `spine-bell.json` — per-device counters and the daily diary |
 
 `docs/index.html` is a launcher for all five. `docs/drive-sync.js` is the shared storage layer; `docs/config.js`
@@ -65,6 +65,35 @@ On a phone: open the site, sign in, and use *Add to Home Screen*.
   Spine Bell and Tally Board banners (Android refuses page-level notifications). It caches nothing.
 - **Just a timer**: the fourth Rhythm preset in Spine Bell is a plain countdown, either N minutes or "ring at"
   a clock time, one bell and no break cycle. The clock time is one-off; the next start uses the minutes.
+
+## Tally Board: the tick and the session log
+
+A tick records **that** a day happened; the **Log** tab records **what** happened, so a gap of a few days can
+still be filled in accurately later.
+
+- **Log a session** takes a day (any day up to today), an activity, what you did, how long in minutes, how hard
+  (Easy / Steady / Hard) and a free note. Picking the same day and activity again reloads what is stored, so the
+  one form adds, edits and back-fills. Saving with every detail blank is still a plain tick.
+- **+ Something else** names an activity that is not on the board yet and creates it with no target ("just
+  tracking"), so an unplanned swim or gym class can be logged without reshaping the plan. A name that already
+  exists is reused rather than duplicated.
+- **Days with nothing logged** lists the last 14 days that carry no tick at all; tapping one loads it into the
+  form. The Today tab shows the same nudge for the last 7 days, but deliberately keeps it out of the tab badge
+  and the daily notification, which stay reserved for cadence targets and reminders.
+- **Plans and sessions are separate records.** A calendar plan ("Badminton, 6pm") keeps its own done/cancelled
+  state; the session records what was actually done. When they differ, both survive — the history shows
+  *Planned: Badminton (did not happen)* above *Cricket — Sunday match*. The Today tab's past-plan row therefore
+  offers a third button, **Did something else**, next to Done and Cancelled.
+- **Where the details show up**: the activity card's *Last session* line and its four-week strip (a square with a
+  dot has details on it; tapping any square opens that day in the Log), the calendar's day panel, and the month
+  grid's tooltips.
+
+### Data shape
+
+Each activity carries the existing `dates: ["YYYY-MM-DD", …]` plus an optional
+`log: { "YYYY-MM-DD": { what, mins, effort, note, at } }`. Every streak, percentage and total still reads
+`dates` alone, so an activity saved before this change needs no migration and keeps working untouched.
+Unticking a day also drops that day's `log` entry, so details never outlive the tick they belong to.
 
 ## Dumbbell Dojo notes (after the 2026-09-14 review)
 
