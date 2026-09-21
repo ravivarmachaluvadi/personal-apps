@@ -124,9 +124,15 @@ Unticking a day also drops that day's `log` entry, so details never outlive the 
 ## Where things live
 
 `docs/` is the only place the apps live now. `docs/river-rapids/` and the other game folders were copied in from
-the old `Documents/FromClaude/FromClaude/Personal` folder and are linked from the launcher. The 3 September copies
-of Dumbbell Dojo, Spine Bell and Tally Board from that folder (artifact versions without Drive sync) are kept in
-`archive/from-claude-2026-09-03/` for reference only.
+the old `Documents/FromClaude/FromClaude/Personal` folder and are linked from the launcher.
+
+`archive/` is gitignored — it exists on disk only, never in the repo, and holds copies kept purely for reference:
+
+- `archive/from-claude-2026-09-03/` — the 3 September Dumbbell Dojo, Spine Bell and Tally Board (artifact
+  versions, no Drive sync).
+- `archive/superseded/` — `dumbbell-dojo-artifact-2026-09-06.html` (the last artifact-database version, which
+  used to sit in a tracked `artifacts/` folder) and `vroom-valley.v1.bak` (which used to be served publicly from
+  `docs/vroom-valley/`). Nothing reads either; both remain recoverable from git history as well.
 
 ## Repository layout
 
@@ -141,6 +147,12 @@ of Dumbbell Dojo, Spine Bell and Tally Board from that folder (artifact versions
   works, front and back) live in the source as `EXM` and `MM_SHAPES`.
 - `seed/shortcuts.txt`, `seed/build-seed.mjs` — the starter shortcut set and its builder.
 - `seed/ocr-notebook-to-csv.py` — turns OCR text of a scanned password notebook into the vault's import CSV.
+- `seed/text-notebook-to-csv.py` — the same for a notebook already typed as plain text (blank line between
+  entries). It reuses the OCR script's block parser, so the two stay in step.
+- `tools/cdp.py` — drives an already-running Chrome (started with `--remote-debugging-port=9222`) through
+  Playwright, for screenshotting a page while working on it. A dev convenience; the site does not need it.
+- `seed/export/` — gitignored. The per-shortcut JSON exported from the old Keycap Atlas artifact; present it and
+  `build-site.py` regenerates `docs/data/keycap-atlas.json`, absent it leaves that file alone.
 
 ## Getting existing passwords in
 

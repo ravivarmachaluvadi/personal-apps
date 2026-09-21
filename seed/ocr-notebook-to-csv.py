@@ -290,10 +290,15 @@ def build_entries(pages):
             target.notes.extend(lines)
             continue
         if is_header(head):
+            has_creds = any(is_cred_line(l) for l in lines[1:])
             if CARD_WORDS.search(head) and prev:
-                target = Entry(f"{prev.title} card", page)
+                target = Entry(f"{display_title(prev)} card", page)
                 entries.append(target)
-            elif first_on_page or not prev:
+            elif has_creds and prev and not empty(prev) and re.search(r'net ?banking|details', head, re.I):
+                base = re.sub(r'\s+card$', '', display_title(prev), flags=re.I)
+                target = Entry(f"{base} {head.rstrip(':').strip()}", page)
+                entries.append(target)
+            elif has_creds or first_on_page or not prev:
                 target = Entry(head.rstrip(':').strip(), page)
                 entries.append(target)
             else:
@@ -305,7 +310,9 @@ def build_entries(pages):
             entries.append(target)
             lines = lines[1:]
         elif RE_URL.match(head) or '://' in head:
-            if any(is_cred_line(l) for l in lines[1:]):
+            if prev and empty(prev):
+                target = prev
+            elif any(is_cred_line(l) for l in lines[1:]):
                 target = Entry('', page)
                 entries.append(target)
             else:
@@ -318,6 +325,9 @@ def build_entries(pages):
             if lab and VEHICLE.match(lab[0]):
                 target = Entry(re.sub(r'\s*(no|number)\.?$', '', lab[0], flags=re.I).strip().title(), page)
                 target.kind = 'id'
+                entries.append(target)
+            elif lab and re.search(r'\bcard\b', lab[0], re.I) and prev and not empty(prev) and not CARD_WORDS.search(prev.title or ''):
+                target = Entry(f"{display_title(prev)} card", page)
                 entries.append(target)
             elif prev.password and any(label_of(l) and PASS_LABELS.match(label_of(l)[0].lower()) for l in lines):
                 target = Entry(f"{display_title(prev)} (2)", page)
