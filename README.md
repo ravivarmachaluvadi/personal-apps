@@ -118,7 +118,7 @@ fact, and would churn the merge on every device for no information.
 
 Resolved and missed events drop out of Today, Calendar and Timeline once they are older than the archive
 window (default 30 days, overridable per type and per event, `Never` allowed), and live on in **History**,
-which is searchable by text, type, state and year. **Nothing is ever deleted automatically.** Deleting is
+which is searchable by text, type, state and any from/to date range. **Nothing is ever deleted automatically.** Deleting is
 always a button you press.
 
 Archiving is derived the same way `missed` is: `isArchived()` is a date comparison evaluated inside each view's

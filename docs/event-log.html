@@ -263,9 +263,14 @@ dialog::backdrop{background:rgba(10,12,16,.5)}
           <button type="button" data-r="next30" class="on">Next 30</button>
           <button type="button" data-r="next90">Next 90</button>
           <button type="button" data-r="ahead">Everything ahead</button>
+          <button type="button" data-r="custom">Custom&hellip;</button>
         </div>
         <label class="ck"><input type="checkbox" id="tlResolved"><span>show resolved</span></label>
         <label class="ck"><input type="checkbox" id="tlArch"><span>include archived</span></label>
+      </div>
+      <div class="row" id="tlCustom" hidden style="margin-bottom:12px">
+        <div class="fld" style="flex:0 0 156px"><label for="tlFrom">From</label><input type="date" id="tlFrom"></div>
+        <div class="fld" style="flex:0 0 156px"><label for="tlTo">To</label><input type="date" id="tlTo"></div>
       </div>
       <p class="foot" style="margin:0 0 14px">The same events as the Calendar, read as a list instead of a grid &mdash; everything in the range in date order, so you can see what is coming without clicking through months.</p>
       <div id="tlBody"></div>
@@ -295,7 +300,12 @@ dialog::backdrop{background:rgba(10,12,16,.5)}
       <div class="row" style="margin-bottom:10px">
         <div class="fld" style="flex:2 1 220px"><label for="hQ">Search</label><input type="text" id="hQ" placeholder="dentist, rent, service&hellip;" autocomplete="off"></div>
         <div class="fld" style="flex:1 1 140px"><label for="hType">Type</label><select id="hType"></select></div>
-        <div class="fld" style="flex:0 0 120px"><label for="hYear">Year</label><select id="hYear"></select></div>
+      </div>
+      <div class="row" style="margin-bottom:10px">
+        <div class="fld" style="flex:0 0 156px"><label for="hFrom">From</label><input type="date" id="hFrom"></div>
+        <div class="fld" style="flex:0 0 156px"><label for="hTo">To</label><input type="date" id="hTo"></div>
+        <div class="fld" style="flex:0 0 130px"><label for="hYear">Quick set</label><select id="hYear"></select></div>
+        <button class="btn sm quiet" type="button" id="hClear" style="align-self:end">Clear dates</button>
       </div>
       <div class="row" style="margin-bottom:12px">
         <div class="seg" id="hState">
@@ -870,9 +880,11 @@ dialog::backdrop{background:rgba(10,12,16,.5)}
   function renderTimeline(){
     var box=$('#tlBody');clear(box);
     var t=today(),from,to;
+    $('#tlCustom').hidden=tlRange!=='custom';
     if(tlRange==='past30'){from=addDays(t,-30);to=t;}
     else if(tlRange==='next30'){from=t;to=addDays(t,30);}
     else if(tlRange==='next90'){from=t;to=addDays(t,90);}
+    else if(tlRange==='custom'){from=$('#tlFrom').value||'0000-01-01';to=$('#tlTo').value||'9999-12-31';}
     else {from=t;to='9999-12-31';}
     var resolved=$('#tlResolved').checked,inclArch=$('#tlArch').checked;
     var list=events().filter(function(e){
@@ -895,7 +907,7 @@ dialog::backdrop{background:rgba(10,12,16,.5)}
           return !resolved&&(s==='done'||s==='cancelled');
         }).length;
         var label=tlRange==='past30'?'the last 30 days':tlRange==='next30'?'the next 30 days':
-                  tlRange==='next90'?'the next 90 days':'the range ahead';
+                  tlRange==='next90'?'the next 90 days':tlRange==='custom'?'the dates you chose':'the range ahead';
         box.appendChild(h('div',{class:'empty',text:'Nothing planned in '+label+
           (hidden?' — but '+hidden+' finished or archived event'+(hidden===1?' is':'s are')+' hidden by the boxes above.':'.')}));
         var acts=h('div',{class:'row'});
@@ -1020,13 +1032,16 @@ dialog::backdrop{background:rgba(10,12,16,.5)}
   var hState='',hShown=50;
   function histList(){
     var q=($('#hQ').value||'').trim().toLowerCase().split(/\s+/).filter(Boolean);
-    var ty=$('#hType').value,yr=$('#hYear').value,only=$('#hArchOnly').checked;
+    var ty=$('#hType').value,only=$('#hArchOnly').checked;
+    /* From/To is the single source of truth; the year select just fills them in */
+    var from=$('#hFrom').value,to=$('#hTo').value;
     return events().filter(function(e){
       var st=stateOf(e);
       if(st==='planned')return false;
       if(hState&&st!==hState)return false;
       if(ty&&e.typeId!==ty)return false;
-      if(yr&&e.date.slice(0,4)!==yr)return false;
+      if(from&&e.date<from)return false;
+      if(to&&e.date>to)return false;
       if(only&&!isArchived(e))return false;
       if(q.length){
         var t=typeOf(e);
@@ -1078,9 +1093,14 @@ dialog::backdrop{background:rgba(10,12,16,.5)}
     if(list.length)del.appendChild(confirmBtn('Delete these '+list.length,'Yes, delete '+list.length,function(){
       putMany(list.map(tomb));toast('Deleted '+list.length+' events');}));
     var s=getSettings();
+    /* the buttons name the count so it is obvious they export the filtered set, not everything */
     $('#hIcs').hidden=!s.ics;
-    $('#hExpFoot').textContent=s.ics?'The .ics file covers the filtered results above.'
-      :'Turn on the calendar export in Settings to download these as an .ics file.';
+    $('#hIcs').disabled=!list.length;
+    $('#hIcs').textContent=list.length?'Export these '+list.length+' as .ics':'Export as .ics';
+    $('#hJson').disabled=!list.length;
+    $('#hJson').textContent=list.length?'Export these '+list.length+' as JSON':'Export as JSON';
+    $('#hExpFoot').textContent=(s.ics?'':'Turn on the calendar export in Settings to add an .ics download. ')+
+      'Exports cover exactly what the filters above are showing \u2014 narrow by date, type or text first.';
   }
 
   /* ---------- .ics ---------- */
@@ -1371,7 +1391,13 @@ dialog::backdrop{background:rgba(10,12,16,.5)}
     });
 
     Array.prototype.forEach.call(document.querySelectorAll('#tlRange button'),function(b){
-      b.addEventListener('click',function(){tlRange=b.getAttribute('data-r');segSet('#tlRange','r',tlRange);renderTimeline();});});
+      b.addEventListener('click',function(){
+        tlRange=b.getAttribute('data-r');segSet('#tlRange','r',tlRange);
+        /* seed the custom pair with a sensible window so it is never blank on first use */
+        if(tlRange==='custom'&&!$('#tlFrom').value&&!$('#tlTo').value){
+          $('#tlFrom').value=addDays(today(),-30);$('#tlTo').value=addDays(today(),90);}
+        renderTimeline();});});
+    ['#tlFrom','#tlTo'].forEach(function(s){$(s).addEventListener('change',renderTimeline);});
     $('#tlResolved').addEventListener('change',renderTimeline);
     $('#tlArch').addEventListener('change',renderTimeline);
 
@@ -1385,7 +1411,16 @@ dialog::backdrop{background:rgba(10,12,16,.5)}
     });
 
     $('#hQ').addEventListener('input',function(){clearTimeout(this._t);this._t=setTimeout(function(){hShown=50;renderHist();},120);});
-    ['#hType','#hYear','#hArchOnly'].forEach(function(s){$(s).addEventListener('change',function(){hShown=50;renderHist();});});
+    ['#hType','#hArchOnly'].forEach(function(s){$(s).addEventListener('change',function(){hShown=50;renderHist();});});
+    ['#hFrom','#hTo'].forEach(function(s){$(s).addEventListener('change',function(){$('#hYear').value='';hShown=50;renderHist();});});
+    $('#hYear').addEventListener('change',function(){
+      var y=this.value;
+      $('#hFrom').value=y?y+'-01-01':'';
+      $('#hTo').value=y?y+'-12-31':'';
+      hShown=50;renderHist();
+    });
+    $('#hClear').addEventListener('click',function(){
+      $('#hFrom').value='';$('#hTo').value='';$('#hYear').value='';hShown=50;renderHist();});
     Array.prototype.forEach.call(document.querySelectorAll('#hState button'),function(b){
       b.addEventListener('click',function(){hState=b.getAttribute('data-s');segSet('#hState','s',hState);hShown=50;renderHist();});});
     $('#hMore').addEventListener('click',function(){hShown+=50;renderHist();});
