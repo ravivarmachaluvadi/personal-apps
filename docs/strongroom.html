@@ -143,6 +143,12 @@ input[type="range"]{padding:0;border:0;background:transparent}
 /* minmax(0,1fr): a one-line address (.val.link) must be cut with …, not widen the panel */
 .detail{padding:18px 20px 20px;position:sticky;top:12px;display:grid;grid-template-columns:minmax(0,1fr);gap:14px;min-width:0}
 @media (max-width:1039px){.detail{position:fixed;inset:0;z-index:40;border-radius:0;overflow:auto;max-height:100vh}.detail[hidden]{display:none}}
+/* the pinned side panel is never taller than the window, so an entry with many fields scrolls inside it
+   instead of running off the bottom of the screen */
+@media (min-width:1040px){.detail{max-height:calc(100vh - 24px);overflow:auto;overscroll-behavior:contain}}
+/* Edit and Delete stay on screen at the foot of the panel however long the entry is; bottom:-20px because
+   the sticky edge sits inside the panel's 20px padding, and this puts the bar flush with the panel edge */
+.detail .foot{position:sticky;bottom:-20px;margin:0 -20px -20px;padding:12px 20px 16px;background:var(--surface);border-top:1px solid var(--line);z-index:1}
 .detail .hd{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
 .detail .hdrow{display:flex;align-items:center;gap:4px}
 .detail .hdrow .mg{margin-right:auto}
@@ -565,7 +571,7 @@ footer .keys kbd{font:500 11.5px "IBM Plex Mono",monospace;padding:1px 6px;borde
     if(p.password){var s=strength(p.password),m=h('div',{class:'meter','data-s':String(s.score)});m.appendChild(h('i',{style:'width:'+[0,25,50,75,100][s.score]+'%'}));box.appendChild(h('div',{},[m,h('div',{class:'meterline'},[h('span',{text:s.label+' password'}),h('span',{text:'changed '+ago(p.pwChangedAt||p.createdAt)})])]));}
     box.appendChild(h('div',{class:'meta'},[h('span',{text:'Created '+fmtDate(p.createdAt)}),h('span',{text:'Updated '+fmtDate(p.updatedAt)})]));
     if(p.history&&p.history.length){var d=h('details');d.appendChild(h('summary',{text:'Previous passwords ('+p.history.length+')'}));var hl=h('div',{class:'hist'});p.history.slice().reverse().forEach(function(x){var shown=false,val=h('span',{class:'val',text:'••••••••'});hl.appendChild(h('div',{},[val,h('span',{class:'hint',text:'until '+fmtDate(x.until)}),iconBtn('eye','Reveal',function(){shown=!shown;val.textContent=shown?x.password:'••••••••';}),iconBtn('copy','Copy',function(e){copyText(x.password,'old password',e.currentTarget);})]));});d.appendChild(hl);box.appendChild(d);}
-    box.appendChild(h('div',{class:'acts'},[h('button',{class:'btn primary',type:'button',text:'Edit',onclick:function(){openEditor(p);}}),h('span',{class:'spacer'}),confirmBtn('Delete','Delete this entry?',function(){storeDel(p.id);selected=null;renderAll();toast('Deleted');})]));}
+    box.appendChild(h('div',{class:'acts foot'},[h('button',{class:'btn primary',type:'button',text:'Edit',onclick:function(){openEditor(p);}}),h('span',{class:'spacer'}),confirmBtn('Delete','Delete this entry?',function(){storeDel(p.id);selected=null;renderAll();toast('Deleted');})]));}
   function renderAll(){if(!KEY)return;var H=health();renderRail(H);renderList(H);renderDetail(H);}
 
   /* ---------- editor ---------- */
