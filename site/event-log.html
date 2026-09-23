@@ -10,7 +10,7 @@
 <style>
 :root{
   --bg:#EDEEF3; --surface:#FFFFFF; --surface-2:#F4F5F9; --line:#D8DAE5;
-  --text:#191B22; --muted:#5A5F72; --faint:#959AAE;
+  --text:#191B22; --muted:#5A5F72; --faint:#686C7A; --mg-ink:#FFFFFF;
   --accent:#4338CA; --accent-ink:#FFFFFF; --accent-soft:#E7E5FB;
   --good:#2E7D4F; --good-soft:#DDF3E4; --warn:#8A5A0F; --warn-soft:#FBEBCB;
   --danger:#B42318; --danger-soft:#FBE0DC;
@@ -21,7 +21,7 @@
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#131519; --surface:#1B1E25; --surface-2:#232731; --line:#333945;
-  --text:#E9EBF0; --muted:#9BA3B4; --faint:#6C7488;
+  --text:#E9EBF0; --muted:#9BA3B4; --faint:#888E9F; --mg-ink:#101317;
   --accent:#A5A0FF; --accent-ink:#14132A; --accent-soft:#2A2748;
   --good:#6BCF8B; --good-soft:#1E3A2A; --warn:#E2A33B; --warn-soft:#3A2E14;
   --danger:#F27A6B; --danger-soft:#3C1F1B;
@@ -32,7 +32,7 @@
 }}
 :root[data-theme="dark"]{
   --bg:#131519; --surface:#1B1E25; --surface-2:#232731; --line:#333945;
-  --text:#E9EBF0; --muted:#9BA3B4; --faint:#6C7488;
+  --text:#E9EBF0; --muted:#9BA3B4; --faint:#888E9F; --mg-ink:#101317;
   --accent:#A5A0FF; --accent-ink:#14132A; --accent-soft:#2A2748;
   --good:#6BCF8B; --good-soft:#1E3A2A; --warn:#E2A33B; --warn-soft:#3A2E14;
   --danger:#F27A6B; --danger-soft:#3C1F1B;
@@ -87,7 +87,7 @@ label.ck .hint{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
 .sw{display:flex;gap:7px;flex-wrap:wrap}
 .sw button{width:27px;height:27px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0}
 .sw button.on{border-color:var(--text)}
-.mg{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font:500 11.5px "DM Mono",ui-monospace,monospace;color:#fff;flex:none;overflow:hidden}
+.mg{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font:500 11.5px "DM Mono",ui-monospace,monospace;color:var(--mg-ink);flex:none;overflow:hidden}
 /* wraps rather than squeezing: in a narrow column the actions drop to their own
    line instead of crushing the title to one character per line */
 .ev{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;padding:9px 11px;border:1px solid var(--line);border-radius:12px;background:var(--surface);margin-bottom:7px}

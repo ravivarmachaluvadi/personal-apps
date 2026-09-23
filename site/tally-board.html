@@ -2,12 +2,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Tally Board</title>
+<script>/* the light/dark choice for this page on this device, applied before first paint */try{var pageTheme=JSON.parse(localStorage.getItem('tally.theme'));if(pageTheme==='light'||pageTheme==='dark')document.documentElement.setAttribute('data-theme',pageTheme);}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <style>
 :root{
   --bg:#F3F2ED; --surface:#FFFFFF; --surface-2:#ECEAE3; --line:#DAD7CE;
-  --text:#1F2328; --muted:#646B73; --faint:#9AA1A9;
+  --text:#1F2328; --muted:#646B73; --faint:#666A70; --mg-ink:#FFFFFF;
   --accent:#0E7C7B; --accent-soft:#D9F0EE; --accent-deep:#0A5756; --accent-ink:#FFFFFF;
   --warn:#9A6212; --warn-soft:#FBEBCB; --danger:#B42318; --danger-soft:#FBE0DC; --good:#2F7D4F; --good-soft:#DDF3E4;
   --n0:#FFF3B0; --n1:#D6F5E3; --n2:#FFDCE0; --n3:#D8ECFF; --n4:#E8DEFF;
@@ -18,7 +19,7 @@
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --bg:#111417; --surface:#1A1E23; --surface-2:#232930; --line:#303841;
-    --text:#E9ECEF; --muted:#98A2AD; --faint:#6B7580;
+    --text:#E9ECEF; --muted:#98A2AD; --faint:#899199; --mg-ink:#101317;
     --accent:#34C4BE; --accent-soft:#143836; --accent-deep:#9FE7E2; --accent-ink:#06201F;
     --warn:#E2A33B; --warn-soft:#3B2E14; --danger:#F27A6B; --danger-soft:#43211D; --good:#6BCF8B; --good-soft:#173826;
     --n0:#4A4222; --n1:#1F3F30; --n2:#4A2A2E; --n3:#1F3448; --n4:#35294F;
@@ -29,7 +30,7 @@
 }
 :root[data-theme="dark"]{
   --bg:#111417; --surface:#1A1E23; --surface-2:#232930; --line:#303841;
-  --text:#E9ECEF; --muted:#98A2AD; --faint:#6B7580;
+  --text:#E9ECEF; --muted:#98A2AD; --faint:#899199; --mg-ink:#101317;
   --accent:#34C4BE; --accent-soft:#143836; --accent-deep:#9FE7E2; --accent-ink:#06201F;
   --warn:#E2A33B; --warn-soft:#3B2E14; --danger:#F27A6B; --danger-soft:#43211D; --good:#6BCF8B; --good-soft:#173826;
   --n0:#4A4222; --n1:#1F3F30; --n2:#4A2A2E; --n3:#1F3448; --n4:#35294F;
@@ -55,7 +56,7 @@ input[type="date"],input[type="time"]{font-family:"JetBrains Mono",ui-monospace,
 .tab{flex:1 0 auto;padding:9px 6px;border-radius:10px;color:var(--muted);font-weight:600;font-size:14.5px;display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
 @media (max-width:620px){.tab{font-size:13px;padding:9px 4px}}
 .tab[aria-selected="true"]{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.12)}
-.tab .n{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11.5px;background:var(--danger);color:#fff;border-radius:999px;padding:1px 6px;min-width:18px;text-align:center}
+.tab .n{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11.5px;background:var(--danger);color:var(--mg-ink);border-radius:999px;padding:1px 6px;min-width:18px;text-align:center}
 .tab .n[hidden]{display:none}
 .panel[hidden]{display:none}
 .grid2{display:grid;grid-template-columns:1fr;gap:16px;align-items:start}
@@ -70,7 +71,7 @@ h2 small{font-family:"Instrument Sans",sans-serif;font-weight:400;font-size:13px
 .row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;padding:10px 12px;border-radius:12px;background:var(--surface-2)}
 .row .t{flex:1 1 150px;min-width:0}.row .t b{display:block;font-weight:600;overflow-wrap:break-word}.row .t span{font-size:13px;color:var(--muted);display:block}
 .row.strike .t b{text-decoration:line-through;color:var(--muted)}
-.mg{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-family:"Familjen Grotesk",sans-serif;font-weight:700;font-size:13px;color:#fff;flex:none;letter-spacing:.02em}
+.mg{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-family:"Familjen Grotesk",sans-serif;font-weight:700;font-size:13px;color:var(--mg-ink);flex:none;letter-spacing:.02em}
 .pill{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:12px;padding:3px 9px;border-radius:999px;background:var(--surface-2);color:var(--muted);white-space:nowrap;flex:none}
 .pill.due{background:var(--warn-soft);color:var(--warn)}.pill.over{background:var(--danger-soft);color:var(--danger)}.pill.done{background:var(--good-soft);color:var(--good)}.pill.mile{background:var(--accent-soft);color:var(--accent-deep)}
 .btn{padding:8px 12px;border-radius:10px;background:var(--surface-2);font-weight:600;font-size:14px;white-space:nowrap}
@@ -202,11 +203,16 @@ footer{margin-top:22px;color:var(--muted);font-size:13px;max-width:70ch}
 .ses .meta{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:12px;color:var(--muted);margin-top:2px}
 .ses .how{font-size:13.5px;color:var(--muted);overflow-wrap:anywhere;margin-top:3px}
 .act .lastses{font-size:13px;color:var(--muted);background:var(--surface-2);border-radius:9px;padding:7px 9px;margin:0 0 10px;overflow-wrap:anywhere}
+.themebtn{width:36px;height:36px;display:inline-grid;place-items:center;padding:0;margin:0;min-height:0;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--text);cursor:pointer;flex:none;align-self:center;font:inherit}
+.themebtn svg{width:17px;height:17px;display:block}
+.themebtn:hover{border-color:var(--accent)}
+.themebtn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 </style>
 <div id="app">
   <header class="top">
     <div class="brand"><i></i>Tally Board</div>
     <div class="datel" id="dateLine"></div>
+    <button class="themebtn" id="themeBtn" type="button" aria-label="Switch theme"></button>
   </header>
   <nav class="tabs" role="tablist" aria-label="Sections">
     <button class="tab" role="tab" data-tab="today" aria-selected="true">Today <span class="n" id="todayCount" hidden>0</span></button>
@@ -694,4 +700,20 @@ footer{margin-top:22px;color:var(--muted);font-size:13px;max-width:70ch}
 })();
 </script>
 
+<script>
+/* light/dark switch for this page, this device only (the head script applies the choice before first paint) */
+(function(){var KEY='tally.theme',root=document.documentElement,btn=document.getElementById('themeBtn'),q=window.matchMedia?window.matchMedia('(prefers-color-scheme: dark)'):null,NS='http://www.w3.org/2000/svg';
+  var ICON={sun:'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41',moon:'M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z'};
+  function chosen(){try{var t=JSON.parse(localStorage.getItem(KEY));return t==='light'||t==='dark'?t:'auto';}catch(e){return 'auto';}}
+  function device(){return q&&q.matches?'dark':'light';}
+  function shown(){var t=chosen();return t==='auto'?device():t;}
+  function paint(){var t=chosen(),dark=shown()==='dark',svg=document.createElementNS(NS,'svg'),path=document.createElementNS(NS,'path'),label=dark?'Switch to light':'Switch to dark';
+    if(t==='auto')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);
+    [['viewBox','0 0 24 24'],['fill','none'],['stroke','currentColor'],['stroke-width','2'],['stroke-linecap','round'],['stroke-linejoin','round'],['aria-hidden','true']].forEach(function(a){svg.setAttribute(a[0],a[1]);});
+    path.setAttribute('d',dark?ICON.sun:ICON.moon);svg.appendChild(path);while(btn.firstChild)btn.removeChild(btn.firstChild);btn.appendChild(svg);btn.setAttribute('aria-label',label);btn.title=label;}
+  /* choosing the theme the device already uses goes back to Auto, so the page follows the device again */
+  btn.addEventListener('click',function(){var next=shown()==='dark'?'light':'dark';try{localStorage.setItem(KEY,JSON.stringify(next===device()?'auto':next));}catch(e){}paint();});
+  if(q){if(q.addEventListener)q.addEventListener('change',paint);else if(q.addListener)q.addListener(paint);}
+  paint();})();
+</script>
 </body></html>

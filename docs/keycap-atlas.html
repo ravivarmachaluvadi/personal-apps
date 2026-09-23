@@ -7,11 +7,12 @@
 <script src="config.js"></script>
 <script src="drive-sync.js"></script>
 <title>Keycap Atlas</title>
+<script>/* the light/dark choice for this page on this device, applied before first paint */try{var pageTheme=JSON.parse(localStorage.getItem('ka.theme'));if(pageTheme==='light'||pageTheme==='dark')document.documentElement.setAttribute('data-theme',pageTheme);}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
 :root{
-  --bg:#E9ECF1; --surface:#FFFFFF; --surface-2:#F2F4F7; --line:#D4D9E1; --text:#1C2129; --muted:#5D6875; --faint:#98A2AE;
+  --bg:#E9ECF1; --surface:#FFFFFF; --surface-2:#F2F4F7; --line:#D4D9E1; --text:#1C2129; --muted:#5D6875; --faint:#646B73; --mg-ink:#FFFFFF;
   --accent:#E0562B; --accent-soft:#FBE3DA; --accent-ink:#FFFFFF; --accent-deep:#B2411D;
   --cap:#FBFBF9; --cap-edge:#C3C8D0; --cap-ink:#23272E; --cap-hi:rgba(255,255,255,.7);
   --good:#2E7D4F; --good-soft:#DDF3E4; --warn:#9A6212; --warn-soft:#FBEBCB; --danger:#B42318; --danger-soft:#FBE0DC;
@@ -21,7 +22,7 @@
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#14171C; --surface:#1C2027; --surface-2:#242932; --line:#323945; --text:#E8EAEE; --muted:#9AA4B1; --faint:#6B7582;
+    --bg:#14171C; --surface:#1C2027; --surface-2:#242932; --line:#323945; --text:#E8EAEE; --muted:#9AA4B1; --faint:#89919B; --mg-ink:#101317;
     --accent:#FF7A4D; --accent-soft:#3A2218; --accent-ink:#1B0F0A; --accent-deep:#FFA285;
     --cap:#2B313A; --cap-edge:#0E1114; --cap-ink:#F0F2F5; --cap-hi:rgba(255,255,255,.08);
     --good:#6BCF8B; --good-soft:#173826; --warn:#E2A33B; --warn-soft:#3B2E14; --danger:#F27A6B; --danger-soft:#43211D;
@@ -31,7 +32,7 @@
   }
 }
 :root[data-theme="dark"]{
-  --bg:#14171C; --surface:#1C2027; --surface-2:#242932; --line:#323945; --text:#E8EAEE; --muted:#9AA4B1; --faint:#6B7582;
+  --bg:#14171C; --surface:#1C2027; --surface-2:#242932; --line:#323945; --text:#E8EAEE; --muted:#9AA4B1; --faint:#89919B; --mg-ink:#101317;
   --accent:#FF7A4D; --accent-soft:#3A2218; --accent-ink:#1B0F0A; --accent-deep:#FFA285;
   --cap:#2B313A; --cap-edge:#0E1114; --cap-ink:#F0F2F5; --cap-hi:rgba(255,255,255,.08);
   --good:#6BCF8B; --good-soft:#173826; --warn:#E2A33B; --warn-soft:#3B2E14; --danger:#F27A6B; --danger-soft:#43211D;
@@ -103,7 +104,7 @@ textarea{min-height:70px;resize:vertical}
 @media (max-width:879px){.rail .item{width:auto;background:var(--surface);border:1px solid var(--line);padding:5px 10px 5px 6px}}
 .rail .item[aria-pressed="true"]{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.1)}
 .rail .item .n{margin-left:auto;font:12px "IBM Plex Mono",monospace;color:var(--faint)}
-.mg{width:24px;height:24px;border-radius:6px;display:grid;place-items:center;font:700 10.5px "Bricolage Grotesque",sans-serif;color:#fff;flex:none;letter-spacing:.02em;background:var(--a7)}
+.mg{width:24px;height:24px;border-radius:6px;display:grid;place-items:center;font:700 10.5px "Bricolage Grotesque",sans-serif;color:var(--mg-ink);flex:none;letter-spacing:.02em;background:var(--a7)}
 .mg.lg{width:34px;height:34px;font-size:13px;border-radius:9px}
 
 .main{display:flex;flex-direction:column;gap:16px;min-width:0}
@@ -186,6 +187,10 @@ footer{margin-top:26px;color:var(--muted);font-size:13px;max-width:72ch;line-hei
   .key{height:18px;min-width:20px;padding:0 5px;font-size:9.5px;border-bottom-width:2px;background:#fff;color:#000;border-color:#999}
   .keys .plus{margin:0 2px;font-size:9px}.keys .then{margin:0 4px;font-size:8px}
 }
+.themebtn{width:36px;height:36px;display:inline-grid;place-items:center;padding:0;margin:0;min-height:0;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--text);cursor:pointer;flex:none;align-self:center;font:inherit}
+.themebtn svg{width:17px;height:17px;display:block}
+.themebtn:hover{border-color:var(--accent)}
+.themebtn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 </style>
 </head>
 <body>
@@ -208,6 +213,7 @@ footer{margin-top:26px;color:var(--muted);font-size:13px;max-width:72ch;line-hei
       <button class="btn" id="drillBtn" type="button">Drill</button>
       <button class="btn" id="ioBtn" type="button">Export / Import</button>
       <button class="btn quiet" id="printBtn" type="button" title="Print the current view as a cheat sheet">Print</button>
+      <button class="themebtn" id="themeBtn" type="button" aria-label="Switch theme"></button>
     </div>
     <div id="sync"></div>
   </header>
@@ -397,7 +403,8 @@ footer{margin-top:26px;color:var(--muted);font-size:13px;max-width:72ch;line-hei
   $('#fKeys').addEventListener('input',updatePreview);$('#fOs').addEventListener('change',updatePreview);
   function stopRec(){recording=false;recBuf=[];clearTimeout(recT);$('#recBtn').setAttribute('aria-pressed','false');$('#recBtn').textContent='Record';}
   $('#recBtn').addEventListener('click',function(){if(recording){stopRec();updatePreview();return;}recording=true;recBuf=[];$('#recBtn').setAttribute('aria-pressed','true');$('#recBtn').textContent='Stop';updatePreview();$('#fKeys').focus();});
-  $('#editor').addEventListener('keydown',function(e){if(!recording)return;e.preventDefault();e.stopPropagation();var os=$('#fOs').value;
+  /* only keys pressed in the Keys box are recorded; typing in any other box ends the recording and reaches that box */
+  $('#editor').addEventListener('keydown',function(e){if(!recording)return;if(e.target!==$('#fKeys')){stopRec();updatePreview();return;}e.preventDefault();e.stopPropagation();var os=$('#fOs').value;
     if(e.key==='Escape'&&recBuf.length&&recBuf[recBuf.length-1]==='Esc'){recBuf.pop();$('#fKeys').value=recBuf.join(' ');stopRec();updatePreview();return;}
     var ch=chordFromEvent(e,os);if(!ch)return;recBuf.push(ch.join('+'));$('#fKeys').value=recBuf.join(' ');clearTimeout(recT);recT=setTimeout(function(){stopRec();updatePreview();},1500);});
   $('#editor').addEventListener('cancel',function(e){if(recording){e.preventDefault();stopRec();updatePreview();}});
@@ -488,6 +495,22 @@ footer{margin-top:26px;color:var(--muted);font-size:13px;max-width:72ch;line-hei
 
   renderAll();
 })();
+</script>
+<script>
+/* light/dark switch for this page, this device only (the head script applies the choice before first paint) */
+(function(){var KEY='ka.theme',root=document.documentElement,btn=document.getElementById('themeBtn'),q=window.matchMedia?window.matchMedia('(prefers-color-scheme: dark)'):null,NS='http://www.w3.org/2000/svg';
+  var ICON={sun:'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41',moon:'M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z'};
+  function chosen(){try{var t=JSON.parse(localStorage.getItem(KEY));return t==='light'||t==='dark'?t:'auto';}catch(e){return 'auto';}}
+  function device(){return q&&q.matches?'dark':'light';}
+  function shown(){var t=chosen();return t==='auto'?device():t;}
+  function paint(){var t=chosen(),dark=shown()==='dark',svg=document.createElementNS(NS,'svg'),path=document.createElementNS(NS,'path'),label=dark?'Switch to light':'Switch to dark';
+    if(t==='auto')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);
+    [['viewBox','0 0 24 24'],['fill','none'],['stroke','currentColor'],['stroke-width','2'],['stroke-linecap','round'],['stroke-linejoin','round'],['aria-hidden','true']].forEach(function(a){svg.setAttribute(a[0],a[1]);});
+    path.setAttribute('d',dark?ICON.sun:ICON.moon);svg.appendChild(path);while(btn.firstChild)btn.removeChild(btn.firstChild);btn.appendChild(svg);btn.setAttribute('aria-label',label);btn.title=label;}
+  /* choosing the theme the device already uses goes back to Auto, so the page follows the device again */
+  btn.addEventListener('click',function(){var next=shown()==='dark'?'light':'dark';try{localStorage.setItem(KEY,JSON.stringify(next===device()?'auto':next));}catch(e){}paint();});
+  if(q){if(q.addEventListener)q.addEventListener('change',paint);else if(q.addListener)q.addListener(paint);}
+  paint();})();
 </script>
 
 </body>

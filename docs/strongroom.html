@@ -12,7 +12,7 @@
 <script>/* the chosen theme, applied before first paint (Settings → Appearance; this device only) */try{var srTheme=JSON.parse(localStorage.getItem('sr.theme'));if(srTheme==='light'||srTheme==='dark')document.documentElement.setAttribute('data-theme',srTheme);}catch(e){}</script>
 <style>
 :root{
-  --bg:#E4E7EA; --surface:#FFFFFF; --surface-2:#F1F3F5; --line:#CFD5DA; --text:#171A1F; --muted:#5A636D; --faint:#98A1AA;
+  --bg:#E4E7EA; --surface:#FFFFFF; --surface-2:#F1F3F5; --line:#CFD5DA; --text:#171A1F; --muted:#5A636D; --faint:#61676D; --mg-ink:#FFFFFF;
   --accent:#1E6B52; --accent-soft:#D8ECE2; --accent-ink:#FFFFFF; --accent-deep:#144B3A;
   --brass:#A9841A; --brass-soft:#F5EBC9;
   --good:#2E7D4F; --good-soft:#DDF3E4; --warn:#9A6212; --warn-soft:#FBEBCB; --danger:#B42318; --danger-soft:#FBE0DC;
@@ -22,7 +22,7 @@
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#121518; --surface:#1A1E23; --surface-2:#23282E; --line:#333A42; --text:#E9ECEF; --muted:#9AA4AE; --faint:#6B7580;
+    --bg:#121518; --surface:#1A1E23; --surface-2:#23282E; --line:#333A42; --text:#E9ECEF; --muted:#9AA4AE; --faint:#878F98; --mg-ink:#101317;
     --accent:#3FB088; --accent-soft:#16352A; --accent-ink:#06150F; --accent-deep:#8FE0BE;
     --brass:#E2B93B; --brass-soft:#3A2F12;
     --good:#6BCF8B; --good-soft:#173826; --warn:#E2A33B; --warn-soft:#3B2E14; --danger:#F27A6B; --danger-soft:#43211D;
@@ -32,7 +32,7 @@
   }
 }
 :root[data-theme="dark"]{
-  --bg:#121518; --surface:#1A1E23; --surface-2:#23282E; --line:#333A42; --text:#E9ECEF; --muted:#9AA4AE; --faint:#6B7580;
+  --bg:#121518; --surface:#1A1E23; --surface-2:#23282E; --line:#333A42; --text:#E9ECEF; --muted:#9AA4AE; --faint:#878F98; --mg-ink:#101317;
   --accent:#3FB088; --accent-soft:#16352A; --accent-ink:#06150F; --accent-deep:#8FE0BE;
   --brass:#E2B93B; --brass-soft:#3A2F12;
   --good:#6BCF8B; --good-soft:#173826; --warn:#E2A33B; --warn-soft:#3B2E14; --danger:#F27A6B; --danger-soft:#43211D;
@@ -126,7 +126,7 @@ input[type="range"]{padding:0;border:0;background:transparent}
 .row{display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 10px;border-radius:11px;cursor:pointer;text-align:left;width:100%}
 .row:hover{background:var(--surface-2)}
 .row[aria-current="true"]{background:var(--accent-soft)}
-.mg{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font:600 13px "Fraunces",serif;color:#fff;flex:none;background:var(--a7)}
+.mg{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font:600 13px "Fraunces",serif;color:var(--mg-ink);flex:none;background:var(--a7)}
 .mg.sm{width:24px;height:24px;font-size:10px;border-radius:6px}
 .row .t b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .row .t span{display:block;font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:"IBM Plex Mono",monospace}
@@ -420,7 +420,8 @@ footer .keys kbd{font:500 11.5px "IBM Plex Mono",monospace;padding:1px 6px;borde
     ['#themeBtn','#themeBtn2'].forEach(function(s){var b=$(s);clear(b);b.appendChild(svgIcon(IC[dark?'sun':'moon']));b.setAttribute('aria-label',label);b.title=label;});
     document.querySelectorAll('#sTheme button').forEach(function(b){b.setAttribute('aria-pressed',String(b.getAttribute('data-t')===THEME));});}
   function setTheme(t){THEME=t;save(LS.theme,t);applyTheme();}
-  ['#themeBtn','#themeBtn2'].forEach(function(s){$(s).addEventListener('click',function(){setTheme(shownTheme()==='dark'?'light':'dark');});});
+  /* choosing the theme the device already uses goes back to Auto, so the page follows the device again */
+  ['#themeBtn','#themeBtn2'].forEach(function(s){$(s).addEventListener('click',function(){var next=shownTheme()==='dark'?'light':'dark',device=darkQ&&darkQ.matches?'dark':'light';setTheme(next===device?'auto':next);});});
   document.querySelectorAll('#sTheme button').forEach(function(b){b.addEventListener('click',function(){setTheme(b.getAttribute('data-t'));});});
   if(darkQ){var onScheme=function(){if(THEME==='auto')applyTheme();};if(darkQ.addEventListener)darkQ.addEventListener('change',onScheme);else if(darkQ.addListener)darkQ.addListener(onScheme);}
   applyTheme();

@@ -54,6 +54,25 @@ and that the origin you are using is listed on the client.
 
 On a phone: open the site, sign in, and use *Add to Home Screen*.
 
+## Light and dark
+
+Every page starts on **Auto** and follows the device. Where to switch:
+
+| Page | Switch |
+|---|---|
+| Launcher, Keycap Atlas, Dumbbell Dojo, Tally Board, Spine Bell | Sun/moon button in the header |
+| Strongroom | Sun/moon button in the header and on the lock screen, plus Settings → Appearance |
+| Event Log, Hack Shelf | Settings → Appearance (Auto / Light / Dark), saved with the page's data |
+
+The header buttons remember the choice **per page, per device** (`<page>.theme` in `localStorage`), and a small
+script in `<head>` applies it before the first paint. Switching back to the theme the device already uses returns
+the page to Auto, so it follows the device again.
+
+Faint secondary text (`--faint`) is set per page to reach 4.5:1 contrast on every background in both themes, and
+the two-letter badges use `--mg-ink` (white in light mode, near-black in dark mode, where the badge colours are
+pastels). A page that can be forced light on a dark device must say `color-scheme:light` in its light block, or
+the browser keeps drawing dark-scheme controls (Dumbbell Dojo's day names were white on white that way).
+
 ## Timers and reminders on a phone
 
 - A phone browser pauses a page that is not on screen (another app in front, or the screen locked), so no web
@@ -173,7 +192,8 @@ all three.
   twice a week) is the default; `ul4` is the 4-day Upper / Lower plan for sport or flare-up weeks; `full3` is a real full-body A / B / C;
   `bro5` is the six-session body-part split. The plan bar above the week strip switches between them from the Today tab.
 - **Day edits** are stored per weekday as `{add, remove, swap}`; Swap keeps the replacement in the original's slot. "Sore back today"
-  turns the day into the Spine Reset (remove everything, add the reset moves); "Reset day" undoes it.
+  turns the day into the Spine Reset (remove everything, add the reset moves); "Reset Wednesday to default" (whichever
+  day it is) undoes it, and keeps that day's ticks and weight logs.
 - **Ticks** store a timestamp (not `true`) so the session summary can say how long the session took. Completion is recomputed
   whenever the list changes (`recomputeComplete`).
 - **Backups**: the export is v2 (`items` with timestamps and tombstones). *Merge a backup* keeps whichever is newer per key;
