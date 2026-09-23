@@ -187,6 +187,38 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
 .sw button{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0}
 .sw button.on{border-color:var(--text)}
 
+/* guide tab: how to use the shelf, a formatting cheat-sheet and fill-in templates */
+.guide{display:grid;gap:12px;max-width:860px}
+.gsec{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:15px 18px;box-shadow:var(--shadow);min-width:0}
+.gsec h2{font-family:Sora,system-ui,sans-serif;font-size:17px;margin:0 0 8px;letter-spacing:-.01em}
+.gsec p,.gsec li{font-size:14.5px;color:var(--muted);margin:5px 0}
+.gsec p b,.gsec li b{color:var(--text)}
+.gsec ol,.gsec ul{padding-left:22px;margin:6px 0}
+.gsec code,.gtable code{font:13px "Source Code Pro",ui-monospace,monospace;background:var(--code-bg);border:1px solid var(--line);padding:0 5px;border-radius:5px;font-variant-ligatures:none;overflow-wrap:anywhere}
+.gsec a{color:var(--accent)}
+.gsec pre.code code{background:none;border:0;padding:0;font:inherit;overflow-wrap:normal}
+.gtable{width:100%;border-collapse:collapse;font-size:14px;margin-top:4px}
+.gtable th{text-align:left;font:500 11.5px "Source Code Pro",ui-monospace,monospace;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);padding:6px 10px 6px 0;border-bottom:1px solid var(--line)}
+.gtable td{padding:8px 10px 8px 0;border-bottom:1px dashed var(--line);vertical-align:top;overflow-wrap:anywhere;min-width:0}
+.gtable td:first-child{font-weight:700;color:var(--text);white-space:nowrap}
+.gtable td.gin{font-weight:400;white-space:normal;width:48%}
+.gtable pre{margin:0;font:13px/1.5 "Source Code Pro",ui-monospace,monospace;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--code-ink)}
+.tpls{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-top:10px}
+.tpl{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--surface-2);display:grid;gap:8px;align-content:start;min-width:0}
+.tpl .kind{font:500 11px "Source Code Pro",ui-monospace,monospace;letter-spacing:.07em;text-transform:uppercase;color:var(--accent)}
+.tplPrev{display:grid;gap:8px;min-width:0}
+.tplPrev h3{font:700 15.5px/1.35 Manrope,system-ui,sans-serif;margin:0;overflow-wrap:anywhere}
+.tplPrev .esub{margin-top:0}
+.tplPrev .tag{cursor:default}
+
+@media (max-width:560px){
+  .gtable thead{display:none}
+  .gtable tr{display:block;padding:6px 0;border-bottom:1px dashed var(--line)}
+  .gtable td{display:block;border:0;padding:2px 0;width:auto}
+  .gtable td:first-child{white-space:normal}
+  .gtable td.gin{width:auto}
+  .tpls{grid-template-columns:minmax(0,1fr)}
+}
 @media (min-width:880px){.railbox>summary{display:none}}
 @media (max-width:879px){
   .layout{grid-template-columns:minmax(0,1fr);gap:10px}
@@ -219,6 +251,7 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
   <nav class="tabs" role="tablist" aria-label="Sections">
     <button class="tab" role="tab" data-tab="shelf" aria-selected="true" aria-controls="p-shelf">Shelf</button>
     <button class="tab" role="tab" data-tab="revisit" aria-selected="false" aria-controls="p-revisit">Revisit <span class="n" id="nRevisit" hidden></span></button>
+    <button class="tab" role="tab" data-tab="guide" aria-selected="false" aria-controls="p-guide" title="How to use it (?)">Guide</button>
   </nav>
 
   <section id="p-shelf" role="tabpanel">
@@ -250,6 +283,105 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
   <section id="p-revisit" role="tabpanel" hidden>
     <p class="lead" id="revLead"></p>
     <div id="revList" style="margin-top:12px"></div>
+  </section>
+
+  <section id="p-guide" role="tabpanel" hidden>
+    <div class="guide">
+      <div class="gsec">
+        <h2>How it works</h2>
+        <ol>
+          <li>Tap <b>+ New</b> (or press <code>n</code>). Only the title is required; fill just the boxes you need.</li>
+          <li><b>Save</b> (or press <code>Ctrl+Enter</code>). Once you sign in with Google, the shelf lives in <code>hack-shelf.json</code> in your own Drive, so every device sees the same entries.</li>
+          <li>Find it again with <b>search</b>, the <b>topic and tag</b> sidebar, or the <b>Smart</b> order, which keeps pinned and most-used entries on top. The <b>Copy</b> on a closed card copies its main code in one tap.</li>
+        </ol>
+        <p>Not sure where to start? Scroll down to <b>Templates</b> and tap <i>Use this template</i>.</p>
+      </div>
+
+      <div class="gsec">
+        <h2>What goes in each box</h2>
+        <table class="gtable">
+          <thead><tr><th>Box</th><th>What to put</th><th>Example</th></tr></thead>
+          <tbody>
+            <tr><td>Title</td><td>The words you would type when searching for it later</td><td>Find what is using a port on Windows</td></tr>
+            <tr><td>Topic</td><td>The <b>one</b> shelf section it lives in. Pick <i>+ New topic&hellip;</i> to create one</td><td>Windows</td></tr>
+            <tr><td>Tags</td><td>Labels it touches, comma-separated. Spaces become dashes, capitals become lower case</td><td><code>windows, ports, network</code></td></tr>
+            <tr><td>Write-up</td><td>What it does, when to use it, what to watch out for. Formatting below</td><td>Fixes &ldquo;address already in use&rdquo;.</td></tr>
+            <tr><td>Code</td><td>The exact command or snippet. The <b>first</b> block is what the card&rsquo;s one-tap Copy takes</td><td><code>netstat -ano | findstr :8080</code></td></tr>
+            <tr><td>Fields</td><td>Facts as key &rarr; value. A value needs a key. Tick <b>Sensitive</b> to hide a value on screen</td><td>Port &rarr; 5432</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="gsec">
+        <h2>Write-up formatting</h2>
+        <p>This is the whole set. Anything else you type, HTML included, is shown exactly as typed.</p>
+        <table class="gtable" id="guideFmt">
+          <thead><tr><th>For</th><th>You type</th><th>You get</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="gsec">
+        <h2>Topic or tag?</h2>
+        <p><b>Topic</b> is <i>where it lives</i>: exactly one per entry, shown as the sections of the sidebar. <b>Tags</b> are <i>what it touches</i>: as many as you like, and tag filters combine, so <code>#windows</code> + <code>#network</code> shows entries that have both.</p>
+        <p>A starter set: topics <i>Windows, Git, Java &amp; Spring, Kafka, Databases, Docker, Interview notes</i>; tags such as <code>network</code>, <code>ports</code>, <code>performance</code>, <code>debugging</code>, <code>gotcha</code>, <code>config</code>.</p>
+      </div>
+
+      <div class="gsec">
+        <h2>Templates</h2>
+        <p>Five kinds of entry. <b>Use this template</b> opens the editor already filled in &mdash; change what you like; nothing is saved until you press Save.</p>
+        <div class="tpls" id="tplList"></div>
+      </div>
+
+      <div class="gsec">
+        <h2>Finding and reusing</h2>
+        <table class="gtable">
+          <thead><tr><th>To</th><th>Do this</th></tr></thead>
+          <tbody>
+            <tr><td>Find something</td><td>Type in search (<code>/</code> jumps there). Every word must match; titles, write-ups, code, field keys, tags and topics all count. <code>Esc</code> clears it</td></tr>
+            <tr><td>Copy the main thing</td><td><b>Copy</b> on the closed card: the first code block, or the first field when there is no code</td></tr>
+            <tr><td>Copy one part</td><td>Tap the title to open the card; each code block and field has its own Copy</td></tr>
+            <tr><td>Keep it on top</td><td>Open it and tap <b>Pin</b></td></tr>
+            <tr><td>Share it</td><td><b>Copy as Markdown</b> &mdash; sensitive values come out as <code>(hidden)</code></td></tr>
+            <tr><td>Make a variation</td><td><b>Duplicate</b>, then edit the copy</td></tr>
+            <tr><td>Keep knowledge fresh</td><td>The <b>Revisit</b> tab (<code>r</code>) brings back entries untouched for 30 days. <i>Still useful</i> hides one for twice as long each time; if it is outdated, delete it</td></tr>
+            <tr><td>Back it up</td><td>&#9881; Settings &rarr; <b>Export JSON</b></td></tr>
+          </tbody>
+        </table>
+        <p>Keys: <code>n</code> new &middot; <code>/</code> search &middot; <code>r</code> Revisit &middot; <code>?</code> this guide &middot; <code>Ctrl+Enter</code> save &middot; <code>Esc</code> close.</p>
+      </div>
+
+      <div class="gsec" id="gRevisit">
+        <h2>Revisit: a short review, not a to-do list</h2>
+        <p><b>Why it exists.</b> Things you write down and never look at again fade: you forget you have them, or they go stale when a tool or a version moves on. Revisit brings those back, a few at a time, so you can keep, fix or drop them.</p>
+        <p><b>What brings an entry back.</b> Every entry remembers the last day you did anything with it: created, edited, copied, opened, or answered here. Once that day is <b>30 days</b> old, the entry is due and the Revisit tab shows a count. Entries you use normally never come back, because using them restarts the clock. Pinned entries never come back &mdash; you see them every day already.</p>
+        <table class="gtable">
+          <thead><tr><th>Answer</th><th>When</th><th>What happens</th></tr></thead>
+          <tbody>
+            <tr><td>Still useful</td><td>It is right and worth keeping</td><td>It goes away for twice as long: 30 &rarr; 60 &rarr; 120 &rarr; 240 &rarr; 365 days, then once a year</td></tr>
+            <tr><td>Edit</td><td>It is outdated or unclear</td><td>Fix it; saving restarts its clock</td></tr>
+            <tr><td>Not useful any more</td><td>You will never need it again</td><td>It is deleted, after a &ldquo;Sure?&rdquo;</td></tr>
+          </tbody>
+        </table>
+        <p><b>Example.</b> You save &ldquo;Kafka consumer keeps rebalancing&rdquo; on 1 March and do not touch it. On 31 March it shows up in Revisit. You read it and tap <i>Still useful</i>: it returns around 30 May, 60 days later. Tap it again then and the next wait is 120 days. If you copy from it in between, the clock restarts from that day.</p>
+        <p><b>How to treat it.</b> A two-minute look once a week is plenty; an empty tab is not a target. Up to 5 show at a time, oldest first; answer them and <i>Show the next</i> loads more. &#9881; Settings changes the batch (3, 5 or 10) and the first wait (14, 30, 60 or 90 days).</p>
+      </div>
+
+      <div class="gsec">
+        <h2>Sensitive values</h2>
+        <p>A field ticked <b>Sensitive</b> shows as dots until you tap <b>Reveal</b>, can be copied without revealing it, is left out of search, and is hidden in Copy as Markdown. It is still stored <b>unencrypted</b> in your Drive file, so keep it to throwaway local passwords. Real passwords and API keys belong in <a href="strongroom.html">Strongroom</a>; the editor warns you when something looks like a real key.</p>
+      </div>
+
+      <div class="gsec">
+        <h2>Habits that pay off</h2>
+        <ul>
+          <li><b>Name titles the way you will search</b>: &ldquo;Find what is using a port&rdquo; beats &ldquo;netstat trick&rdquo;.</li>
+          <li><b>One idea per entry</b>, so Copy and search stay precise.</li>
+          <li><b>Put the thing you copy most first</b> &mdash; the closed card&rsquo;s Copy takes the first code block.</li>
+          <li><b>Add a <i>Source</i> field with a link</b> when you learned it from a doc or an article.</li>
+        </ul>
+      </div>
+    </div>
   </section>
 </main>
 
@@ -769,7 +901,7 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
     if(!BOOTED)return;
     applyTheme();setFakeBanner();renderHeader();renderTabs();
     if(VIEW==='shelf'){renderRail();renderFilters();renderList();}
-    else renderRevisit();
+    else if(VIEW==='revisit')renderRevisit();
     if($('#settings').hasAttribute('open'))renderTopicAdmin();
   }
   function renderHeader(){
@@ -780,7 +912,7 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
     var n=storeReady()?dueList().length:0,b=$('#nRevisit');
     b.textContent=String(n);b.hidden=n===0;
     $$('.tab').forEach(function(t){t.setAttribute('aria-selected',String(t.getAttribute('data-tab')===VIEW));});
-    $('#p-shelf').hidden=VIEW!=='shelf';$('#p-revisit').hidden=VIEW!=='revisit';
+    $('#p-shelf').hidden=VIEW!=='shelf';$('#p-revisit').hidden=VIEW!=='revisit';$('#p-guide').hidden=VIEW!=='guide';
   }
   function setFakeBanner(){
     var b=$('#fakeBanner');clear(b);b.hidden=!FAKE;if(!FAKE)return;
@@ -858,7 +990,8 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
       h('p',{text:'Keep the commands, fixes and small discoveries you want to find again. Each entry holds a short note, code you can copy in one tap, and labelled values such as ports, paths or where you learned it.'}),
       h('div',{class:'row'},[
         h('button',{type:'button',class:'btn pri',id:'obNew',text:'New entry',onclick:function(){openEditor(null);}}),
-        h('button',{type:'button',class:'btn',id:'obEx',text:'Add 3 examples',onclick:addExamples})])]));
+        h('button',{type:'button',class:'btn',id:'obEx',text:'Add 3 examples',onclick:addExamples}),
+        h('button',{type:'button',class:'btn quiet',id:'obGuide',text:'How to use it',onclick:function(){showView('guide');}})])]));
   }
   function renderExamplesFoot(){
     var box=$('#exFoot');clear(box);
@@ -952,6 +1085,59 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
       :'Nothing here yet — add entries to your shelf first.'}));
   }
 
+  /* ---------- guide: the cheat-sheet is drawn by renderRich itself, so it can never drift
+     from what the write-up box really does; templates only fill the editor, never the shelf ---------- */
+  var FMT_EXAMPLES=[
+    ['Paragraphs','First paragraph.\n\nA blank line starts the next one.'],
+    ['Line break','Line one\nline two'],
+    ['Bullets','- keeps your changes staged\n- or throws them away'],
+    ['Numbered','1. stop the service\n2. clear the cache'],
+    ['Inline code','Run `ipconfig /flushdns` first'],
+    ['Link','See https://learn.microsoft.com/windows-server/'],
+    ['Anything else','**bold**, # headings and <b>tags</b> stay as typed']
+  ];
+  var TEMPLATES=[
+    {kind:'A command hack',topic:'Windows',title:'Find and kill what is using a port on Windows',tags:['windows','ports','network'],
+      body:'Fixes “address already in use” when an app will not start.\nThe last column of the first command is the PID; put it into the second.',
+      blocks:[{lang:'powershell',code:'netstat -ano | findstr :8080'},{lang:'powershell',code:'taskkill /PID 12345 /F'}],
+      fields:[{k:'When',v:'an app fails with “port already in use”'},{k:'Admin?',v:'only if the process was started as admin'}]},
+    {kind:'A config snippet',topic:'Java & Spring',title:'Spring Boot: show SQL with bound values',tags:['jpa','hibernate','logging','debugging'],
+      body:'For local debugging only — very noisy in production. `org.hibernate.orm.jdbc.bind` is the Hibernate 6 name (Spring Boot 3).',
+      blocks:[{lang:'yaml',code:'logging:\n  level:\n    org.hibernate.SQL: DEBUG\n    org.hibernate.orm.jdbc.bind: TRACE'}],fields:[]},
+    {kind:'A lesson learned',topic:'Kafka',title:'Kafka consumer keeps rebalancing',tags:['kafka','performance','gotcha'],
+      body:'If processing one poll’s records takes longer than `max.poll.interval.ms`, the consumer is removed from its group and a rebalance starts. Fixes:\n- lower `max.poll.records`, or\n- raise `max.poll.interval.ms`, or\n- move slow work off the polling thread',
+      blocks:[],fields:[{k:'Setting',v:'max.poll.interval.ms'},{k:'Default',v:'300000 (5 minutes)'}]},
+    {kind:'A fact sheet',topic:'Databases',title:'Local dev ports',tags:['ports','reference'],body:'',blocks:[],
+      fields:[{k:'Postgres',v:'5432'},{k:'Redis',v:'6379'},{k:'Kafka',v:'9092'},{k:'App',v:'8080'}]},
+    {kind:'A login with a sensitive field',topic:'Databases',title:'Local test database login',tags:['postgres','local'],
+      body:'Throwaway local credentials only — real passwords belong in Strongroom.',blocks:[],
+      fields:[{k:'Host',v:'localhost:5432'},{k:'User',v:'postgres'},{k:'Password',v:'devpass',secret:true}]}
+  ];
+  function tplPreview(t){
+    var box=h('div',{class:'tplPrev'},[h('h3',{text:t.title})]);
+    var sub=h('div',{class:'esub'},[h('span',{class:'topic'},[h('span',{class:'dot',style:'background:var(--c0)'}),t.topic])]);
+    t.tags.forEach(function(g){sub.appendChild(h('span',{class:'tag',text:'#'+g}));});
+    box.appendChild(sub);
+    if(t.body)box.appendChild(renderRich(t.body,''));
+    t.blocks.forEach(function(b){box.appendChild(h('div',{class:'block'},[h('div',{class:'bhead'},[h('span',{class:'lang',text:b.lang||'code'})]),h('pre',{class:'code'},[h('code',{text:b.code})])]));});
+    if(t.fields.length){
+      var fl=h('div',{class:'fields'});
+      t.fields.forEach(function(f){fl.appendChild(h('div',{class:'frow',style:'grid-template-columns:minmax(80px,32%) minmax(0,1fr)'},[
+        h('span',{class:'fk',text:f.k}),h('span',{class:'fv'+(f.secret?' masked':''),text:f.secret?'••••••••':f.v})]));});
+      box.appendChild(fl);
+    }
+    return box;
+  }
+  function renderGuide(){
+    var tb=$('#guideFmt tbody');clear(tb);
+    FMT_EXAMPLES.forEach(function(x){tb.appendChild(h('tr',{},[h('td',{text:x[0]}),h('td',{class:'gin'},[h('pre',{text:x[1]})]),h('td',{class:'gout'},[renderRich(x[1],'')])]));});
+    var box=$('#tplList');clear(box);
+    TEMPLATES.forEach(function(t,i){
+      box.appendChild(h('div',{class:'tpl','data-tpl':String(i)},[h('span',{class:'kind',text:t.kind}),tplPreview(t),
+        h('div',{class:'row'},[h('button',{type:'button',class:'btn pri sm useTpl',text:'Use this template',onclick:function(){openEditor(null,{tpl:t});}})])]));
+    });
+  }
+
   /* ---------- filters and navigation ---------- */
   function setQuery(q){Q=q;$('#q').value=q;SHOWN=PAGE;renderAll();}
   function setTopic(id){
@@ -968,7 +1154,7 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
     if(e&&old)old.parentNode.replaceChild(entryCard(e,false),old);else renderAll();
   }
   function showView(v){
-    VIEW=v==='revisit'?'revisit':'shelf';
+    VIEW=v==='revisit'||v==='guide'?v:'shelf';
     if(VIEW==='revisit')REV_IDS=null;
     renderAll();
   }
@@ -1018,19 +1204,25 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
     opts=opts||{};
     var src=id?entryById(id):null;
     if(id&&!src){toast('That entry no longer exists');return;}
-    var dup=opts.dup?entryById(opts.dup):null,e=src||dup;
+    var dup=opts.dup?entryById(opts.dup):null,tpl=opts.tpl||null,e=src||dup||tpl,fresh=!!(dup||tpl);
     edClear();
-    ED={id:src?src.id:null,base:src?src.updatedAt:0,createdAt:src?src.createdAt:0,leaving:false,snap:''};
-    $('#edHd').textContent=src?'Edit entry':dup?'Duplicate entry':'New entry';
+    ED={id:src?src.id:null,base:src?src.updatedAt:0,createdAt:src?src.createdAt:0,leaving:false,snap:'',fromGuide:!!tpl};
+    $('#edHd').textContent=src?'Edit entry':dup?'Duplicate entry':tpl?'New entry from a template':'New entry';
     $('#edTitle').value=e?clampStr(dup?e.title+' (copy)':e.title,140):'';
-    var ctxTopic=!e&&topicById(FTOPIC)?FTOPIC:'';
-    fillSelect($('#edTopic'),topicOpts(),e?(topicOf(e)?e.topicId:''):ctxTopic);
-    $('#edNewTopicWrap').hidden=true;
+    /* a template names its topic: reuse one with that name, otherwise offer it as a new topic,
+       which is only created if the entry is actually saved */
+    var topicSel=!e&&topicById(FTOPIC)?FTOPIC:'',newTopic='';
+    if(tpl){
+      var same=topics().filter(function(t){return t.name.toLowerCase()===String(tpl.topic||'').toLowerCase();})[0];
+      topicSel=same?same.id:(tpl.topic?'__new':'');newTopic=same?'':(tpl.topic||'');
+    }else if(e)topicSel=topicOf(e)?e.topicId:'';
+    fillSelect($('#edTopic'),topicOpts(),topicSel);
+    $('#edNewTopic').value=newTopic;$('#edNewTopicWrap').hidden=topicSel!=='__new';
     $('#edTags').value=e?(e.tags||[]).join(', '):FTAGS.join(', ');
     $('#edBody').value=e?e.body||'':'';
     var blocks=e?(e.blocks||[]):[{lang:'',code:''}];
-    blocks.forEach(function(b){$('#edBlocks').appendChild(edBlockRow(dup?{lang:b.lang,code:b.code}:b));});
-    (e?(e.fields||[]):[]).forEach(function(f){$('#edFields').appendChild(edFieldRow(dup?{k:f.k,v:f.v,secret:f.secret}:f));});
+    blocks.forEach(function(b){$('#edBlocks').appendChild(edBlockRow(fresh?{lang:b.lang,code:b.code}:b));});
+    (e?(e.fields||[]):[]).forEach(function(f){$('#edFields').appendChild(edFieldRow(fresh?{k:f.k,v:f.v,secret:f.secret}:f));});
     edTagHints();edNudge();
     ED.snap=JSON.stringify(readEditor());
     var dlg=$('#edDlg');if(!dlg.hasAttribute('open'))dlg.showModal();
@@ -1104,11 +1296,12 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
     var cur=ED.id?ITEMS[ED.id]:null;
     /* per-record newest-wins would silently drop whichever edit is older, so ask */
     if(ED.id&&!force&&(!cur||cur.deleted||cur.updatedAt!==ED.base)){edShowBar(!cur||cur.deleted?'gone':'changed');return;}
-    var isNew=!ED.id,e=res.entry;
+    var isNew=!ED.id,e=res.entry,fromGuide=!!ED.fromGuide;
     e.id=ED.id||uid('e');e.kind='entry';e.createdAt=ED.createdAt||Date.now();
     var list=res.topic?[res.topic,e]:[e];
     putQuiet(list);
     OPEN[e.id]=true;ED.leaving=true;dlg.close();
+    if(fromGuide)VIEW='shelf';
     renderAll();
     var node=VIEW==='shelf'?cardNode($('#list'),e.id):null;
     if(node){
@@ -1188,6 +1381,7 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
     if(e.key==='/'){e.preventDefault();if(VIEW!=='shelf')showView('shelf');$('#q').focus();}
     else if(e.key==='n'){e.preventDefault();openEditor(null);}
     else if(e.key==='r'){showView('revisit');}
+    else if(e.key==='?'){showView('guide');}
   }
   function wire(){
     $$('.tab').forEach(function(t){t.addEventListener('click',function(){showView(t.getAttribute('data-tab'));});});
@@ -1263,6 +1457,7 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
     $('#sortSel').value=SORT;
     $('#railBox').open=window.innerWidth>=880;
     mountSync($('#sync'));
+    renderGuide();
     WAS_SYNCED=!!STORE.synced;BOOTED=true;
     showView('shelf');
     var lastDay=today();

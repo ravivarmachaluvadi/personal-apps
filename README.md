@@ -280,6 +280,15 @@ never overwrites a newer edit; *replace* makes the file the truth and deletes wh
 Settings → Developer → **Pretend today is** moves this browser's date (never Drive's), so Revisit can be watched
 without waiting a month. Copies and reviews made while pretending are dated with the pretend day.
 
+### The Guide tab
+
+The third tab (or `?`) is the manual: what goes in each editor box, the write-up formatting, topic versus tag,
+how Revisit decides and what its three answers do, finding and reusing, and sensitive values. The formatting
+examples are drawn by the page's own renderer, so the cheat-sheet cannot drift from what the write-up box really
+does. **Templates** — a command hack, a config snippet, a lesson learned, a fact sheet and a login with a
+sensitive field — open the editor pre-filled; nothing is saved until you press Save, and a template's topic is
+reused if one with that name exists, otherwise created on save. Reading the Guide writes nothing.
+
 ## Sign-in details worth knowing
 
 - The Google token lasts one hour. After that the pages show *Continue with Google* again; one tap, no consent
