@@ -43,6 +43,10 @@ body[data-mode="work-done"],body[data-mode="break"],body[data-mode="break-done"]
   --accent:var(--break); --accent-soft:var(--break-soft); --accent-deep:var(--break-deep); --accent-ink:var(--break-ink);
 }
 *{box-sizing:border-box}
+/* no scroll anchoring: these pages redraw whole sections when you click inside them, and Chrome anchored the
+   scroll to the control just clicked; once that control was replaced the page jumped (to the top in Strongroom,
+   thousands of pixels in Keycap Atlas). Set on body *, not on html or body, where it allows a different jump */
+body *{overflow-anchor:none}
 body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;transition:background .5s ease}
 body[data-mode="work-done"],body[data-mode="break-done"],body[data-mode="timer-done"]{background:color-mix(in srgb,var(--bg) 78%,var(--break))}
 body[data-mode="break"]{background:color-mix(in srgb,var(--bg) 90%,var(--break))}

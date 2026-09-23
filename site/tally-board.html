@@ -39,6 +39,10 @@
   color-scheme:dark;
 }
 *{box-sizing:border-box}
+/* no scroll anchoring: these pages redraw whole sections when you click inside them, and Chrome anchored the
+   scroll to the control just clicked; once that control was replaced the page jumped (to the top in Strongroom,
+   thousands of pixels in Keycap Atlas). Set on body *, not on html or body, where it allows a different jump */
+body *{overflow-anchor:none}
 body{margin:0;background:var(--bg);color:var(--text);font:15.5px/1.5 "Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
 button{font:inherit;cursor:pointer;border:0;border-radius:10px;color:inherit;background:none}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--accent);outline-offset:2px}

@@ -33,6 +33,10 @@
   color-scheme:dark;
 }
 *{box-sizing:border-box}
+/* no scroll anchoring: these pages redraw whole sections when you click inside them, and Chrome anchored the
+   scroll to the control just clicked; once that control was replaced the page jumped (to the top in Strongroom,
+   thousands of pixels in Keycap Atlas). Set on body *, not on html or body, where it allows a different jump */
+body *{overflow-anchor:none}
 body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 "Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
 button{font:inherit;cursor:pointer;border:0;border-radius:9px;color:inherit;background:none;padding:0}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
@@ -105,6 +109,10 @@ input[type="range"]{padding:0;border:0;background:transparent}
 @media (min-width:1040px){.body{grid-template-columns:210px minmax(0,1fr) 380px}}
 .rail{display:flex;flex-direction:column;gap:14px;position:sticky;top:12px}
 @media (max-width:759px){.rail{position:static}}
+/* desktop: the rail stays pinned while the list scrolls, so once it is taller than the window (many types of your own)
+   it scrolls on its own instead of hiding "Older than a year" below the screen. The 6px padding, cancelled by the
+   negative margin, keeps the selected item's shadow and the focus ring from being clipped (as in Keycap Atlas) */
+@media (min-width:760px){.rail{top:6px;max-height:calc(100vh - 12px);overflow-y:auto;padding:6px;margin:-6px;scrollbar-width:thin;scrollbar-color:var(--line) transparent}}
 .rail h3{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--faint);margin:0 0 6px 6px;font-weight:600}
 .rail .list{display:flex;flex-direction:column;gap:2px}
 @media (max-width:759px){.rail .list{flex-direction:row;flex-wrap:wrap;gap:6px}}
@@ -114,9 +122,7 @@ input[type="range"]{padding:0;border:0;background:transparent}
 .rail .item .n{margin-left:auto;font:12px "IBM Plex Mono",monospace;color:var(--faint)}
 .rail .item.h .n{color:var(--warn)}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
-/* overflow-anchor:none: every click rebuilds the list, and Chrome anchored the scroll to the clicked (focused)
-   row; once that row was replaced the page jumped to the top */
-.list-card{padding:6px;min-width:0;overflow-anchor:none}
+.list-card{padding:6px;min-width:0}
 .row{display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 10px;border-radius:11px;cursor:pointer;text-align:left;width:100%}
 .row:hover{background:var(--surface-2)}
 .row[aria-current="true"]{background:var(--accent-soft)}
