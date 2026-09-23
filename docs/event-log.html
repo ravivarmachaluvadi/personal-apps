@@ -73,6 +73,7 @@ h1{font-family:"Space Grotesk",system-ui,sans-serif;font-weight:700;font-size:cl
 .btn.danger{color:var(--danger)}
 .btn[disabled]{opacity:.5;cursor:default}
 .icon{font-size:17px;line-height:1;padding:7px 9px}
+.icon svg{width:17px;height:17px;display:block}
 input[type=text],input[type=date],input[type=time],input[type=number],select,textarea{font:14.5px Figtree,system-ui,sans-serif;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:8px 10px;min-height:38px;width:100%}
 input[type=date],input[type=time],input[type=number]{font-family:"DM Mono",ui-monospace,monospace}
 textarea{min-height:64px;resize:vertical}
@@ -176,6 +177,7 @@ dialog::backdrop{background:rgba(10,12,16,.5)}
     <div class="datel" id="dateLine"></div>
     <div class="headright">
       <div id="sync"></div>
+      <button class="btn icon" id="themeBtn" type="button" aria-label="Switch theme"></button>
       <button class="btn icon" id="gear" type="button" title="Settings" aria-label="Settings">&#9881;</button>
     </div>
   </header>
@@ -514,7 +516,15 @@ dialog::backdrop{background:rgba(10,12,16,.5)}
   var SDEF={notify:false,notifyHour:8,ics:false,icsAlarm:false,archiveDays:30,horizonDays:180,theme:'auto'};
   function getSettings(){var s=ITEMS.settings,o={};Object.keys(SDEF).forEach(function(k){o[k]=(s&&!s.deleted&&s[k]!==undefined)?s[k]:SDEF[k];});return o;}
   function setSetting(k,v){var o=getSettings();o[k]=v;o.id='settings';o.kind='settings';put(o);}
-  function applyTheme(){var t=getSettings().theme;if(t==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',t);}
+  /* the header sun/moon shows the theme a tap switches to; it writes the same Settings theme as the gear menu */
+  var darkQ=window.matchMedia?window.matchMedia('(prefers-color-scheme: dark)'):null;
+  var THEME_ICON={sun:'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41',moon:'M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z'};
+  function deviceTheme(){return darkQ&&darkQ.matches?'dark':'light';}
+  function shownTheme(){var t=getSettings().theme;return t==='light'||t==='dark'?t:deviceTheme();}
+  function paintThemeBtn(){var b=document.getElementById('themeBtn');if(!b)return;var dark=shownTheme()==='dark',NS='http://www.w3.org/2000/svg',svg=document.createElementNS(NS,'svg'),p=document.createElementNS(NS,'path'),label=dark?'Switch to light':'Switch to dark';
+    [['viewBox','0 0 24 24'],['fill','none'],['stroke','currentColor'],['stroke-width','2'],['stroke-linecap','round'],['stroke-linejoin','round'],['aria-hidden','true']].forEach(function(a){svg.setAttribute(a[0],a[1]);});
+    p.setAttribute('d',dark?THEME_ICON.sun:THEME_ICON.moon);svg.appendChild(p);while(b.firstChild)b.removeChild(b.firstChild);b.appendChild(svg);b.setAttribute('aria-label',label);b.title=label;}
+  function applyTheme(){var t=getSettings().theme;if(t==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',t);paintThemeBtn();}
 
   /* ---------- derived state: nothing here ever writes ---------- */
   function stateOf(e){if(e.state==='done')return 'done';if(e.state==='cancelled')return 'cancelled';return e.date<today()?'missed':'planned';}
@@ -1568,6 +1578,9 @@ dialog::backdrop{background:rgba(10,12,16,.5)}
     $('#sHorizon').addEventListener('change',function(){setSetting('horizonDays',+this.value);reconcileAll();renderAll();});
     Array.prototype.forEach.call(document.querySelectorAll('#sTheme button'),function(b){
       b.addEventListener('click',function(){setSetting('theme',b.getAttribute('data-t'));segSet('#sTheme','t',b.getAttribute('data-t'));applyTheme();});});
+    /* choosing the theme the device already uses goes back to Auto, so the page follows the device again */
+    $('#themeBtn').addEventListener('click',function(){var next=shownTheme()==='dark'?'light':'dark',v=next===deviceTheme()?'auto':next;setSetting('theme',v);segSet('#sTheme','t',v);applyTheme();});
+    if(darkQ){var onScheme=function(){var t=getSettings().theme;if(t!=='light'&&t!=='dark')applyTheme();};if(darkQ.addEventListener)darkQ.addEventListener('change',onScheme);else if(darkQ.addListener)darkQ.addListener(onScheme);}
     $('#sExport').addEventListener('click',function(){
       download('event-log-'+today()+'.json',JSON.stringify({format:'event-log-export',v:1,exportedAt:new Date().toISOString(),items:STORE.doc.items},null,2),'application/json');
     });
