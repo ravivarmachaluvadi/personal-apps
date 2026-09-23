@@ -151,6 +151,7 @@ dialog::backdrop{background:rgba(8,10,12,.6);backdrop-filter:blur(2px)}
 .dlg h3{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--faint);margin:6px 0 0;font-weight:600}
 .dlg label{font-size:12.5px;color:var(--muted);display:block;margin-bottom:4px;font-weight:500}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.catnew{margin-top:6px}
 @media (max-width:480px){.two{grid-template-columns:1fr}}
 .pwrow{display:flex;gap:6px;align-items:center}
 .pwrow input{flex:1;font-family:"IBM Plex Mono",monospace}
@@ -242,7 +243,7 @@ footer{margin-top:24px;color:var(--muted);font-size:13px;max-width:72ch;line-hei
     <h2><span id="editTitle">New entry</span><button class="btn quiet x" type="button" id="editClose" aria-label="Close">✕</button></h2>
     <div class="two">
       <div><label for="fTitle">Title</label><input id="fTitle" placeholder="GitHub, HDFC NetBanking, Home Wi-Fi…" maxlength="80" required></div>
-      <div><label for="fCat">Type</label><select id="fCat"><option value="login">Login</option><option value="bank">Bank account</option><option value="card">Card</option><option value="wifi">Wi-Fi</option><option value="note">Secure note</option><option value="id">Identity / document</option><option value="other">Other</option></select></div>
+      <div><label for="fCat">Type</label><select id="fCat"></select><input id="fCatNew" class="catnew" type="text" maxlength="24" placeholder="Name your own type, e.g. Insurance" aria-label="New type name" autocomplete="off" hidden></div>
     </div>
     <div><label for="fUser" id="fUserLabel">Username or email</label><input id="fUser" class="mono" maxlength="200" autocomplete="off"></div>
     <div>
@@ -330,7 +331,20 @@ footer{margin-top:24px;color:var(--muted);font-size:13px;max-width:72ch;line-hei
   'use strict';
   var $=function(s,r){return (r||document).querySelector(s);};
   var LS={meta:'sr.meta',entries:'sr.entries',pending:'sr.pending',autolock:'sr.autolock',cat:'sr.cat'};
-  var CATS={login:'Login',bank:'Bank',card:'Card',wifi:'Wi-Fi',note:'Secure note',id:'Identity',other:'Other'};
+  var BUILTIN={login:'Login',bank:'Bank',card:'Card',wifi:'Wi-Fi',note:'Secure note',id:'Identity',other:'Other'};
+  var SPECIAL={all:1,fav:1,weak:1,reused:1,old:1},NEWCAT='\u0001new';
+  /* A type is just a string on the entry: a built-in key, or the custom label itself. */
+  function catName(c){return BUILTIN[c]||String(c||'')||'Other';}
+  function customCats(){var seen={},out=[];entries().forEach(function(p){var c=p.category;if(!c||BUILTIN[c]||seen[c])return;seen[c]=1;out.push(c);});return out.sort(function(a,b){return a.localeCompare(b);});}
+  function cleanCat(s){s=String(s||'').replace(/\s+/g,' ').trim().slice(0,24);if(!s)return '';var low=s.toLowerCase(),hit='';
+    Object.keys(BUILTIN).forEach(function(k){if(k===low||BUILTIN[k].toLowerCase()===low)hit=k;});if(hit)return hit;
+    var ex='';customCats().forEach(function(c){if(c.toLowerCase()===low)ex=c;});return ex||s;}
+  function fillCatSelect(sel,val,noNew,extra){clear(sel);
+    Object.keys(BUILTIN).forEach(function(k){sel.appendChild(h('option',{value:k,text:BUILTIN[k]}));});
+    var cust=customCats();(extra||[]).concat([val]).forEach(function(c){if(c&&!BUILTIN[c]&&cust.indexOf(c)<0)cust.push(c);});
+    cust.sort(function(a,b){return a.localeCompare(b);}).forEach(function(c){sel.appendChild(h('option',{value:c,text:c}));});
+    if(!noNew)sel.appendChild(h('option',{value:NEWCAT,text:'+ Add a new type\u2026'}));
+    sel.value=val&&(BUILTIN[val]||cust.indexOf(val)>=0)?val:'login';}
   var TEMPLATES={bank:[['Account number',false],['IFSC',false],['Transaction password',true],['UPI PIN',true],['Registered mobile',false]],card:[['Card holder',false],['Expiry (MM/YY)',false],['CVV',true],['ATM PIN',true],['Issuing bank',false]],wifi:[['Router address',false],['Router admin password',true]],id:[['Number',false],['Issued on',false],['Expires on',false]],login:[['Recovery email',false],['Security answer',true],['Backup codes',true]]};
   var SECRET_RE=/pin|cvv|otp|secret|answer|backup|code|passphrase|private|token|password|pwd|tpin|mpin/i;
   var ITER=600000,YEAR=365*86400000;
@@ -475,18 +489,19 @@ footer{margin-top:24px;color:var(--muted);font-size:13px;max-width:72ch;line-hei
   /* ---------- render ---------- */
   var catSel=load(LS.cat,'all'),query='',selected=null;
   function entries(){return Object.keys(PLAIN).map(function(k){return PLAIN[k];});}
-  function match(p,H){if(catSel==='fav'&&!p.fav)return false;if(catSel==='weak'&&!H.weak[p.id])return false;if(catSel==='reused'&&!H.reused[p.id])return false;if(catSel==='old'&&!H.old[p.id])return false;if(CATS[catSel]&&p.category!==catSel)return false;
-    if(!query)return true;var hay=[p.title,p.username,p.url,(p.tags||[]).join(' '),CATS[p.category]||'',(p.fields||[]).map(function(f){return f.label+' '+(f.secret?'':f.value);}).join(' ')].join(' ').toLowerCase();return query.toLowerCase().split(/\s+/).every(function(w){return hay.indexOf(w)>=0;});}
+  function match(p,H){if(catSel==='fav'&&!p.fav)return false;if(catSel==='weak'&&!H.weak[p.id])return false;if(catSel==='reused'&&!H.reused[p.id])return false;if(catSel==='old'&&!H.old[p.id])return false;if(!SPECIAL[catSel]&&p.category!==catSel)return false;
+    if(!query)return true;var hay=[p.title,p.username,p.url,(p.tags||[]).join(' '),catName(p.category),(p.fields||[]).map(function(f){return f.label+' '+(f.secret?'':f.value);}).join(' ')].join(' ').toLowerCase();return query.toLowerCase().split(/\s+/).every(function(w){return hay.indexOf(w)>=0;});}
   function renderRail(H){var all=entries(),box=$('#cats');clear(box);
+    if(!SPECIAL[catSel]&&!all.some(function(p){return p.category===catSel;})){catSel='all';save(LS.cat,catSel);}
     function item(key,label,n,cls){box.appendChild(h('button',{class:'item'+(cls||''),type:'button','aria-pressed':String(catSel===key),onclick:function(){catSel=key;save(LS.cat,catSel);renderAll();}},[label,h('span',{class:'n',text:String(n)})]));}
     item('all','Everything',all.length);item('fav','Favourites',all.filter(function(p){return p.fav;}).length);
-    Object.keys(CATS).forEach(function(c){var n=all.filter(function(p){return p.category===c;}).length;if(n)item(c,CATS[c],n);});
+    Object.keys(BUILTIN).concat(customCats()).forEach(function(c){var n=all.filter(function(p){return p.category===c;}).length;if(n)item(c,catName(c),n);});
     var hb=$('#health');clear(hb);[['weak','Weak passwords'],['reused','Reused passwords'],['old','Older than a year']].forEach(function(x){var n=Object.keys(H[x[0]]).length;hb.appendChild(h('button',{class:'item'+(n?' h':''),type:'button','aria-pressed':String(catSel===x[0]),onclick:function(){catSel=x[0];save(LS.cat,catSel);renderAll();}},[x[1],h('span',{class:'n',text:String(n)})]));});}
   function renderList(H){var box=$('#list');clear(box);var list=entries().filter(function(p){return match(p,H);}).sort(function(a,b){return (b.fav?1:0)-(a.fav?1:0)||a.title.localeCompare(b.title);});
     if(!list.length){box.appendChild(h('p',{class:'empty',text:entries().length?'Nothing matches.':'The vault is empty. Add your first entry, or import a CSV from your browser or another password manager in Settings.'}));return;}
     list.forEach(function(p){var r=h('div',{class:'row',role:'button',tabindex:'0','aria-current':String(selected===p.id),onclick:function(e){if(e.target.closest('button'))return;selected=p.id;renderAll();},onkeydown:function(e){if(e.key==='Enter'&&!e.target.closest('button')){selected=p.id;renderAll();}}});
       r.appendChild(h('span',{class:'mg',text:mono(p.title),style:'background:'+hashColor(p.title)}));
-      r.appendChild(h('span',{class:'t'},[h('b',{text:p.title}),h('span',{text:p.username||domain(p.url||'')||CATS[p.category]||''})]));
+      r.appendChild(h('span',{class:'t'},[h('b',{text:p.title}),h('span',{text:p.username||domain(p.url||'')||catName(p.category)})]));
       var side=h('span',{class:'side'});if(H.weak[p.id])side.appendChild(h('span',{class:'pill weak',text:'weak'}));if(H.reused[p.id])side.appendChild(h('span',{class:'pill reused',text:'reused'}));
       if(p.password)side.appendChild(iconBtn('key','Copy password',function(e){e.stopPropagation();copyText(p.password,'password');}));
       var star=iconBtn('star',p.fav?'Remove from favourites':'Add to favourites',function(e){e.stopPropagation();p.fav=!p.fav;saveEntry(p);},'star');star.setAttribute('aria-pressed',String(!!p.fav));star.querySelector('path').setAttribute('fill',p.fav?'currentColor':'none');side.appendChild(star);
@@ -502,7 +517,7 @@ footer{margin-top:24px;color:var(--muted);font-size:13px;max-width:72ch;line-hei
     return h('div',{class:'field'},[h('label',{text:label}),v]);}
   function renderDetail(H){var box=$('#detail');clear(box);var p=selected&&PLAIN[selected];if(!p){box.hidden=true;return;}box.hidden=false;
     var hd=h('div',{class:'hd'},[h('span',{class:'mg',text:mono(p.title),style:'background:'+hashColor(p.title)})]);
-    var sub=h('div',{class:'sub'},[h('span',{class:'pill cat',text:CATS[p.category]||'Other'})]);(p.tags||[]).forEach(function(t){sub.appendChild(h('span',{class:'pill',text:t}));});if(H.weak[p.id])sub.appendChild(h('span',{class:'pill weak',text:'weak password'}));if(H.reused[p.id])sub.appendChild(h('span',{class:'pill reused',text:'reused password'}));if(H.old[p.id])sub.appendChild(h('span',{class:'pill old',text:'over a year old'}));
+    var sub=h('div',{class:'sub'},[h('span',{class:'pill cat',text:catName(p.category)})]);(p.tags||[]).forEach(function(t){sub.appendChild(h('span',{class:'pill',text:t}));});if(H.weak[p.id])sub.appendChild(h('span',{class:'pill weak',text:'weak password'}));if(H.reused[p.id])sub.appendChild(h('span',{class:'pill reused',text:'reused password'}));if(H.old[p.id])sub.appendChild(h('span',{class:'pill old',text:'over a year old'}));
     hd.appendChild(h('div',{style:'flex:1;min-width:0'},[h('h2',{text:p.title}),sub]));hd.appendChild(iconBtn('star',p.fav?'Remove from favourites':'Add to favourites',function(){p.fav=!p.fav;saveEntry(p);},'star'));hd.lastChild.setAttribute('aria-pressed',String(!!p.fav));hd.lastChild.querySelector('path').setAttribute('fill',p.fav?'currentColor':'none');
     hd.appendChild(h('button',{class:'btn quiet',type:'button',text:'✕','aria-label':'Close',onclick:function(){selected=null;renderAll();}}));box.appendChild(hd);
     var uLabel=p.category==='wifi'?'Network name':p.category==='card'?'Card number':p.category==='bank'?'Customer ID / User ID':p.category==='id'?'Number / ID':'Username',pLabel=p.category==='wifi'?'Wi-Fi password':p.category==='card'?'Card PIN':p.category==='bank'?'Login password':'Password';
@@ -520,14 +535,14 @@ footer{margin-top:24px;color:var(--muted);font-size:13px;max-width:72ch;line-hei
   function saveEntry(p){if(!KEY)return;p.updatedAt=Date.now();var id=p.id,payload=clone(p);delete payload.id;PLAIN[id]=p;renderAll();
     encryptJSON(KEY,payload,id).then(function(blob){storeDoc({id:id,vid:META.vid,iv:blob.iv,ct:blob.ct,updatedAt:p.updatedAt});}).catch(function(){toast('Could not encrypt this entry');});}
   function openEditor(p){editing=p||null;$('#editTitle').textContent=p?'Edit entry':'New entry';
-    $('#fTitle').value=p?p.title:'';$('#fCat').value=p&&CATS[p.category]?p.category:'login';$('#fUser').value=p?(p.username||''):'';$('#fPass').value=p?(p.password||''):'';$('#fPass').type='password';$('#fUrl').value=p?(p.url||''):'';$('#fTags').value=p?(p.tags||[]).join(', '):'';$('#fNotes').value=p?(p.notes||''):'';
+    $('#fTitle').value=p?p.title:'';fillCatSelect($('#fCat'),p?p.category:'login');$('#fCatNew').value='';$('#fCatNew').hidden=true;$('#fUser').value=p?(p.username||''):'';$('#fPass').value=p?(p.password||''):'';$('#fPass').type='password';$('#fUrl').value=p?(p.url||''):'';$('#fTags').value=p?(p.tags||[]).join(', '):'';$('#fNotes').value=p?(p.notes||''):'';
     setFields(p?(p.fields||[]):[]);
     $('#gen').hidden=true;$('#genToggle').setAttribute('aria-expanded','false');catLabels();setMeter($('#fMeter'),$('#fMeterText'),$('#fMeterBits'),$('#fPass').value);
     var d=$('#editDel');clear(d);if(p)d.appendChild(confirmBtn('Delete','Delete this entry?',function(){$('#editor').close();storeDel(p.id);selected=null;renderAll();toast('Deleted');}));
     $('#editor').showModal();setTimeout(function(){$('#fTitle').focus();},30);}
   function catLabels(){var c=$('#fCat').value;$('#fUserLabel').textContent=c==='wifi'?'Network name (SSID)':c==='card'?'Card number':c==='bank'?'Customer ID / User ID':c==='id'?'Number / ID':'Username or email';$('#fPassLabel').textContent=c==='wifi'?'Wi-Fi password':c==='card'?'Card PIN':c==='bank'?'Login password':c==='note'?'Secret (optional)':'Password';
-    var t=$('#fTemplate'),tpl=TEMPLATES[c];t.hidden=!tpl;if(tpl)t.textContent='Add the usual '+CATS[c].toLowerCase()+' fields';}
-  $('#fCat').addEventListener('change',catLabels);
+    var t=$('#fTemplate'),tpl=TEMPLATES[c];t.hidden=!tpl;if(tpl)t.textContent='Add the usual '+catName(c).toLowerCase()+' fields';}
+  $('#fCat').addEventListener('change',function(){var isNew=this.value===NEWCAT,inp=$('#fCatNew');inp.hidden=!isNew;if(isNew){inp.value='';inp.focus();}catLabels();});
   /* extra fields */
   function fieldRow(f){var row=h('div',{class:'frow'});var lab=h('input',{type:'text',placeholder:'Label',maxlength:'40',value:f.label||'','aria-label':'Field label'});var val=h('input',{type:f.secret?'password':'text',class:'val',placeholder:'Value',maxlength:'500',value:f.value||'','aria-label':'Field value',autocomplete:'off'});
     var lock=h('button',{class:'btn icon lock',type:'button','aria-pressed':String(!!f.secret),title:'Hide this value until revealed','aria-label':'Secret',onclick:function(){var on=lock.getAttribute('aria-pressed')!=='true';lock.setAttribute('aria-pressed',String(on));val.type=on?'password':'text';}});lock.textContent='🔒';
@@ -540,11 +555,12 @@ footer{margin-top:24px;color:var(--muted);font-size:13px;max-width:72ch;line-hei
   $('#fPass').addEventListener('input',function(){setMeter($('#fMeter'),$('#fMeterText'),$('#fMeterBits'),this.value);});
   $('#editClose').addEventListener('click',function(){$('#editor').close();});$('#editCancel').addEventListener('click',function(){$('#editor').close();});
   $('#editForm').addEventListener('submit',function(e){e.preventDefault();if(!KEY)return;var title=$('#fTitle').value.trim();if(!title){$('#fTitle').focus();return;}
+    var cat=$('#fCat').value;if(cat===NEWCAT){cat=cleanCat($('#fCatNew').value);if(!cat){$('#fCatNew').focus();return;}}
     var pw=$('#fPass').value,tags=$('#fTags').value.split(',').map(function(t){return t.trim();}).filter(Boolean),now=Date.now();
     var p=editing||{id:uid(),createdAt:now,fav:false,history:[],pwChangedAt:now};
     if(editing&&editing.password&&pw!==editing.password){p.history=(p.history||[]).concat([{password:editing.password,until:now}]).slice(-5);p.pwChangedAt=now;}
     if(!editing)p.pwChangedAt=now;
-    p.title=title;p.category=$('#fCat').value;p.username=$('#fUser').value.trim();p.password=pw;p.url=$('#fUrl').value.trim();p.tags=tags;p.notes=$('#fNotes').value;p.fields=readFields();
+    p.title=title;p.category=cat;p.username=$('#fUser').value.trim();p.password=pw;p.url=$('#fUrl').value.trim();p.tags=tags;p.notes=$('#fNotes').value;p.fields=readFields();
     selected=p.id;saveEntry(p);$('#editor').close();toast(editing?'Saved':'Added '+title);editing=null;});
   $('#newBtn').addEventListener('click',function(){openEditor(null);});
   /* generator */
@@ -577,11 +593,12 @@ footer{margin-top:24px;color:var(--muted);font-size:13px;max-width:72ch;line-hei
     recs.forEach(function(r){var title=String(r.title||'').trim();if(!title)return;var k=(title+'|'+(r.username||'')).toLowerCase(),ex=byKey[k],now=Date.now(),fields=cleanFields(r.fields);
       if(ex){var ch=false;['username','password','url','notes'].forEach(function(f){if(r[f]&&r[f]!==ex[f]){if(f==='password'&&ex.password){ex.history=(ex.history||[]).concat([{password:ex.password,until:now}]).slice(-5);ex.pwChangedAt=now;}ex[f]=r[f];ch=true;}});if(r.tags&&r.tags.length){ex.tags=r.tags;ch=true;}
         if(fields.length){var have={};(ex.fields||[]).forEach(function(f){have[f.label.toLowerCase()]=f;});fields.forEach(function(f){var o=have[f.label.toLowerCase()];if(o){if(o.value!==f.value){o.value=f.value;ch=true;}}else{ex.fields=(ex.fields||[]).concat([f]);ch=true;}});}
-        if(r.category&&CATS[r.category]&&r.category!==ex.category&&ex.category==='login'){ex.category=r.category;ch=true;}
+        if(r.category&&r.category!==ex.category&&ex.category==='login'){ex.category=r.category;ch=true;}
         if(ch){saveEntry(ex);updated++;}}
-      else{var p={id:uid(),title:title,category:CATS[r.category]?r.category:'login',username:r.username||'',password:r.password||'',url:r.url||'',notes:r.notes||'',tags:r.tags||[],fields:fields,fav:!!r.fav,createdAt:r.createdAt||now,pwChangedAt:r.pwChangedAt||now,history:[]};byKey[k]=p;saveEntry(p);added++;}});
+      else{var p={id:uid(),title:title,category:r.category||'login',username:r.username||'',password:r.password||'',url:r.url||'',notes:r.notes||'',tags:r.tags||[],fields:fields,fav:!!r.fav,createdAt:r.createdAt||now,pwChangedAt:r.pwChangedAt||now,history:[]};byKey[k]=p;saveEntry(p);added++;}});
     return 'Imported '+added+' new, updated '+updated+'.';}
-  function normCat(s){s=String(s||'').toLowerCase();return /card|credit|debit/.test(s)?'card':/bank|netbank|upi|account/.test(s)?'bank':/note/.test(s)?'note':/wifi|wi-fi|network|router/.test(s)?'wifi':/ident|aadhaar|passport|licen|pan\b|document/.test(s)?'id':CATS[s]?s:'';}
+  function normCat(s){var raw=String(s||'').replace(/\s+/g,' ').trim(),low=raw.toLowerCase();
+    return /card|credit|debit/.test(low)?'card':/bank|netbank|upi|account/.test(low)?'bank':/note/.test(low)?'note':/wifi|wi-fi|network|router/.test(low)?'wifi':/ident|aadhaar|passport|licen|pan\b|document/.test(low)?'id':cleanCat(raw);}
   function parseFieldLines(text){return String(text||'').split(/\n/).map(function(l){var m=/^\s*([^:]{1,40}?)\s*(\[hidden\])?\s*:\s*(.+)$/.exec(l);return m?{label:m[1].trim(),value:m[3].trim(),secret:!!m[2]||SECRET_RE.test(m[1])}:null;}).filter(Boolean);}
   function csvToRecords(text){var rows=parseCsv(text);if(rows.length<2)return null;var head=rows[0].map(function(x){return x.trim().toLowerCase();}),used={};
     function col(names){for(var i=0;i<names.length;i++){var k=head.indexOf(names[i]);if(k>=0){used[k]=1;return k;}}return -1;}
@@ -642,13 +659,13 @@ footer{margin-top:24px;color:var(--muted);font-size:13px;max-width:72ch;line-hei
     else if(r.category==='bank'){if(!r.username)r.username=take(/^(customer id|user ?id|login id|cif|cust id)$/i);if(!r.password)r.password=take(/^(login |net ?banking )?password$/i);}
     else if(r.category==='wifi'){if(!r.username)r.username=take(/^(ssid|network( name)?|wifi name)$/i);if(!r.password)r.password=take(/^(wifi |network )?(password|key|passphrase)$/i);}}
   var PASTE=[];
-  function renderPreview(){var box=$('#ptable');clear(box);
+  function renderPreview(){var box=$('#ptable');clear(box);var pcats=PASTE.map(function(r){return r.category;});
     PASTE.forEach(function(r,i){var row=h('div',{class:'prow'+(r.skip?' off':'')});
       var cb=h('input',{type:'checkbox','aria-label':'Import this entry'});cb.checked=!r.skip;cb.addEventListener('change',function(){r.skip=!cb.checked;row.classList.toggle('off',r.skip);});row.appendChild(cb);
       var t=h('input',{type:'text',value:r.title||'','aria-label':'Title',placeholder:'Title'});t.addEventListener('input',function(){r.title=t.value;});row.appendChild(t);
       row.appendChild(h('span',{class:'m',text:r.username||'—',title:r.username||''}));
       row.appendChild(h('span',{class:'m',text:r.password?'•'.repeat(Math.min(12,r.password.length)):'no password',style:r.password?'':'color:var(--warn)'}));
-      var sel=h('select',{'aria-label':'Type'});Object.keys(CATS).forEach(function(c){sel.appendChild(h('option',{value:c,text:CATS[c]}));});sel.value=CATS[r.category]?r.category:'login';sel.addEventListener('change',function(){r.category=sel.value;});row.appendChild(sel);
+      var sel=h('select',{'aria-label':'Type'});fillCatSelect(sel,r.category||'login',true,pcats);sel.addEventListener('change',function(){r.category=sel.value;});row.appendChild(sel);
       var extras=[];if(r.url)extras.push(r.url);(r.fields||[]).forEach(function(f){extras.push(f.label+': '+(f.secret?'•••':f.value));});if(r.notes)extras.push('note: '+r.notes.split('\n')[0]);
       if(extras.length)row.appendChild(h('span',{class:'x',text:extras.join('  ·  '),title:extras.join('\n')}));
       box.appendChild(row);});

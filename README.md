@@ -231,6 +231,18 @@ Bitwarden, 1Password, Excel, or this vault). Bank, Card, Wi-Fi and Identity type
 fields hold account numbers, PINs, expiry dates and the like. For a scanned notebook, run local OCR and
 `seed/ocr-notebook-to-csv.py`; only masked summaries are printed.
 
+### Entry types
+
+Login, Bank, Card, Wi-Fi, Secure note, Identity and Other are built in. Beyond those, the Type dropdown in an
+entry ends with **+ Add a new type…**: pick it, name the type (up to 24 characters), and save. The name is
+stored on the entry itself, so it is encrypted and syncs like the rest of the vault — there is no separate
+list of types to keep in step. Every type in use then shows up in the left rail with its count, and in the Type
+dropdown of every other entry.
+
+Typing a name that already exists reuses it whatever the capitalisation, and typing a built-in name (“Card”)
+maps back to the built-in. A custom type disappears on its own once no entry uses it. An import keeps an
+unrecognised `type` or folder column as a custom type instead of dropping it to Login.
+
 ## Keys notation in Keycap Atlas
 
 Join simultaneous keys with `+`, separate steps with a space: `Ctrl+Shift+P`, `Ctrl+K Ctrl+S`, `g i`, `Alt+H O I`.
