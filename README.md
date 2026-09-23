@@ -373,6 +373,10 @@ the list, and **↑ / ↓** anywhere else walk through the results. **Esc** clos
 clears the search. Rows also have one-click copy buttons for the username and the password (shown on hover
 on a laptop, always on a phone); a copy button turns into a tick for a moment when the copy worked.
 
+The rail remembers the last view between visits, with one exception: unlocking always leaves a health view
+(*Weak*, *Reused*, *Older than a year*) for *Everything*, because a short health list right after unlocking looks
+like missing entries. A type view such as *Login* is a deliberate choice and stays.
+
 ## Keys notation in Keycap Atlas
 
 Join simultaneous keys with `+`, separate steps with a space: `Ctrl+Shift+P`, `Ctrl+K Ctrl+S`, `g i`, `Alt+H O I`.

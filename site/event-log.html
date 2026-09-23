@@ -54,6 +54,8 @@ h1{font-family:"Space Grotesk",system-ui,sans-serif;font-weight:700;font-size:cl
 .tabs::-webkit-scrollbar{display:none}
 .tab{flex:none;background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);font:600 14.5px Figtree,system-ui,sans-serif;padding:9px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;min-height:40px}
 .tab[aria-selected="true"]{color:var(--text);border-bottom-color:var(--accent)}
+/* phones: tighter tabs so all five fit without scrolling "History" off the edge */
+@media (max-width:480px){.tabs{gap:0}.tab{flex:1 1 auto;justify-content:center;padding:9px 5px;font-size:14px;gap:5px}}
 .tab .n{background:var(--accent);color:var(--accent-ink);border-radius:999px;font:500 11px/1 "DM Mono",ui-monospace,monospace;padding:4px 6px;min-width:19px;text-align:center}
 .tab .n.warn{background:var(--danger);color:#fff}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:12px;box-shadow:var(--shadow)}

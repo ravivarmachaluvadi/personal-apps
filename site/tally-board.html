@@ -156,6 +156,10 @@ table.agg td.tot b{color:var(--text);font-weight:600}
 .notes{columns:1;column-gap:12px}
 @media (min-width:560px){.notes{columns:2}}
 @media (min-width:900px){.notes{columns:3}}
+/* Today's side panel is narrow at every screen width, so its notes are sized by width, not by screen; a grid,
+   not columns, because columns split a note's pin (drawn above the note) across the column break */
+#pinnedNotes{columns:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px 12px;align-items:start;padding-top:6px}
+#pinnedNotes .note{margin-bottom:0}
 .note{break-inside:avoid;margin-bottom:12px;border-radius:4px 4px 14px 14px;padding:14px 14px 10px;background:var(--n0);color:var(--text);position:relative}
 .note:nth-child(odd){transform:rotate(-.4deg)}.note:nth-child(even){transform:rotate(.3deg)}
 .note.pinned::before{content:"";position:absolute;top:-6px;left:50%;width:10px;height:10px;border-radius:50%;background:var(--text);opacity:.7;transform:translateX(-50%)}
