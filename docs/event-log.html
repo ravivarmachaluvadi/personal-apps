@@ -156,7 +156,14 @@ dialog::backdrop{background:rgba(10,12,16,.5)}
 .hist-row{display:flex;gap:10px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
 .hist-row .d{font:500 12.5px "DM Mono",ui-monospace,monospace;color:var(--faint);flex:none}
 .hist-row .t{flex:1 1 200px;overflow-wrap:anywhere}
+.pager{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
+.pager .pages{display:inline-flex;gap:4px;flex-wrap:wrap}
+.pager .pages button{min-width:34px}
+.pager .pages button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.pager .gap{color:var(--faint);padding:0 2px}
+.pager .info{margin-left:auto;display:inline-flex;gap:10px;align-items:center;color:var(--muted);font-size:13px}
 @media (max-width:860px){.grid2{grid-template-columns:1fr}.f3{grid-template-columns:1fr}}
+@media (max-width:520px){.pager .lbl{display:none}.pager .info{margin-left:0}}
 @media (max-width:400px){.cell{padding:3px}.cell .dnum{font-size:11px}.dot{width:7px;height:7px}}
 </style>
 </head>
@@ -310,15 +317,22 @@ dialog::backdrop{background:rgba(10,12,16,.5)}
       <div class="row" style="margin-bottom:12px">
         <div class="seg" id="hState">
           <button type="button" data-s="" class="on">Any</button>
+          <button type="button" data-s="planned">Planned</button>
           <button type="button" data-s="done">Done</button>
           <button type="button" data-s="missed">Missed</button>
           <button type="button" data-s="cancelled">Skipped</button>
         </div>
         <label class="ck"><input type="checkbox" id="hArchOnly"><span>archived only</span></label>
         <span class="foot" id="hCount" style="margin:0 0 0 auto"></span>
+        <select id="hSort" aria-label="Sort order" style="width:auto"></select>
       </div>
       <div id="histBody"></div>
-      <div class="row" style="margin-top:12px"><button class="btn" id="hMore" type="button" hidden>Show 50 more</button></div>
+      <div class="pager" id="hPager" hidden>
+        <button class="btn sm" id="hPrev" type="button" aria-label="Previous page">&#8249;<span class="lbl"> Prev</span></button>
+        <span class="pages" id="hPages"></span>
+        <button class="btn sm" id="hNext" type="button" aria-label="Next page"><span class="lbl">Next </span>&#8250;</button>
+        <span class="info"><span id="hRange"></span><select id="hSize" aria-label="Events per page" style="width:auto"></select></span>
+      </div>
     </div>
     <div class="card">
       <h2>Do something with these results</h2>
@@ -1010,7 +1024,10 @@ dialog::backdrop{background:rgba(10,12,16,.5)}
     var col=h('div',{class:'sw'}),cur=ty.color||0;
     colorPicker(col,8,cur,function(i){cur=i;});
     var dlg=h('dialog',{},[card]);
-    card.appendChild(h('h2',{text:'Edit type'}));
+    /* built on demand, so it must leave the page however it closes, Esc included */
+    dlg.addEventListener('close',function(){dlg.remove();});
+    card.appendChild(h('h2',{class:'dlgh'},[h('span',{text:'Edit type'}),
+      h('button',{class:'btn quiet x',type:'button','aria-label':'Close without saving',text:'✕',onclick:function(){dlg.close();}})]));
     card.appendChild(h('div',{class:'fld'},[h('label',{text:'Name'}),name]));
     card.appendChild(h('div',{class:'row'},[
       h('div',{class:'fld',style:'flex:0 0 100px'},[h('label',{text:'Code'}),code]),
@@ -1018,26 +1035,32 @@ dialog::backdrop{background:rgba(10,12,16,.5)}
     card.appendChild(h('div',{class:'fld'},[h('label',{text:'Colour'}),col]));
     card.appendChild(h('label',{class:'ck'},[plan,h('span',{text:'Can be planned ahead'})]));
     card.appendChild(h('div',{class:'end'},[
-      h('button',{class:'btn',type:'button',text:'Cancel',onclick:function(){dlg.close();dlg.remove();}}),
+      h('button',{class:'btn',type:'button',text:'Cancel',onclick:function(){dlg.close();}}),
       h('button',{class:'btn pri',type:'button',text:'Save',onclick:function(){
         var c=copy(ty);
         c.name=name.value.trim()||ty.name;
         c.code=code.value.trim().toUpperCase()||mono(c.name);
         c.color=cur;c.archiveDays=arch.value===''?null:+arch.value;c.plannable=plan.checked;
-        put(c);dlg.close();dlg.remove();toast('Type saved');}})]));
+        put(c);dlg.close();toast('Type saved');}})]));
     document.body.appendChild(dlg);dlg.showModal();
   }
 
-  /* ---------- History ---------- */
-  var hState='',hShown=50;
+  /* ---------- History: every event, planned ones included, a page at a time ---------- */
+  var SIZES=[['25','25 a page'],['50','50 a page'],['100','100 a page']];
+  var SORTS=[['desc','Newest first'],['asc','Oldest first']];
+  var hState='',hPage=1;
+  var hSize=+lsGet('eventlog.hSize','25');if(!(hSize===25||hSize===50||hSize===100))hSize=25;
+  var hSort=lsGet('eventlog.hSort','desc')==='asc'?'asc':'desc';
+  function histFiltered(){
+    return !!(($('#hQ').value||'').trim()||hState||$('#hType').value||$('#hFrom').value||$('#hTo').value||$('#hArchOnly').checked);
+  }
   function histList(){
     var q=($('#hQ').value||'').trim().toLowerCase().split(/\s+/).filter(Boolean);
     var ty=$('#hType').value,only=$('#hArchOnly').checked;
     /* From/To is the single source of truth; the year select just fills them in */
     var from=$('#hFrom').value,to=$('#hTo').value;
-    return events().filter(function(e){
+    var list=events().filter(function(e){
       var st=stateOf(e);
-      if(st==='planned')return false;
       if(hState&&st!==hState)return false;
       if(ty&&e.typeId!==ty)return false;
       if(from&&e.date<from)return false;
@@ -1045,12 +1068,54 @@ dialog::backdrop{background:rgba(10,12,16,.5)}
       if(only&&!isArchived(e))return false;
       if(q.length){
         var t=typeOf(e);
-        var hay=(String(e.title||'')+' '+String(e.note||'')+' '+(t?t.name:'')+' '+e.date).toLowerCase();
+        /* the month name is in the haystack so "september rent" finds it */
+        var hay=(String(e.title||'')+' '+String(e.note||'')+' '+(t?t.name:'')+' '+e.date+' '+MOL[+e.date.slice(5,7)-1]).toLowerCase();
         for(var i=0;i<q.length;i++)if(hay.indexOf(q[i])<0)return false;
       }
       return true;
-    }).sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:0;});
+    }).sort(byDate);
+    if(hSort==='desc')list.reverse();
+    return list;
   }
+  function histActions(e,st){
+    var out=[];
+    if(st==='planned'||st==='missed'){
+      out.push(h('button',{class:'btn sm pri',type:'button',text:'Done',onclick:function(){setState(e,'done');}}));
+      out.push(h('button',{class:'btn sm',type:'button',text:'Skip',onclick:function(){setState(e,'cancelled');}}));
+    }else out.push(h('button',{class:'btn sm quiet',type:'button',text:'Reopen',onclick:function(){setState(e,'planned');}}));
+    out.push(h('button',{class:'btn sm quiet',type:'button',text:e.keep?'Unpin':'Keep',onclick:function(){toggleKeep(e);}}));
+    out.push(confirmBtn('Delete','Yes',function(){remove(e.id);}));
+    return out;
+  }
+  function renderPager(n,pages){
+    var pg=$('#hPager'),box=$('#hPages');clear(box);
+    /* nothing to page through and no size choice worth offering: stay out of the way */
+    pg.hidden=n<=+SIZES[0][0];
+    var a=(hPage-1)*hSize+1,b=Math.min(n,hPage*hSize);
+    $('#hRange').textContent=n?a+'\u2013'+b+' of '+n:'';
+    $('#hPrev').disabled=hPage<=1;
+    $('#hNext').disabled=hPage>=pages;
+    $('#hPrev').hidden=$('#hNext').hidden=pages<2;
+    if(pages<2)return;
+    /* first, last, and two either side of the current page; gaps become an ellipsis */
+    var last=0;
+    for(var p=1;p<=pages;p++){
+      if(p!==1&&p!==pages&&Math.abs(p-hPage)>2)continue;
+      if(last&&p-last>1)box.appendChild(h('span',{class:'gap',text:'\u2026'}));
+      (function(p){
+        box.appendChild(h('button',{class:'btn sm'+(p===hPage?' on':''),type:'button','data-page':String(p),
+          'aria-label':'Page '+p,'aria-current':p===hPage?'page':null,text:String(p),onclick:function(){goPage(p);}}));
+      })(p);
+      last=p;
+    }
+  }
+  function goPage(p){
+    hPage=p;renderHist();
+    /* the pager sits under the list, so a new page would otherwise open at its bottom */
+    var top=$('#histBody').getBoundingClientRect().top;
+    if(top<0)$('#histBody').scrollIntoView({block:'start'});
+  }
+  function histReset(){hPage=1;renderHist();}
   function renderHist(){
     var sel=$('#hType'),cur=sel.value;
     fillSelect(sel,[['','Any type']].concat(types().map(function(t){return [t.id,t.name];})),cur);
@@ -1058,39 +1123,51 @@ dialog::backdrop{background:rgba(10,12,16,.5)}
     var ys=Object.keys(years).sort().reverse();
     var ysel=$('#hYear'),ycur=ysel.value;
     fillSelect(ysel,[['','Any year']].concat(ys.map(function(y){return [y,y];})),ycur);
-    var list=histList(),box=$('#histBody');clear(box);
+    fillSelect($('#hSort'),SORTS,hSort);
+    fillSelect($('#hSize'),SIZES,String(hSize));
+    var list=histList(),box=$('#histBody'),filtered=histFiltered(),total=events().length;clear(box);
+    var pages=Math.max(1,Math.ceil(list.length/hSize));
+    /* a delete can empty the last page; fall back to the new last page instead of a blank one */
+    if(hPage>pages)hPage=pages;
+    if(hPage<1)hPage=1;
     if(!list.length){
-      var filtered=($('#hQ').value||hState||$('#hType').value||$('#hYear').value||$('#hArchOnly').checked);
-      box.appendChild(h('div',{class:'empty',text:filtered?'Nothing matches.':'No history yet \u2014 finished and missed events land here.'}));
+      if(filtered){
+        box.appendChild(h('div',{class:'empty',text:'Nothing matches.'}));
+        box.appendChild(h('button',{class:'btn sm',type:'button',text:'Clear all filters',onclick:clearHistFilters}));
+      }else box.appendChild(h('div',{class:'empty',text:'No events yet \u2014 add one on the Today tab, or set up a repeat on the Types tab.'}));
     }else{
       var cur2=null,grp=null;
-      list.slice(0,hShown).forEach(function(e){
+      list.slice((hPage-1)*hSize,hPage*hSize).forEach(function(e){
         var mk=e.date.slice(0,7);
         if(mk!==cur2){cur2=mk;grp=h('div',{style:'margin-bottom:14px'});
           grp.appendChild(h('div',{class:'sect',text:MOL[+mk.slice(5,7)-1]+' '+mk.slice(0,4)}));box.appendChild(grp);}
         var t=typeOf(e),st=stateOf(e);
         var bits=[];
+        if(e.time)bits.push(e.time);
         if(e.note)bits.push(e.note);
         if((st==='done'||st==='cancelled')&&e.doneAt){
           var late=diffDays(e.date,keyOf(new Date(e.doneAt)));
           if(late>0)bits.push(st+' '+late+' day'+(late===1?'':'s')+' late');
         }
+        if(st==='planned')bits.push(rel(e.date));
         if(isArchived(e))bits.push('archived');
         grp.appendChild(h('div',{class:'hist-row'},[
           h('span',{class:'d',text:e.date}),
-          h('span',{class:'mg',style:'background:'+tcolor(t)+';width:21px;height:21px;border-radius:6px;font-size:10px'},[tcode(t)]),
+          h('span',{class:'mg',style:'background:'+tcolor(t)+';width:21px;height:21px;border-radius:6px;font-size:10px',title:t?t.name:'No type'},[tcode(t)]),
           h('span',{class:'t'},[h('b',{text:e.title||'(untitled)'}),bits.length?' \u00b7 '+bits.join(' \u00b7 '):null]),
           h('span',{class:'pill '+st,text:st}),
-          h('button',{class:'btn sm quiet',type:'button',text:'Reopen',onclick:function(){setState(e,'planned');}}),
-          h('button',{class:'btn sm quiet',type:'button',text:e.keep?'Unpin':'Keep',onclick:function(){toggleKeep(e);}}),
-          confirmBtn('Delete','Yes',function(){remove(e.id);})]));
+          e.keep?h('span',{class:'pill keep',text:'kept'}):null
+        ].concat(histActions(e,st))));
       });
     }
-    $('#hMore').hidden=list.length<=hShown;
-    var yrs=list.map(function(e){return e.date.slice(0,4);});
-    $('#hCount').textContent=list.length+' event'+(list.length===1?'':'s')+(yrs.length?' \u00b7 '+yrs[yrs.length-1]+'\u2013'+yrs[0]:'');
+    renderPager(list.length,pages);
+    var lo=list.length?list[0].date.slice(0,4):'',hi=list.length?list[list.length-1].date.slice(0,4):'';
+    if(lo>hi){var sw=lo;lo=hi;hi=sw;}
+    $('#hCount').textContent=(filtered?list.length+' of '+total:String(list.length))+' event'+((filtered?total:list.length)===1?'':'s')+
+      (lo?' \u00b7 '+(lo===hi?lo:lo+'\u2013'+hi):'');
     var del=$('#hDel');clear(del);
-    if(list.length)del.appendChild(confirmBtn('Delete these '+list.length,'Yes, delete '+list.length,function(){
+    /* unfiltered, "these" would be every event in the file; that one lives behind DELETE in Settings */
+    if(list.length&&filtered)del.appendChild(confirmBtn('Delete these '+list.length,'Yes, delete '+list.length,function(){
       putMany(list.map(tomb));toast('Deleted '+list.length+' events');}));
     var s=getSettings();
     /* the buttons name the count so it is obvious they export the filtered set, not everything */
@@ -1100,7 +1177,12 @@ dialog::backdrop{background:rgba(10,12,16,.5)}
     $('#hJson').disabled=!list.length;
     $('#hJson').textContent=list.length?'Export these '+list.length+' as JSON':'Export as JSON';
     $('#hExpFoot').textContent=(s.ics?'':'Turn on the calendar export in Settings to add an .ics download. ')+
-      'Exports cover exactly what the filters above are showing \u2014 narrow by date, type or text first.';
+      'Exports cover every page of what the filters above are showing \u2014 narrow by date, type or text first.'+
+      (filtered||!list.length?'':' Bulk delete appears once a filter narrows the list.');
+  }
+  function clearHistFilters(){
+    $('#hQ').value='';$('#hType').value='';$('#hFrom').value='';$('#hTo').value='';$('#hYear').value='';
+    $('#hArchOnly').checked=false;hState='';segSet('#hState','s','');histReset();
   }
 
   /* ---------- .ics ---------- */
@@ -1410,20 +1492,24 @@ dialog::backdrop{background:rgba(10,12,16,.5)}
       }
     });
 
-    $('#hQ').addEventListener('input',function(){clearTimeout(this._t);this._t=setTimeout(function(){hShown=50;renderHist();},120);});
-    ['#hType','#hArchOnly'].forEach(function(s){$(s).addEventListener('change',function(){hShown=50;renderHist();});});
-    ['#hFrom','#hTo'].forEach(function(s){$(s).addEventListener('change',function(){$('#hYear').value='';hShown=50;renderHist();});});
+    /* any change to what is being looked at starts again from page 1 */
+    $('#hQ').addEventListener('input',function(){clearTimeout(this._t);this._t=setTimeout(histReset,120);});
+    ['#hType','#hArchOnly'].forEach(function(s){$(s).addEventListener('change',histReset);});
+    ['#hFrom','#hTo'].forEach(function(s){$(s).addEventListener('change',function(){$('#hYear').value='';histReset();});});
     $('#hYear').addEventListener('change',function(){
       var y=this.value;
       $('#hFrom').value=y?y+'-01-01':'';
       $('#hTo').value=y?y+'-12-31':'';
-      hShown=50;renderHist();
+      histReset();
     });
     $('#hClear').addEventListener('click',function(){
-      $('#hFrom').value='';$('#hTo').value='';$('#hYear').value='';hShown=50;renderHist();});
+      $('#hFrom').value='';$('#hTo').value='';$('#hYear').value='';histReset();});
     Array.prototype.forEach.call(document.querySelectorAll('#hState button'),function(b){
-      b.addEventListener('click',function(){hState=b.getAttribute('data-s');segSet('#hState','s',hState);hShown=50;renderHist();});});
-    $('#hMore').addEventListener('click',function(){hShown+=50;renderHist();});
+      b.addEventListener('click',function(){hState=b.getAttribute('data-s');segSet('#hState','s',hState);histReset();});});
+    $('#hSort').addEventListener('change',function(){hSort=this.value==='asc'?'asc':'desc';lsSet('eventlog.hSort',hSort);histReset();});
+    $('#hSize').addEventListener('change',function(){hSize=+this.value||25;lsSet('eventlog.hSize',String(hSize));histReset();});
+    $('#hPrev').addEventListener('click',function(){if(hPage>1)goPage(hPage-1);});
+    $('#hNext').addEventListener('click',function(){goPage(hPage+1);});
     $('#hIcs').addEventListener('click',function(){exportIcs(histList(),'events');});
     $('#hJson').addEventListener('click',function(){
       var list=histList(),out={format:'event-log-export',v:1,exportedAt:new Date().toISOString(),items:{}};
@@ -1537,10 +1623,12 @@ dialog::backdrop{background:rgba(10,12,16,.5)}
     maybeNotify();
     if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').then(function(r){SWREG=r;},function(){});
     var lastDay=today();
+    /* every view is a function of the date, so only a new day needs a redraw; redrawing
+       every minute wiped a half-answered "Sure?" and an open Move picker mid-use */
     setInterval(function(){
       var t=today();
-      if(t!==lastDay){lastDay=t;reconcileAll();}
-      renderAll();maybeNotify();
+      if(t!==lastDay){lastDay=t;reconcileAll();renderAll();}
+      maybeNotify();
     },60000);
     if(window.DriveStore)DriveStore.onAuth(function(){setTimeout(function(){reconcileAll();renderAll();},1200);});
   }

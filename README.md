@@ -121,6 +121,12 @@ window (default 30 days, overridable per type and per event, `Never` allowed), a
 which is searchable by text, type, state and any from/to date range. **Nothing is ever deleted automatically.** Deleting is
 always a button you press.
 
+History lists **every** event by default — planned, done, missed and skipped — newest first (or oldest first),
+25, 50 or 100 to a page, with the filters narrowing that list. Any filter change goes back to page 1. Search also
+matches month names, so `september rent` works. The exports cover every page of the filtered list; the bulk
+*Delete these N* only appears once a filter is on, because unfiltered it would mean every event in the file
+(that stays behind *type DELETE* in Settings).
+
 Archiving is derived the same way `missed` is: `isArchived()` is a date comparison evaluated inside each view's
 filter, so changing the window is instant, free and reversible, and the backlog is never rewritten. Events you
 still want in front of you carry a **Keep** pin, which overrides the window and shows them under *Kept here*.
