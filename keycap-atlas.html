@@ -90,6 +90,9 @@ textarea{min-height:70px;resize:vertical}
 .rail{position:sticky;top:12px;display:flex;flex-direction:column;gap:14px}
 @media (max-width:879px){.rail{position:static}}
 .rail h3{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--faint);margin:0 0 6px 6px;font-weight:600}
+.railhd{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 4px 6px}
+.railhd h3{margin:0}
+.railhd .btn{color:var(--accent-deep)}
 .rail .list{display:flex;flex-direction:column;gap:2px}
 @media (max-width:879px){.rail .list{flex-direction:row;flex-wrap:wrap;gap:6px}}
 .rail .item{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:9px;text-align:left;width:100%;font-weight:500;color:var(--muted)}
@@ -214,7 +217,7 @@ footer{margin-top:26px;color:var(--muted);font-size:13px;max-width:72ch;line-hei
   <div class="body">
     <aside class="rail">
       <div>
-        <h3>Apps</h3>
+        <div class="railhd"><h3>Apps</h3><button class="btn sm quiet" id="newAppBtn" type="button">+ New app</button></div>
         <div class="list" id="apps"></div>
       </div>
       <div>
@@ -239,9 +242,10 @@ footer{margin-top:26px;color:var(--muted);font-size:13px;max-width:72ch;line-hei
   <form class="dlg" id="editForm" method="dialog">
     <h2><span id="editTitle">Add a shortcut</span><button class="btn quiet x" type="button" id="editClose" aria-label="Close">✕</button></h2>
     <div class="two">
-      <div><label for="fApp">App</label><input id="fApp" list="appList" placeholder="VS Code, Excel, Windows 11…" maxlength="40" required><datalist id="appList"></datalist></div>
+      <div><label for="fApp">App</label><select id="fApp" required></select></div>
       <div><label for="fOs">Operating system</label><select id="fOs"><option value="win">Windows</option><option value="mac">macOS</option><option value="linux">Linux</option><option value="any">Any (web, cross-platform)</option></select></div>
     </div>
+    <div id="fNewAppWrap" hidden><label for="fNewApp">New app name</label><input id="fNewApp" placeholder="Notion, Figma, Claude desktop…" maxlength="40" autocomplete="off"><p class="hint" id="fNewAppMsg" aria-live="polite">It joins the Apps list with the shortcut you save here.</p></div>
     <div>
       <div class="kind" role="group" aria-label="Kind"><button type="button" data-kind="key" aria-pressed="true">Keyboard shortcut</button><button type="button" data-kind="cmd" aria-pressed="false">Command line</button></div>
       <label for="fKeys" id="fKeysLabel">Keys</label>
@@ -368,7 +372,6 @@ footer{margin-top:26px;color:var(--muted);font-size:13px;max-width:72ch;line-hei
     var box=$('#apps');clear(box);
     box.appendChild(h('button',{class:'item',type:'button','aria-pressed':String(appSel==='all'),onclick:function(){appSel='all';save(LS.app,appSel);renderAll();}},[h('span',{class:'mg',text:'∗',style:'background:var(--text)'}),'All apps',h('span',{class:'n',text:String(total)})]));
     apps.forEach(function(a){box.appendChild(h('button',{class:'item',type:'button','aria-pressed':String(appSel===a),onclick:function(){appSel=appSel===a?'all':a;save(LS.app,appSel);renderAll();}},[h('span',{class:'mg',text:mono(a),style:'background:'+hashColor(a)}),h('span',{text:a,style:'overflow:hidden;text-overflow:ellipsis;white-space:nowrap'}),h('span',{class:'n',text:String(counts[a])})]));});
-    var dl=$('#appList');clear(dl);var all={};items().forEach(function(it){all[it.app]=1;});Object.keys(all).sort().forEach(function(a){dl.appendChild(h('option',{value:a}));});
     document.querySelectorAll('#views .item').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.view===viewSel));});
     document.querySelectorAll('#osSeg button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.os===osSel));});
   }
@@ -401,10 +404,22 @@ footer{margin-top:26px;color:var(--muted);font-size:13px;max-width:72ch;line-hei
   function setKind(k){editKind=k==='cmd'?'cmd':'key';document.querySelectorAll('.kind button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.kind===editKind));});
     var cmd=editKind==='cmd';$('#fKeysLabel').textContent=cmd?'Command':'Keys';$('#fKeys').placeholder=cmd?'caffeinate -t 3600   ·   git log --oneline -20':'Ctrl+Shift+P   ·   Ctrl+K Ctrl+S   ·   g i';$('#recBtn').hidden=cmd;if(cmd)stopRec();updatePreview();}
   document.querySelectorAll('.kind button').forEach(function(b){b.addEventListener('click',function(){setKind(b.dataset.kind);});});
-  function openEditor(it){editing=it||null;$('#editTitle').textContent=it?'Edit entry':'Add a shortcut';
-    $('#fApp').value=it?it.app:(appSel!=='all'?appSel:'');$('#fOs').value=it?it.os:(osSel==='all'?(isMac()?'mac':'win'):osSel);$('#fKeys').value=it?it.keys:'';$('#fAction').value=it?it.action:'';$('#fNote').value=it?(it.note||''):'';$('#fTags').value=it?(it.tags||[]).join(', '):'';
+  /* an app is just the name on its shortcuts, so a new one is born with its first shortcut and leaves when its last one goes */
+  var NEW_APP='__new';
+  function appNames(){var all={};items().forEach(function(it){all[it.app]=1;});return Object.keys(all).sort(function(a,b){return a.localeCompare(b);});}
+  function cleanName(s){return String(s||'').trim().replace(/\s+/g,' ');}
+  function fillAppPicker(cur){var sel=$('#fApp'),names=appNames();clear(sel);
+    if(cur&&cur!==NEW_APP&&names.indexOf(cur)<0)names.push(cur);
+    if(names.length&&!cur)sel.appendChild(h('option',{value:'',disabled:true,text:'Choose an app…'}));
+    names.forEach(function(a){sel.appendChild(h('option',{value:a,text:a}));});
+    sel.appendChild(h('option',{value:NEW_APP,text:'+ New app…'}));
+    sel.value=cur||(names.length?'':NEW_APP);showNewApp();}
+  function showNewApp(){var on=$('#fApp').value===NEW_APP;$('#fNewAppWrap').hidden=!on;$('#fNewApp').required=on;$('#fNewAppMsg').textContent='It joins the Apps list with the shortcut you save here.';}
+  $('#fApp').addEventListener('change',function(){showNewApp();if($('#fApp').value===NEW_APP)$('#fNewApp').focus();});
+  function openEditor(it,opt){editing=it||null;var fresh=!it&&!!(opt&&opt.newApp);$('#editTitle').textContent=it?'Edit entry':fresh?'Add a new app':'Add a shortcut';
+    fillAppPicker(it?it.app:fresh?NEW_APP:(appSel!=='all'&&appNames().indexOf(appSel)>=0?appSel:''));$('#fNewApp').value='';$('#fOs').value=it?it.os:(osSel==='all'?(isMac()?'mac':'win'):osSel);$('#fKeys').value=it?it.keys:'';$('#fAction').value=it?it.action:'';$('#fNote').value=it?(it.note||''):'';$('#fTags').value=it?(it.tags||[]).join(', '):'';
     var d=$('#editDel');clear(d);if(it)d.appendChild(confirmBtn('Delete',function(){$('#editor').close();del(it.id);toast('Deleted');}));
-    stopRec();setKind(it?it.kind:'key');$('#editor').showModal();setTimeout(function(){$(it?'#fAction':'#fApp').focus();},30);}
+    stopRec();setKind(it?it.kind:'key');$('#editor').showModal();setTimeout(function(){$(it?'#fAction':$('#fApp').value===NEW_APP?'#fNewApp':'#fApp').focus();},30);}
   function updatePreview(){var p=$('#fPreview');clear(p);var v=$('#fKeys').value.trim();if(recording){p.appendChild(h('span',{text:'Press the shortcut now… (Esc-based shortcuts: press Esc twice to stop recording)'}));return;}
     if(!v){p.appendChild(h('span',{text:editKind==='cmd'?'Type the command exactly as you would run it.':'Type keys joined with +, a space between steps.'}));return;}
     p.appendChild(editKind==='cmd'?renderCmd(v,false,false):renderKeys(v,$('#fOs').value==='mac'?'mac':'win'));}
@@ -417,11 +432,20 @@ footer{margin-top:26px;color:var(--muted);font-size:13px;max-width:72ch;line-hei
     var ch=chordFromEvent(e,os);if(!ch)return;recBuf.push(ch.join('+'));$('#fKeys').value=recBuf.join(' ');clearTimeout(recT);recT=setTimeout(function(){stopRec();updatePreview();},1500);});
   $('#editor').addEventListener('cancel',function(e){if(recording){e.preventDefault();stopRec();updatePreview();}});
   $('#editClose').addEventListener('click',function(){$('#editor').close();});$('#editCancel').addEventListener('click',function(){$('#editor').close();});
-  $('#editForm').addEventListener('submit',function(e){e.preventDefault();var app=$('#fApp').value.trim(),keys=$('#fKeys').value.trim(),action=$('#fAction').value.trim();if(!app||!keys||!action)return;
+  $('#editForm').addEventListener('submit',function(e){e.preventDefault();var pick=$('#fApp').value,app=pick===NEW_APP?cleanName($('#fNewApp').value):pick,keys=$('#fKeys').value.trim(),action=$('#fAction').value.trim();
+    if(pick===NEW_APP&&!app){$('#fNewAppMsg').textContent='Name the new app first.';$('#fNewApp').focus();return;}
+    if(!app||!keys||!action)return;
+    /* a "new" name that only differs in case or spacing from an app you have files under that app, so the list gets no twin */
+    var made=false;if(pick===NEW_APP){var same=appNames().filter(function(a){return a.toLowerCase()===app.toLowerCase();})[0];if(same)app=same;else made=true;}
     var tags=$('#fTags').value.split(',').map(function(t){return t.trim();}).filter(Boolean);
     var it=editing||{id:uid(),src:'user',order:Date.now(),fav:false,conf:0,drills:0};it.app=app;it.os=$('#fOs').value;it.keys=keys;it.action=action;it.note=$('#fNote').value.trim();it.tags=tags;it.kind=editKind;
-    put(it);$('#editor').close();toast(editing?'Saved':'Added to '+app);editing=null;});
+    put(it);$('#editor').close();
+    if(made){appSel=app;save(LS.app,appSel);renderAll();}
+    var msg=made?(editing?'Moved to the new app '+app:'Added '+app+' with its first shortcut'):editing?'Saved':'Added to '+app;
+    if(!visible().some(function(v){return v.id===it.id;}))msg+=' (the current filter hides it)';
+    toast(msg);editing=null;});
   $('#addBtn').addEventListener('click',function(){openEditor(null);});
+  $('#newAppBtn').addEventListener('click',function(){openEditor(null,{newApp:true});});
 
   /* ---------- drill ---------- */
   var D=null;

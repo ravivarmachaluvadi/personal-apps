@@ -377,6 +377,14 @@ The rail remembers the last view between visits, with one exception: unlocking a
 (*Weak*, *Reused*, *Older than a year*) for *Everything*, because a short health list right after unlocking looks
 like missing entries. A type view such as *Login* is a deliberate choice and stays.
 
+## Adding an app in Keycap Atlas
+
+**+ New app** beside the *Apps* heading opens the Add dialog with the app set to *+ New app…* and a name box. The
+same choice sits at the bottom of the App list when adding or editing any shortcut, so a shortcut can also be moved
+into a new app. An app is only the name on its shortcuts: it appears with the first shortcut you save under it and
+leaves the list when its last one is deleted or moved. A new name that differs only in case or spacing from an
+existing app (*claude code* for *Claude Code*) files under the existing one instead of making a twin.
+
 ## Keys notation in Keycap Atlas
 
 Join simultaneous keys with `+`, separate steps with a space: `Ctrl+Shift+P`, `Ctrl+K Ctrl+S`, `g i`, `Alt+H O I`.
