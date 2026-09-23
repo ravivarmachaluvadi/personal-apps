@@ -226,6 +226,14 @@ A collapsed card shows a one-line summary and a **Copy** that copies the first c
 when there is no code. Tap the title for everything else: per-block and per-field Copy, Edit, Pin, Duplicate,
 Copy as Markdown and Delete. An open card drops the header Copy, because each block and field has its own.
 
+The list is built to be scanned rather than read: each card has a stripe down its left edge in its topic's colour,
+a code entry shows a language chip (*Java*, *AutoHotkey*), and the collapsed preview is two lines — two lines of
+the write-up, or two coloured lines of code with imports, package lines and comments skipped.
+
+**Settings → Appearance → Accent colour** picks Plum (the default), Teal, Indigo or Amber. It is stored with the
+other settings, so it follows you across devices; every accent clears 4.5:1 as text and as a button in both
+themes. A backup made before accents existed restores exactly as it was (Plum), with no setting added.
+
 ### Code colouring
 
 Code blocks are coloured by the language typed on the block: Java, Kotlin, JavaScript / TypeScript, JSON, Python,

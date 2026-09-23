@@ -24,7 +24,7 @@
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#151216; --surface:#1D191F; --surface-2:#262128; --line:#3A333D;
+  --bg:#151216; --surface:#201B22; --surface-2:#262128; --line:#453C48;
   --text:#EDE8EE; --muted:#A79EAB; --faint:#908795;
   --accent:#E58BC9; --accent-ink:#2A0F22; --accent-soft:#3A2233;
   --good:#6BCF8B; --good-soft:#1E3A2A; --warn:#E2A33B; --warn-soft:#3A2E14;
@@ -37,7 +37,7 @@
   color-scheme:dark;
 }}
 :root[data-theme="dark"]{
-  --bg:#151216; --surface:#1D191F; --surface-2:#262128; --line:#3A333D;
+  --bg:#151216; --surface:#201B22; --surface-2:#262128; --line:#453C48;
   --text:#EDE8EE; --muted:#A79EAB; --faint:#908795;
   --accent:#E58BC9; --accent-ink:#2A0F22; --accent-soft:#3A2233;
   --good:#6BCF8B; --good-soft:#1E3A2A; --warn:#E2A33B; --warn-soft:#3A2E14;
@@ -49,6 +49,19 @@
   --shadow:0 10px 26px rgba(0,0,0,.35);
   color-scheme:dark;
 }
+/* accent colour (Settings → Appearance): each clears 4.5:1 as text on every background and on its soft tint,
+   and its ink clears 4.5:1 on the accent, in both themes */
+:root[data-accent="teal"]{--accent:#0B6B69;--accent-ink:#FFFFFF;--accent-soft:#D8F0EE}
+:root[data-accent="indigo"]{--accent:#4338CA;--accent-ink:#FFFFFF;--accent-soft:#E6E4FB}
+:root[data-accent="amber"]{--accent:#8A5300;--accent-ink:#FFFFFF;--accent-soft:#FBEBCB}
+@media (prefers-color-scheme:dark){
+  :root[data-accent="teal"]:not([data-theme="light"]){--accent:#4FD1C5;--accent-ink:#04201D;--accent-soft:#16332F}
+  :root[data-accent="indigo"]:not([data-theme="light"]){--accent:#A5A0FF;--accent-ink:#16123A;--accent-soft:#27244A}
+  :root[data-accent="amber"]:not([data-theme="light"]){--accent:#F2B84B;--accent-ink:#231500;--accent-soft:#3A2C12}
+}
+:root[data-theme="dark"][data-accent="teal"]{--accent:#4FD1C5;--accent-ink:#04201D;--accent-soft:#16332F}
+:root[data-theme="dark"][data-accent="indigo"]{--accent:#A5A0FF;--accent-ink:#16123A;--accent-soft:#27244A}
+:root[data-theme="dark"][data-accent="amber"]{--accent:#F2B84B;--accent-ink:#231500;--accent-soft:#3A2C12}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 Manrope,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
@@ -123,7 +136,7 @@ label.ck .hint{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
 .grp:first-child{margin-top:2px}
 
 /* one card per entry */
-.entry{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:11px 14px;margin-bottom:9px;box-shadow:var(--shadow);transition:outline-color .3s}
+.entry{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--stripe,var(--line));border-radius:14px;padding:11px 14px 11px 13px;margin-bottom:9px;box-shadow:var(--shadow);transition:outline-color .3s}
 .entry.flash{outline:2px solid var(--accent);outline-offset:1px}
 .ehead{display:flex;align-items:flex-start;gap:8px}
 .etitle{flex:1 1 auto;min-width:0;text-align:left;background:none;border:0;padding:3px 0;margin:0;font:700 16px/1.35 Manrope,system-ui,sans-serif;color:var(--text);cursor:pointer;overflow-wrap:anywhere}
@@ -135,8 +148,10 @@ button.etitle[aria-expanded="true"]::before{content:'\25BE'}
 .topic{display:inline-flex;gap:6px;align-items:center;font-weight:600}
 .tag{border:0;background:var(--surface-2);color:var(--muted);border-radius:999px;padding:2px 8px;font:500 12px "Source Code Pro",ui-monospace,monospace;cursor:pointer;overflow-wrap:anywhere}
 .tag:hover{color:var(--accent)}
-.summary{color:var(--muted);font-size:14px;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.summary.mono{font:13px "Source Code Pro",ui-monospace,monospace;font-variant-ligatures:none}
+.summary{color:var(--muted);font-size:14px;margin-top:5px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
+.summary.mono{display:block;font:13px/1.5 "Source Code Pro",ui-monospace,monospace;font-variant-ligatures:none;white-space:pre;color:var(--code-ink);background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:5px 10px;max-height:calc(3em + 12px);-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent)}
+.lchip{font:600 11.5px "Source Code Pro",ui-monospace,monospace;color:var(--tk-t);background:var(--code-bg);border:1px solid var(--line);border-radius:6px;padding:1px 7px}
+.seg.acc i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:-1px}
 .ebody{margin-top:10px;display:grid;gap:10px;min-width:0}
 .rich{font-size:15px;min-width:0;overflow-wrap:anywhere}
 .rich p{margin:0 0 7px}
@@ -456,6 +471,13 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
     <button type="button" data-t="light">Light</button>
     <button type="button" data-t="dark">Dark</button>
   </div>
+  <p class="hint" style="margin:10px 0 6px">Accent colour</p>
+  <div class="seg acc" id="sAccent" role="group" aria-label="Accent colour">
+    <button type="button" data-a="plum" class="on"><i style="background:#C2549F"></i>Plum</button>
+    <button type="button" data-a="teal"><i style="background:#1FA59C"></i>Teal</button>
+    <button type="button" data-a="indigo"><i style="background:#6D63E0"></i>Indigo</button>
+    <button type="button" data-a="amber"><i style="background:#D9951F"></i>Amber</button>
+  </div>
   <h3>Data</h3>
   <div class="row">
     <button class="btn sm" id="sExport" type="button">Export JSON</button>
@@ -567,7 +589,7 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
   function findById(list,id){for(var i=0;i<(list||[]).length;i++)if(list[i].id===id)return list[i];return null;}
 
   /* ---------- settings (an ordinary item, because drive-sync only merges items) ---------- */
-  var SDEF={theme:'auto',revisitBatch:5,revisitDays:30,secretNudge:true};
+  var SDEF={theme:'auto',accent:'plum',revisitBatch:5,revisitDays:30,secretNudge:true};
   function getSettings(){var s=ITEMS.settings,o={};Object.keys(SDEF).forEach(function(k){o[k]=(s&&!s.deleted&&s[k]!==undefined)?s[k]:SDEF[k];});return o;}
   function setSetting(k,v){var o=getSettings();o[k]=v;o.id='settings';o.kind='settings';put(o);}
   /* the header sun/moon shows the theme a tap switches to; it writes the same Settings theme as the gear menu */
@@ -578,7 +600,8 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
   function paintThemeBtn(){var b=document.getElementById('themeBtn');if(!b)return;var dark=shownTheme()==='dark',NS='http://www.w3.org/2000/svg',svg=document.createElementNS(NS,'svg'),p=document.createElementNS(NS,'path'),label=dark?'Switch to light':'Switch to dark';
     [['viewBox','0 0 24 24'],['fill','none'],['stroke','currentColor'],['stroke-width','2'],['stroke-linecap','round'],['stroke-linejoin','round'],['aria-hidden','true']].forEach(function(a){svg.setAttribute(a[0],a[1]);});
     p.setAttribute('d',dark?THEME_ICON.sun:THEME_ICON.moon);svg.appendChild(p);while(b.firstChild)b.removeChild(b.firstChild);b.appendChild(svg);b.setAttribute('aria-label',label);b.title=label;}
-  function applyTheme(){var t=getSettings().theme;if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);else document.documentElement.removeAttribute('data-theme');paintThemeBtn();}
+  function applyTheme(){var t=getSettings().theme;if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);else document.documentElement.removeAttribute('data-theme');
+    var a=getSettings().accent;if(a&&a!=='plum')document.documentElement.setAttribute('data-accent',a);else document.documentElement.removeAttribute('data-accent');paintThemeBtn();}
 
   /* ---------- normalisers: everything typed or imported passes through these ---------- */
   var ID_RE=/^[\w.:~@+-]{1,80}$/;
@@ -611,6 +634,8 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
     if(x.id!=='settings')return null;
     var o={id:'settings',kind:'settings'};
     o.theme=['auto','light','dark'].indexOf(x.theme)>=0?x.theme:SDEF.theme;
+    /* only a valid accent that is in the record: a restore must not invent a setting the backup never had */
+    if(['plum','teal','indigo','amber'].indexOf(x.accent)>=0)o.accent=x.accent;
     o.revisitBatch=(+x.revisitBatch>=1&&+x.revisitBatch<=20)?Math.floor(+x.revisitBatch):SDEF.revisitBatch;
     o.revisitDays=(+x.revisitDays>=1&&+x.revisitDays<=365)?Math.floor(+x.revisitDays):SDEF.revisitDays;
     o.secretNudge=x.secretNudge===undefined?SDEF.secretNudge:!!x.secretNudge;
@@ -671,12 +696,16 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
     if(f)return {kind:'field',id:f.id,what:f.k||'value'};
     return null;
   }
+  var PREVIEW_SKIP=/^\s*(import\s|package\s|using\s|#include|#!|from\s+\S+\s+import\s|require\(|\/\/|\/\*|\*|--\s|#|rem\s|::)/i;
   function summaryOf(e){
-    var line=String(e.body||'').split('\n').map(function(s){return s.trim();}).filter(Boolean)[0];
-    /* the write-up renders `code` without its backticks, so the one-line summary does too */
-    if(line)return {text:line.replace(/^[-*]\s+|^\d+[.)]\s+/,'').replace(/`([^`]+)`/g,'$1'),mono:false};
+    var lines=String(e.body||'').split('\n').map(function(s){return s.trim();}).filter(Boolean);
+    /* the write-up renders `code` without its backticks, so the summary does too; two lines, because a first line
+       such as "To add a shortcut:" says little on its own */
+    if(lines.length)return {text:lines.slice(0,2).map(function(l){return l.replace(/^[-*]\s+|^\d+[.)]\s+/,'').replace(/`([^`]+)`/g,'$1');}).join(' '),mono:false};
     var b=(e.blocks||[]).filter(function(x){return x.code&&x.code.trim();})[0];
-    if(b)return {text:b.code.split('\n').filter(function(s){return s.trim();})[0].trim(),mono:true,lang:b.lang};
+    /* a code preview skips imports, package lines and comments, then shows two lines as they are indented */
+    if(b){var cl=b.code.split('\n').filter(function(x){return x.trim();}),keep=cl.filter(function(x){return !PREVIEW_SKIP.test(x);});
+      return {text:(keep.length?keep:cl).slice(0,2).map(function(x){return x.replace(/\s+$/,'');}).join('\n'),mono:true,lang:b.lang};}
     var f=(e.fields||[])[0];
     if(f)return {text:f.k+': '+(f.secret?'••••':f.v),mono:false};
     return {text:'',mono:false};
@@ -1021,7 +1050,7 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
   function refreshMetaLine(id){var e=entryById(id);if(!e)return;var t=metaText(e,metaOf(id));$$('article.entry').forEach(function(a){if(a.getAttribute('data-id')===id){var el=a.querySelector('.emeta');if(el)el.textContent=t;}});}
   function entryCard(e,rev){
     var m=metaOf(e.id),open=rev||!!OPEN[e.id],t=topicOf(e),id=e.id;
-    var art=h('article',{class:'entry'+(rev?' rev':''),'data-id':id});
+    var art=h('article',{class:'entry'+(rev?' rev':''),'data-id':id,style:t?'--stripe:var(--c'+normColor(t.color)+')':null});
     var head=h('div',{class:'ehead'});
     if(rev)head.appendChild(h('div',{class:'etitle','aria-expanded':'true',text:e.title||'(untitled)'}));
     else head.appendChild(h('button',{type:'button',class:'etitle','aria-expanded':String(open),text:e.title||'(untitled)',onclick:function(){toggleOpen(id);}}));
@@ -1029,9 +1058,11 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
     var p=primaryOf(e);
     if(p&&!rev&&!open)head.appendChild(h('button',{type:'button',class:'btn sm qcopy',title:'Copy the '+p.what,text:'Copy',onclick:function(ev){ev.stopPropagation();copyAndCount(id,p.kind,p.id);}}));
     art.appendChild(head);
-    if(t||(e.tags||[]).length){
+    var pb=(e.blocks||[]).filter(function(x){return x.code&&x.code.trim();})[0],ln=!open&&pb?String(pb.lang||'').trim():'';
+    if(t||ln||(e.tags||[]).length){
       var sub=h('div',{class:'esub'});
       if(t)sub.appendChild(h('span',{class:'topic'},[h('span',{class:'dot',style:'background:var(--c'+normColor(t.color)+')'}),t.name]));
+      if(ln)sub.appendChild(h('span',{class:'lchip',title:'Code in '+langName(ln),text:langName(ln)}));
       (e.tags||[]).forEach(function(tag){sub.appendChild(h('button',{type:'button',class:'tag','data-tag':tag,title:'Show only #'+tag,text:'#'+tag,onclick:function(ev){ev.stopPropagation();FTAGS=FTAGS.indexOf(tag)>=0?FTAGS:FTAGS.concat([tag]);SHOWN=PAGE;if(VIEW!=='shelf')showView('shelf');else renderAll();}}));});
       art.appendChild(sub);
     }
@@ -1409,7 +1440,7 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
     fillSelect($('#sBatch'),[[3,'3'],[5,'5'],[10,'10']],getSettings().revisitBatch);
     fillSelect($('#sDays'),[[14,'14 days'],[30,'30 days'],[60,'60 days'],[90,'90 days']],getSettings().revisitDays);
     $('#sNudge').checked=!!getSettings().secretNudge;
-    segSet('#sTheme','t',getSettings().theme);
+    segSet('#sTheme','t',getSettings().theme);segSet('#sAccent','a',getSettings().accent);
     $('#sFake').value=FAKE;$('#sImportMsg').textContent='';$('#sDelConfirm').value='';$('#sDelAll').disabled=true;$('#sTopicNew').value='';
     renderTopicAdmin();
     var d=$('#settings');if(!d.hasAttribute('open'))d.showModal();
@@ -1519,6 +1550,7 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
     $('#sDays').addEventListener('change',function(){setSetting('revisitDays',+this.value);REV_IDS=null;renderAll();});
     $('#sNudge').addEventListener('change',function(){setSetting('secretNudge',this.checked);});
     $$('#sTheme button').forEach(function(b){b.addEventListener('click',function(){var t=b.getAttribute('data-t');setSetting('theme',t);segSet('#sTheme','t',t);applyTheme();});});
+    $$('#sAccent button').forEach(function(b){b.addEventListener('click',function(){var a=b.getAttribute('data-a');setSetting('accent',a);segSet('#sAccent','a',a);applyTheme();});});
     /* choosing the theme the device already uses goes back to Auto, so the page follows the device again */
     $('#themeBtn').addEventListener('click',function(){var next=shownTheme()==='dark'?'light':'dark',v=next===deviceTheme()?'auto':next;setSetting('theme',v);segSet('#sTheme','t',v);applyTheme();});
     if(darkQ){var onScheme=function(){var t=getSettings().theme;if(t!=='light'&&t!=='dark')applyTheme();};if(darkQ.addEventListener)darkQ.addEventListener('change',onScheme);else if(darkQ.addListener)darkQ.addListener(onScheme);}
