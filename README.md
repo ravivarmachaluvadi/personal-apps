@@ -224,7 +224,20 @@ One card with a title and any mix of:
 
 A collapsed card shows a one-line summary and a **Copy** that copies the first code block, or the first field
 when there is no code. Tap the title for everything else: per-block and per-field Copy, Edit, Pin, Duplicate,
-Copy as Markdown and Delete.
+Copy as Markdown and Delete. An open card drops the header Copy, because each block and field has its own.
+
+### Code colouring
+
+Code blocks are coloured by the language typed on the block: Java, Kotlin, JavaScript / TypeScript, JSON, Python,
+Bash / Shell, PowerShell, Command Prompt, SQL, C / C++ / C#, Go, Rust and YAML (common spellings such as `ts`,
+`py`, `ps1` or `c#` work). Keywords, strings, comments, numbers, types, calls, shell flags and variables each get
+a colour that clears 4.5:1 on the code background in both themes. A block with no language, or one not on the
+list, still colours its strings and numbers but nothing else, so a `#` in prose never turns into a comment.
+
+The colouring is a small tokenizer inside the page (no library, works offline). It only wraps slices of the saved
+text in spans, never parses anything as markup, and Copy still reads the saved record, so what you copy is always
+exactly what you saved. A block over 16 lines shows its first 16, fades, and opens in place with **Show all N
+lines**, instead of scrolling inside the card.
 
 ### Finding it again
 

@@ -17,6 +17,7 @@
   --good:#2E7D4F; --good-soft:#DDF3E4; --warn:#8A5A0F; --warn-soft:#FBEBCB;
   --danger:#B42318; --danger-soft:#FBE0DC;
   --code-bg:#F8F5F8; --code-ink:#2A2230;
+  --tk-k:#A1236F; --tk-s:#1E7A34; --tk-c:#6B6471; --tk-n:#A1470A; --tk-t:#0B6A8A; --tk-f:#5B3CC4; --tk-o:#7A5200; --tk-v:#B42318;
   --c0:#8E2C74; --c1:#0E7C7B; --c2:#B8770C; --c3:#1D6FB8;
   --c4:#2E7D4F; --c5:#7A3FC1; --c6:#B4530E; --c7:#5A6472;
   --shadow:0 10px 26px rgba(30,26,32,.07);
@@ -29,6 +30,7 @@
   --good:#6BCF8B; --good-soft:#1E3A2A; --warn:#E2A33B; --warn-soft:#3A2E14;
   --danger:#F27A6B; --danger-soft:#3C1F1B;
   --code-bg:#141115; --code-ink:#EDE3EC;
+  --tk-k:#F28FCE; --tk-s:#A6E3A1; --tk-c:#9A91A0; --tk-n:#F5B971; --tk-t:#7DD3F0; --tk-f:#B8A6FF; --tk-o:#F0C674; --tk-v:#F59E8B;
   --c0:#E58BC9; --c1:#5AC8C6; --c2:#E2A33B; --c3:#6FB3F0;
   --c4:#6BCF8B; --c5:#BFA0F5; --c6:#F0A06B; --c7:#A9B3C1;
   --shadow:0 10px 26px rgba(0,0,0,.35);
@@ -41,6 +43,7 @@
   --good:#6BCF8B; --good-soft:#1E3A2A; --warn:#E2A33B; --warn-soft:#3A2E14;
   --danger:#F27A6B; --danger-soft:#3C1F1B;
   --code-bg:#141115; --code-ink:#EDE3EC;
+  --tk-k:#F28FCE; --tk-s:#A6E3A1; --tk-c:#9A91A0; --tk-n:#F5B971; --tk-t:#7DD3F0; --tk-f:#B8A6FF; --tk-o:#F0C674; --tk-v:#F59E8B;
   --c0:#E58BC9; --c1:#5AC8C6; --c2:#E2A33B; --c3:#6FB3F0;
   --c4:#6BCF8B; --c5:#BFA0F5; --c6:#F0A06B; --c7:#A9B3C1;
   --shadow:0 10px 26px rgba(0,0,0,.35);
@@ -143,7 +146,15 @@ button.etitle[aria-expanded="true"]::before{content:'\25BE'}
 .rich a,.fv a{color:var(--accent);overflow-wrap:anywhere}
 .block{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--code-bg);min-width:0}
 .bhead{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:3px 5px 3px 11px;border-bottom:1px solid var(--line);font:500 11.5px "Source Code Pro",ui-monospace,monospace;color:var(--faint)}
-pre.code{margin:0;padding:10px 12px;overflow:auto;max-height:22em;white-space:pre;tab-size:4;font:13.5px/1.55 "Source Code Pro",ui-monospace,monospace;color:var(--code-ink);font-variant-ligatures:none}
+pre.code{margin:0;padding:10px 12px;overflow-x:auto;white-space:pre;tab-size:4;font:13.5px/1.55 "Source Code Pro",ui-monospace,monospace;color:var(--code-ink);font-variant-ligatures:none}
+.block.long:not(.full) pre.code{max-height:calc(16 * 1.55em + 20px);overflow-y:hidden;-webkit-mask-image:linear-gradient(#000 72%,transparent);mask-image:linear-gradient(#000 72%,transparent)}
+.bmore{display:block;width:100%;border:0;border-top:1px solid var(--line);background:var(--surface-2);color:var(--accent);font:600 12.5px Manrope,system-ui,sans-serif;padding:7px;cursor:pointer;min-height:34px}
+.bmore:hover{text-decoration:underline}
+.bhead .lang{color:var(--muted);font-weight:600}
+.bhead .lines{color:var(--faint);font-weight:500}
+/* code colours: one token class per kind, each at least 4.5:1 on --code-bg in both themes */
+.tk-k{color:var(--tk-k)}.tk-s{color:var(--tk-s)}.tk-c{color:var(--tk-c);font-style:italic}.tk-n{color:var(--tk-n)}
+.tk-t,.tk-a{color:var(--tk-t)}.tk-f{color:var(--tk-f)}.tk-o{color:var(--tk-o)}.tk-v{color:var(--tk-v)}
 .fields{display:grid;gap:0;border-top:1px dashed var(--line)}
 .frow{display:grid;grid-template-columns:minmax(80px,32%) minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:6px 0;border-bottom:1px dashed var(--line)}
 .fk{color:var(--muted);font-weight:600;font-size:13.5px;overflow-wrap:anywhere}
@@ -152,6 +163,8 @@ pre.code{margin:0;padding:10px 12px;overflow:auto;max-height:22em;white-space:pr
 .facts{display:flex;gap:4px;justify-content:flex-end}
 .emeta{color:var(--faint);font-size:12.5px}
 .eacts{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.eacts .spacer{flex:1 1 auto}
+.eacts>span:last-child>.btn.danger{border-color:transparent;background:transparent}
 .revacts{display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-top:1px solid var(--line);padding-top:10px}
 .onboard{background:var(--surface);border:1px dashed var(--line);border-radius:14px;padding:18px 20px}
 .onboard h2{font-family:Sora,system-ui,sans-serif;font-size:19px;margin:0 0 6px;letter-spacing:-.01em}
@@ -663,7 +676,7 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
     /* the write-up renders `code` without its backticks, so the one-line summary does too */
     if(line)return {text:line.replace(/^[-*]\s+|^\d+[.)]\s+/,'').replace(/`([^`]+)`/g,'$1'),mono:false};
     var b=(e.blocks||[]).filter(function(x){return x.code&&x.code.trim();})[0];
-    if(b)return {text:b.code.split('\n').filter(function(s){return s.trim();})[0].trim(),mono:true};
+    if(b)return {text:b.code.split('\n').filter(function(s){return s.trim();})[0].trim(),mono:true,lang:b.lang};
     var f=(e.fields||[])[0];
     if(f)return {text:f.k+': '+(f.secret?'••••':f.v),mono:false};
     return {text:'',mono:false};
@@ -1014,7 +1027,7 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
     else head.appendChild(h('button',{type:'button',class:'etitle','aria-expanded':String(open),text:e.title||'(untitled)',onclick:function(){toggleOpen(id);}}));
     if(m.pinned)head.appendChild(h('span',{class:'pinmark',title:'Pinned','aria-label':'Pinned',text:'📌'}));
     var p=primaryOf(e);
-    if(p&&!rev)head.appendChild(h('button',{type:'button',class:'btn sm qcopy',title:'Copy the '+p.what,text:'Copy',onclick:function(ev){ev.stopPropagation();copyAndCount(id,p.kind,p.id);}}));
+    if(p&&!rev&&!open)head.appendChild(h('button',{type:'button',class:'btn sm qcopy',title:'Copy the '+p.what,text:'Copy',onclick:function(ev){ev.stopPropagation();copyAndCount(id,p.kind,p.id);}}));
     art.appendChild(head);
     if(t||(e.tags||[]).length){
       var sub=h('div',{class:'esub'});
@@ -1022,7 +1035,7 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
       (e.tags||[]).forEach(function(tag){sub.appendChild(h('button',{type:'button',class:'tag','data-tag':tag,title:'Show only #'+tag,text:'#'+tag,onclick:function(ev){ev.stopPropagation();FTAGS=FTAGS.indexOf(tag)>=0?FTAGS:FTAGS.concat([tag]);SHOWN=PAGE;if(VIEW!=='shelf')showView('shelf');else renderAll();}}));});
       art.appendChild(sub);
     }
-    if(!open){var s=summaryOf(e);if(s.text)art.appendChild(h('div',{class:'summary'+(s.mono?' mono':''),text:s.text}));return art;}
+    if(!open){var s=summaryOf(e);if(s.text){var sm=h('div',{class:'summary'+(s.mono?' mono':'')});if(s.mono)hlInto(sm,s.text,s.lang);else sm.textContent=s.text;art.appendChild(sm);}return art;}
     art.appendChild(cardBody(e,m,rev));
     return art;
   }
@@ -1041,17 +1054,97 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
       body.appendChild(h('div',{class:'eacts'},[
         h('button',{type:'button',class:'btn sm aEdit',text:'Edit',onclick:function(){openEditor(id);}}),
         h('button',{type:'button',class:'btn sm aPin',text:m.pinned?'Unpin':'Pin',onclick:function(){togglePin(id);}}),
-        h('button',{type:'button',class:'btn sm aDup',text:'Duplicate',onclick:function(){openEditor(null,{dup:id});}}),
-        h('button',{type:'button',class:'btn sm aMd',text:'Copy as Markdown',onclick:function(){copyAndCount(id,'md');}}),
+        h('button',{type:'button',class:'btn sm quiet aDup',text:'Duplicate',onclick:function(){openEditor(null,{dup:id});}}),
+        h('button',{type:'button',class:'btn sm quiet aMd',text:'Copy as Markdown',onclick:function(){copyAndCount(id,'md');}}),
+        h('span',{class:'spacer'}),
         confirmBtn('Delete','Delete',function(){deleteEntry(id);})]));
     }
     return body;
   }
+  /* ---------- code colouring: a small tokenizer per language family, appended as text nodes and spans ----------
+     The code is never parsed as markup and never changed: the spans only wrap slices of the saved text, and Copy
+     still reads the record. An unknown language gets strings and numbers only, so a '#' in prose is not a comment. */
+  var HL_FAMILY={java:'java',kotlin:'kt',kt:'kt',kts:'kt',js:'js',javascript:'js',jsx:'js',mjs:'js',ts:'js',tsx:'js',typescript:'js',node:'js',
+    json:'json',py:'py',python:'py',python3:'py',bash:'sh',sh:'sh',shell:'sh',zsh:'sh',console:'sh',terminal:'sh',
+    powershell:'ps',ps:'ps',ps1:'ps',pwsh:'ps',cmd:'cmd',bat:'cmd',batch:'cmd',sql:'sql',mysql:'sql',postgres:'sql',postgresql:'sql',psql:'sql',plsql:'sql',
+    c:'c',h:'c',cpp:'c','c++':'c',cc:'c',cs:'c','c#':'c',csharp:'c',go:'go',golang:'go',rust:'rs',rs:'rs',yaml:'yaml',yml:'yaml'};
+  var HL_NAME={java:'Java',kotlin:'Kotlin',kt:'Kotlin',js:'JavaScript',javascript:'JavaScript',jsx:'JavaScript',ts:'TypeScript',typescript:'TypeScript',tsx:'TypeScript',
+    json:'JSON',py:'Python',python:'Python',bash:'Bash',sh:'Shell',shell:'Shell',zsh:'Zsh',powershell:'PowerShell',ps:'PowerShell',ps1:'PowerShell',pwsh:'PowerShell',
+    cmd:'Command Prompt',bat:'Batch',sql:'SQL',mysql:'MySQL',postgres:'PostgreSQL',postgresql:'PostgreSQL',psql:'PostgreSQL',c:'C',cpp:'C++','c++':'C++',cs:'C#','c#':'C#',
+    csharp:'C#',go:'Go',golang:'Go',rust:'Rust',rs:'Rust',yaml:'YAML',yml:'YAML',html:'HTML',xml:'XML',css:'CSS',ahk:'AutoHotkey',autohotkey:'AutoHotkey'};
+  function hlWords(s){var o={};s.split(' ').forEach(function(w){if(w)o[w]=1;});return o;}
+  var HL_JAVA='abstract assert boolean break byte case catch char class const continue default do double else enum extends final finally float for goto if implements import instanceof int interface long native new package private protected public return short static strictfp super switch synchronized this throw throws transient try void volatile while var record yield sealed permits true false null';
+  var HL_KW={java:hlWords(HL_JAVA),
+    kt:hlWords(HL_JAVA+' fun val when object is as in out data companion init lateinit override open internal suspend typealias'),
+    js:hlWords('async await break case catch class const continue debugger default delete do else export extends finally for from function if import in instanceof let new of return static super switch this throw try typeof var void while with yield true false null undefined interface type enum implements private public protected readonly declare namespace abstract as keyof'),
+    json:hlWords('true false null'),
+    py:hlWords('and as assert async await break class continue def del elif else except finally for from global if import in is lambda nonlocal not or pass raise return try while with yield True False None self match case'),
+    sh:hlWords('if then else elif fi case esac for while until do done in function return exit export local readonly declare unset shift source alias select time'),
+    ps:hlWords('begin break catch class continue data do dynamicparam else elseif end exit filter finally for foreach from function if in param process return switch throw trap try until using while'),
+    cmd:hlWords('echo set if else goto call exit for in do not exist defined errorlevel pause setlocal endlocal'),
+    sql:hlWords('select from where and or not insert into values update set delete create table drop alter add column index view join left right inner outer full cross on group by order having limit offset as distinct union all case when then else end is null like in exists between primary key foreign references default unique check constraint returning with recursive asc desc true false'),
+    c:hlWords('auto break case char const continue default do double else enum extern float for goto if inline int long register return short signed sizeof static struct switch typedef union unsigned void volatile while class namespace public private protected template typename using virtual override new delete this true false nullptr bool var foreach in out ref readonly async await string object base internal sealed get set'),
+    go:hlWords('break case chan const continue default defer else fallthrough for func go goto if import interface map package range return select struct switch type var true false nil'),
+    rs:hlWords('as async await break const continue crate dyn else enum extern false fn for if impl in let loop match mod move mut pub ref return self Self static struct super trait true type unsafe use where while'),
+    yaml:hlWords('true false null yes no on off')};
+  var HL_NOCASE={sql:1,ps:1,cmd:1},HL_SHELL={sh:1,ps:1,cmd:1},HL_TYPED={java:1,kt:1,js:1,c:1,go:1,rs:1,py:1},HL_CALLS={java:1,kt:1,js:1,c:1,go:1,rs:1,py:1,sql:1};
+  var HL_RE={};
+  /* one regex per family; the capture group that matched says what the slice is (1 block comment … 8 word) */
+  function hlRegex(f){
+    if(HL_RE[f])return HL_RE[f];
+    var slash=/^(java|kt|js|c|go|rs|json)$/.test(f),hash=/^(py|sh|ps|yaml)$/.test(f),none='(?!)';
+    var parts=[
+      f==='ps'?'<#[\\s\\S]*?#>':(slash||f==='sql')?'/\\*[\\s\\S]*?\\*/':none,
+      slash?'//[^\\n]*':hash?'#[^\\n]*':f==='sql'?'--[^\\n]*':f==='cmd'?'(?:rem\\b|::)[^\\n]*':none,
+      (f==='py'?'"""[\\s\\S]*?"""|\'\'\'[\\s\\S]*?\'\'\'|':'')+'"(?:\\\\.|[^"\\\\\\n])*"|\'(?:\\\\.|[^\'\\\\\\n])*\''+(/^(js|go|sh)$/.test(f)?'|`(?:\\\\.|[^`\\\\])*`':''),
+      /^(java|kt|js|py)$/.test(f)?'@[A-Za-z_]\\w*':none,
+      HL_SHELL[f]?'\\$\\{[^}\\n]*\\}|\\$[A-Za-z_?][\\w:]*|%[A-Za-z_]\\w*%':none,
+      '\\b(?:0[xX][\\da-fA-F_]+|\\d[\\d_]*(?:\\.\\d[\\d_]*)?(?:[eE][+-]?\\d+)?[lLfFdDuU]*)\\b',
+      HL_SHELL[f]?'--?[A-Za-z][\\w-]*'+(f==='sh'?'':'|/[A-Za-z]\\w*'):none,
+      f==='ps'?'[A-Za-z_][\\w$]*(?:-[A-Za-z]\\w*)*':'[A-Za-z_][\\w$]*'];
+    return (HL_RE[f]=new RegExp(parts.map(function(x){return '('+x+')';}).join('|'),'g'+(f==='cmd'?'i':'')));
+  }
+  function hlClassOf(f,g,tok,code,at,end){
+    var before=code.slice(code.lastIndexOf('\n',at-1)+1,at);
+    if(g===1)return 'tk-c';
+    if(g===2)return f==='cmd'&&!/^\s*$/.test(before)?null:'tk-c';     /* rem and :: only start a line */
+    if(g===3)return 'tk-s';if(g===4)return 'tk-a';if(g===5)return 'tk-v';if(g===6)return 'tk-n';
+    if(g===7)return /(^|\s)$/.test(before)?'tk-o':null;               /* a flag only after a space or at the start */
+    var kw=HL_KW[f]||{};
+    if(kw[HL_NOCASE[f]?tok.toLowerCase():tok])return 'tk-k';
+    if(HL_SHELL[f])return /(^|[|;&(])\s*$/.test(before)?'tk-f':null;   /* the command at the start of a line or pipe */
+    if(f==='yaml')return /^[\s-]*$/.test(before)&&code.charAt(end)===':'?'tk-t':null;
+    if(HL_TYPED[f]&&/^[A-Z]/.test(tok)&&/[a-z]/.test(tok))return 'tk-t';
+    return HL_CALLS[f]&&/^\s*\(/.test(code.slice(end,end+40))?'tk-f':null;
+  }
+  function hlInto(el,code,lang){
+    code=String(code==null?'':code);
+    var f=HL_FAMILY[String(lang||'').trim().toLowerCase()]||'';
+    if(code.length>60000){el.appendChild(document.createTextNode(code));return el;}
+    var re=hlRegex(f),last=0,m;re.lastIndex=0;
+    while((m=re.exec(code))){
+      var g=1;while(g<m.length&&m[g]===undefined)g++;
+      var cls=hlClassOf(f,g,m[0],code,m.index,m.index+m[0].length);
+      if(!cls)continue;
+      if(m.index>last)el.appendChild(document.createTextNode(code.slice(last,m.index)));
+      el.appendChild(h('span',{class:cls,text:m[0]}));last=m.index+m[0].length;
+    }
+    if(last<code.length)el.appendChild(document.createTextNode(code.slice(last)));
+    return el;
+  }
+  function langName(lang){var k=String(lang||'').trim();return k?(HL_NAME[k.toLowerCase()]||k):'Code';}
+  var LONG_LINES=16,FULLB={};
   function blockView(id,b){
-    return h('div',{class:'block','data-bid':b.id},[
-      h('div',{class:'bhead'},[h('span',{class:'lang',text:b.lang||'code'}),
+    var code=String(b.code||''),n=code.replace(/\n+$/,'').split('\n').length,long=n>LONG_LINES,key=id+':'+b.id;
+    var blk=h('div',{class:'block'+(long?' long':'')+(long&&FULLB[key]?' full':''),'data-bid':b.id},[
+      h('div',{class:'bhead'},[h('span',{class:'lang'},[langName(b.lang),n>1?h('span',{class:'lines',text:' · '+n+' lines'}):null]),
         h('button',{type:'button',class:'btn sm quiet bcopy',text:'Copy',onclick:function(){copyAndCount(id,'block',b.id);}})]),
-      h('pre',{class:'code'},[h('code',{text:b.code})])]);
+      h('pre',{class:'code'},[hlInto(h('code'),code,b.lang)])]);
+    /* a long block shows its first lines and opens in place, instead of a scroll box inside the card */
+    if(long)blk.appendChild(h('button',{type:'button',class:'bmore',text:FULLB[key]?'Show less':'Show all '+n+' lines',onclick:function(){
+      if(FULLB[key])delete FULLB[key];else FULLB[key]=true;
+      blk.classList.toggle('full',!!FULLB[key]);this.textContent=FULLB[key]?'Show less':'Show all '+n+' lines';}}));
+    return blk;
   }
   /* a sensitive value is only put into the page after Reveal; Copy reads it from the record */
   function fieldView(id,f){
