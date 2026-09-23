@@ -122,7 +122,9 @@ input[type="range"]{padding:0;border:0;background:transparent}
 .rail .item .n{margin-left:auto;font:12px "IBM Plex Mono",monospace;color:var(--faint)}
 .rail .item.h .n{color:var(--warn)}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
-.list-card{padding:6px;min-width:0}
+/* overflow-anchor:none: every click rebuilds the list, and Chrome anchored the scroll to the clicked (focused)
+   row; once that row was replaced the page jumped to the top */
+.list-card{padding:6px;min-width:0;overflow-anchor:none}
 .row{display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 10px;border-radius:11px;cursor:pointer;text-align:left;width:100%}
 .row:hover{background:var(--surface-2)}
 .row[aria-current="true"]{background:var(--accent-soft)}
