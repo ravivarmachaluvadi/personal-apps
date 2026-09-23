@@ -6,6 +6,8 @@
       (the artifact's browser-only storage becomes per-key Drive sync)
   site/event-log.html                 ->  docs/event-log.html
       (already Drive-native; only the config.js/drive-sync.js tags are injected)
+  site/hack-shelf.html                ->  docs/hack-shelf.html
+      (Drive-native too; same injection, plus a ban on every markup-string API)
   seed/export/keycap/shortcuts/*.json ->  docs/data/keycap-atlas.json (starter set)
 
 Every replacement asserts that its anchor text exists, so a drifted source fails loudly.
@@ -302,6 +304,22 @@ _dupes = sorted({n for n in _decls if _decls.count(n) > 1})
 assert not _dupes, 'duplicate function declarations in event log (the later one silently wins): ' + ', '.join(_dupes)
 wr('docs/event-log.html', el)
 
+# ---------------------------------------------------------------- Hack Shelf
+# Drive-native like Event Log and built the same way, in its own block so the two pages can
+# change independently. The ban is wider than Event Log's: this page renders text and code the
+# user typed, so every markup-string API is refused, not only the one.
+hs = rd('site/hack-shelf.html')
+hs = rep(hs, '<title>Hack Shelf</title>',
+         '<title>Hack Shelf</title>\n<script src="config.js"></script>\n<script src="drive-sync.js"></script>')
+assert "file:'hack-shelf.json'" in hs, 'anchor not found: hack-shelf Drive store'
+assert "cacheKey:'hackshelf.doc'" in hs, 'anchor not found: hack-shelf cache key'
+for _api in ('innerHTML', 'outerHTML', 'insertAdjacentHTML', 'document.write'):
+    assert _api not in hs, 'hack shelf must build DOM with h(), never ' + _api
+_decls = re.findall(r'^  function ([A-Za-z_$][\w$]*)\s*\(', hs, re.M)
+_dupes = sorted({n for n in _decls if _decls.count(n) > 1})
+assert not _dupes, 'duplicate function declarations in hack shelf (the later one silently wins): ' + ', '.join(_dupes)
+wr('docs/hack-shelf.html', hs)
+
 # ---------------------------------------------------------------- starter data
 docs = []
 for f in sorted(glob.glob(os.path.join(ROOT, 'seed', 'export', 'keycap', 'shortcuts', '*.json'))):
@@ -313,6 +331,6 @@ docs.sort(key=lambda d: d.get('order', 0))
 if docs:
     with open(os.path.join(DOCS, 'data', 'keycap-atlas.json'), 'w', encoding='utf-8') as f:
         json.dump({'format': 'keycap-atlas', 'v': 1, 'shortcuts': docs}, f, ensure_ascii=False)
-    print('built docs/: keycap-atlas, strongroom, dumbbell-dojo, tally-board, spine-bell, event-log, data/keycap-atlas.json (%d shortcuts)' % len(docs))
+    print('built docs/: keycap-atlas, strongroom, dumbbell-dojo, tally-board, spine-bell, event-log, hack-shelf, data/keycap-atlas.json (%d shortcuts)' % len(docs))
 else:
-    print('built docs/: keycap-atlas, strongroom, dumbbell-dojo, tally-board, spine-bell, event-log (seed/export absent, data/keycap-atlas.json kept as is)')
+    print('built docs/: keycap-atlas, strongroom, dumbbell-dojo, tally-board, spine-bell, event-log, hack-shelf (seed/export absent, data/keycap-atlas.json kept as is)')

@@ -1,6 +1,6 @@
 # Personal Apps
 
-Six single-file web apps whose data lives as JSON files in **your own Google Drive**, not in any app's
+Seven single-file web apps whose data lives as JSON files in **your own Google Drive**, not in any app's
 database. Open them from a laptop or a phone, sign in with Google once per device, and every device sees the
 same data. The **Continue with Google** button sits in the header of every page; until you tap it on a device,
 that device keeps its data only in its own browser (the header then says *changes waiting*).
@@ -13,8 +13,9 @@ that device keeps its data only in its own browser (the header then says *change
 | Tally Board | `docs/tally-board.html` | `tally-board.json` — activities, session log, plans, milestones, notes |
 | Spine Bell | `docs/spine-bell.html` | `spine-bell.json` — per-device counters and the daily diary |
 | Event Log | `docs/event-log.html` | `event-log.json` — event types, one-off and repeating events, settings |
+| Hack Shelf | `docs/hack-shelf.html` | `hack-shelf.json` — entries (write-up, code, fields, tags), topics, usage, settings |
 
-`docs/index.html` is a launcher for all six. `docs/drive-sync.js` is the shared storage layer; `docs/config.js`
+`docs/index.html` is a launcher for all seven. `docs/drive-sync.js` is the shared storage layer; `docs/config.js`
 holds the one setting you must fill in (the Google OAuth client ID).
 
 ## How the storage works
@@ -185,6 +186,80 @@ all three.
   everywhere else a card's canvas is built when it scrolls into view, and the animation loop stops when nothing is visible.
 - **Do & Don't tab**: `DOS` holds the pairs and `figSVG` draws the side-view figures from a few joint coordinates.
 
+## Hack Shelf: find it again, copy it, keep it fresh
+
+Hack Shelf is for the things you learned or discovered and want to reuse: a command, a fix, a gotcha, a list of
+facts. Keycap Atlas stays the place for one keystroke or one command per app and OS (with its drill); Strongroom
+stays the place for real secrets.
+
+### An entry
+
+One card with a title and any mix of:
+
+- a **write-up** — paragraphs, `- ` bullets, `1. ` numbered lines, `` `inline code` `` and `https://` links. That
+  is the whole formatting set; anything else you type, HTML included, is shown as literal text;
+- **code blocks**, each with a language and its own Copy button;
+- **fields** — key → value rows, such as *Port → 5432* or *Source → a link*;
+- **tags**, and exactly **one topic** (or none).
+
+A collapsed card shows a one-line summary and a **Copy** that copies the first code block, or the first field
+when there is no code. Tap the title for everything else: per-block and per-field Copy, Edit, Pin, Duplicate,
+Copy as Markdown and Delete.
+
+### Finding it again
+
+| Way | How it works |
+|---|---|
+| Search | Every word must appear somewhere: title, write-up, code, languages, field keys, tags, topic name |
+| Topics and tags | The rail on a laptop, a fold-out row on a phone. Tags combine (AND); a tag on a card filters too |
+| Smart order (default) | Pinned first, then `(1 + uses) / (1 + days since last use ÷ 30)`, so frequent *and* recent wins |
+| Revisit tab | Up to 5 entries you have not opened, copied or edited for 30 days, oldest first |
+
+A **use** is a copy that actually reached the clipboard, or a click on a link in the entry. Opening a card is not a
+use, but it does count as having looked at the entry. **Still useful** in Revisit puts an entry away for twice as
+long each time (30 → 60 → 120 → 240 → 365 days); pinned entries never come back, because you see them already.
+The batch is fixed when you open the tab, so copying from a card there does not make it vanish.
+
+### Sensitive fields: hidden on screen, not encrypted
+
+Tick **Sensitive** on a field and its value shows as dots until you tap Reveal (and hides again when the page goes
+to the background). Copy works without revealing it. Sensitive values are left out of search, so a guess typed
+into the search box cannot confirm a secret, and Copy as Markdown writes `(hidden)`. But the value is stored as
+**plain text** in `hack-shelf.json`, like everything else in that file.
+
+When a value looks like a real secret — a GitHub, Slack, AWS, Google or `sk-` key, a private key block, or a login
+token (JWT) — the editor says so and points to Strongroom. It never stops you saving, and Settings can turn it off.
+
+### Data shape, and why usage lives apart
+
+Everything is a record in `items`, told apart by `kind`:
+
+| kind | id | What it holds |
+|---|---|---|
+| `entry` | `e…` | title, `topicId`, tags, write-up, `blocks[{id, lang, code}]`, `fields[{id, k, v, secret}]` |
+| `meta` | `m-<entry id>` | `pinned`, `uses`, `lastUsed`, `lastSeen`, `reviewedOn`, `interval` |
+| `topic` | `t…` | name, colour 0–7 |
+| `settings` | `settings` | theme, Revisit batch size and first wait, the secret warning on/off |
+
+Drive sync keeps whichever copy of a record was saved last. Copies, pins and Revisit answers are frequent and
+happen on whichever device is in your hand; if they stamped the entry itself, copying a snippet on the phone could
+throw away an edit made on the laptop that had not uploaded yet. So they write only `meta`, and the entry changes
+only when you edit it. The worst a race can cost is one use count or one pin, never an edit. The editor also warns
+before saving over an entry that changed on another device since you opened it.
+
+Topics are referenced by id, so renaming one is a single write. **No topic** is not stored: an entry has no topic
+when its `topicId` is empty or points at a deleted topic. Deleting a topic is therefore one tombstone, and its
+entries simply read as *No topic* without being rewritten.
+
+### Backups and testing
+
+Settings → **Export JSON** writes `hack-shelf-YYYY-MM-DD.json`. **Import** accepts only that file or the Drive
+file itself; another app's file is refused by name. A merge keeps each record's own timestamp, so an old backup
+never overwrites a newer edit; *replace* makes the file the truth and deletes what it lacks.
+
+Settings → Developer → **Pretend today is** moves this browser's date (never Drive's), so Revisit can be watched
+without waiting a month. Copies and reviews made while pretending are dated with the pretend day.
+
 ## Sign-in details worth knowing
 
 - The Google token lasts one hour. After that the pages show *Continue with Google* again; one tap, no consent
@@ -207,7 +282,7 @@ the old `Documents/FromClaude/FromClaude/Personal` folder and are linked from th
 
 ## Repository layout
 
-- `docs/` — the site. `tools/build-site.py` regenerates the six pages from the sources below; run it after
+- `docs/` — the site. `tools/build-site.py` regenerates the seven pages from the sources below; run it after
   editing any source. It leaves `docs/data/keycap-atlas.json` alone unless the gitignored `seed/export/` folder
   is present. `docs/sw.js` is the notification service worker (not built, edit in place).
 - `keycap-atlas.html`, `strongroom.html` — page sources (artifact-style fragments; the build adds the storage layer
@@ -220,6 +295,9 @@ the old `Documents/FromClaude/FromClaude/Personal` folder and are linked from th
   back to browser-only storage when `drive-sync.js` is absent, so it opens straight from the filesystem. The
   build only injects the two script tags, then asserts the store is wired, that the page uses no `innerHTML`,
   and that no function is declared twice (a duplicate is hoisted over the first and wins silently).
+- `site/hack-shelf.html` — page source, built exactly like Event Log. Because it renders text and code you typed,
+  the build refuses every markup-string API (`innerHTML`, `outerHTML`, `insertAdjacentHTML`, `document.write`),
+  where Event Log's build refuses only `innerHTML`.
 - `seed/shortcuts.txt`, `seed/build-seed.mjs` — the starter shortcut set and its builder.
 - `seed/ocr-notebook-to-csv.py` — turns OCR text of a scanned password notebook into the vault's import CSV.
 - `seed/text-notebook-to-csv.py` — the same for a notebook already typed as plain text (blank line between
