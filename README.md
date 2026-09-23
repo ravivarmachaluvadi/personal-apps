@@ -327,6 +327,32 @@ Typing a name that already exists reuses it whatever the capitalisation, and typ
 maps back to the built-in. A custom type disappears on its own once no entry uses it. An import keeps an
 unrecognised `type` or folder column as a custom type instead of dropping it to Login.
 
+### A login used on more than one site
+
+Some accounts sign in on two addresses with the same username and password — EPFO's Unified Portal and its
+Passbook site, for example. Keep them as **one** entry (two entries would also flag the password as reused):
+the main address goes in *Website*, and the other in an extra field. **+ Website** in the editor adds that
+field for you, labelled *Other website*; rename it (“Passbook”). Any extra field whose value is a web address
+— `https://…`, `www.…`, or a bare domain like `example.gov.in` — gets **Open** and **Copy** buttons in the
+entry, exactly like *Website*, and search finds the entry by either address. A field marked secret never
+turns into a link. It is an ordinary extra field, so nothing about the stored entry, the CSV export or the
+import changed. Links only ever open as `http(s)://`; anything else gets `https://` in front.
+
+### Light and dark
+
+The sun/moon button in the header (and in the corner of the lock screen) switches between light and dark.
+**Settings → Appearance** has *Auto / Light / Dark*; Auto follows the device's own setting and is the
+default. The choice is kept in this browser (`sr.theme` in `localStorage`), not in the vault, because the lock
+screen needs it before anything is decrypted — so each device keeps its own. A small script in `<head>`
+applies it before the first paint, so the page never flashes the other theme.
+
+### Keyboard
+
+`/` jumps to search. **Enter** in the search box opens the top match, **↓** opens the next one and moves into
+the list, and **↑ / ↓** anywhere else walk through the results. **Esc** closes the open entry first, then
+clears the search. Rows also have one-click copy buttons for the username and the password (shown on hover
+on a laptop, always on a phone); a copy button turns into a tick for a moment when the copy worked.
+
 ## Keys notation in Keycap Atlas
 
 Join simultaneous keys with `+`, separate steps with a space: `Ctrl+Shift+P`, `Ctrl+K Ctrl+S`, `g i`, `Alt+H O I`.

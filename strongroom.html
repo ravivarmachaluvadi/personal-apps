@@ -1,6 +1,7 @@
 <title>Strongroom</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<script>/* the chosen theme, applied before first paint (Settings → Appearance; this device only) */try{var srTheme=JSON.parse(localStorage.getItem('sr.theme'));if(srTheme==='light'||srTheme==='dark')document.documentElement.setAttribute('data-theme',srTheme);}catch(e){}</script>
 <style>
 :root{
   --bg:#E4E7EA; --surface:#FFFFFF; --surface-2:#F1F3F5; --line:#CFD5DA; --text:#171A1F; --muted:#5A636D; --faint:#98A1AA;
@@ -45,6 +46,7 @@ input[type="range"]{padding:0;border:0;background:transparent}
 .btn.sm{padding:5px 9px;font-size:13px}
 .btn.icon{width:32px;height:32px;padding:0;border-radius:8px;color:var(--muted)}
 .btn.icon svg{width:16px;height:16px}
+.btn.icon.ok{color:var(--good)}
 .btn.quiet{background:transparent;color:var(--muted)}
 .btn.danger{color:var(--danger)}
 .btn.dangerfill{background:var(--danger);color:#fff}
@@ -57,7 +59,10 @@ input[type="range"]{padding:0;border:0;background:transparent}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* lock screen */
-.lock{min-height:100vh;display:grid;place-items:center;padding:24px 16px}
+/* #lock, not .lock: the secret toggle on an extra-field row is also class "lock", and a 100vh min-height
+   made every field row in the editor a full screen tall */
+#lock{min-height:100vh;display:grid;place-items:center;padding:24px 16px;position:relative}
+#lock .theme{position:absolute;top:14px;right:14px}
 .lock .panel{width:min(420px,100%);text-align:center;display:grid;gap:14px;justify-items:center}
 .door{width:132px;height:132px;color:var(--accent)}
 .door .wheel{transform-origin:66px 66px;transition:transform 1.2s cubic-bezier(.2,.8,.2,1)}
@@ -89,7 +94,12 @@ input[type="range"]{padding:0;border:0;background:transparent}
 .search input{padding-left:36px}
 .search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--faint);pointer-events:none}
 .tools{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.countdown{font:12px "IBM Plex Mono",monospace;color:var(--muted)}
+.tools .btn.icon{width:37px;height:37px;background:var(--surface-2);color:var(--text);border-radius:9px}
+.countdown{font:500 12px "IBM Plex Mono",monospace;color:var(--muted)}
+.countdown::before{content:"·";margin-right:6px}
+.countdown:empty{display:none}
+/* phones: the four buttons share one full-width row down to a 360px screen */
+@media (max-width:480px){.tools{width:100%}.tools .btn:not(.icon){padding:8px 9px;flex:1 1 auto}}
 .body{display:grid;grid-template-columns:1fr;gap:14px;align-items:start}
 @media (min-width:760px){.body{grid-template-columns:210px 1fr}}
 @media (min-width:1040px){.body{grid-template-columns:210px minmax(0,1fr) 380px}}
@@ -120,12 +130,15 @@ input[type="range"]{padding:0;border:0;background:transparent}
 .empty{color:var(--muted);font-size:14px;margin:0;padding:18px 14px}
 
 /* detail */
-.detail{padding:18px 20px 20px;position:sticky;top:12px;display:grid;gap:14px;min-width:0}
+/* minmax(0,1fr): a one-line address (.val.link) must be cut with …, not widen the panel */
+.detail{padding:18px 20px 20px;position:sticky;top:12px;display:grid;grid-template-columns:minmax(0,1fr);gap:14px;min-width:0}
 @media (max-width:1039px){.detail{position:fixed;inset:0;z-index:40;border-radius:0;overflow:auto;max-height:100vh}.detail[hidden]{display:none}}
-.detail .hd{display:flex;align-items:center;gap:12px}
-.detail .hd h2{font-family:"Fraunces",serif;font-weight:600;font-size:22px;letter-spacing:-.01em;margin:0;line-height:1.15;overflow-wrap:anywhere}
-.detail .hd .sub{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
-.field{display:grid;gap:3px}
+.detail .hd{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+.detail .hdrow{display:flex;align-items:center;gap:4px}
+.detail .hdrow .mg{margin-right:auto}
+.detail .hd h2{font-family:"Fraunces",serif;font-weight:600;font-size:20px;letter-spacing:-.01em;margin:0;line-height:1.2;overflow-wrap:break-word;text-wrap:balance}
+.detail .hd .sub{display:flex;gap:6px;flex-wrap:wrap}
+.field{display:grid;grid-template-columns:minmax(0,1fr);gap:3px}
 .field label{font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--faint);font-weight:600}
 .field .v{display:flex;align-items:center;gap:6px;min-height:36px}
 .field .v .val{flex:1;min-width:0;font-family:"IBM Plex Mono",monospace;font-size:14px;overflow-wrap:anywhere;padding:6px 10px;background:var(--surface-2);border-radius:8px}
@@ -133,6 +146,7 @@ input[type="range"]{padding:0;border:0;background:transparent}
 .field .v .val.plain{font-family:"Public Sans",sans-serif;white-space:pre-wrap}
 .field .v .val a{color:var(--accent-deep);text-decoration:none;overflow-wrap:anywhere}
 .field .v .val a:hover{text-decoration:underline}
+.field .v .val.link{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .meta{font-size:12.5px;color:var(--muted);display:grid;gap:2px}
 .detail details summary{cursor:pointer;font-size:13px;color:var(--muted);font-weight:500}
 .hist{display:grid;gap:6px;margin-top:8px}
@@ -165,6 +179,10 @@ dialog::backdrop{background:rgba(8,10,12,.6);backdrop-filter:blur(2px)}
 .gen .len input{flex:1}
 .gen .len b{font-family:"IBM Plex Mono",monospace;min-width:2.5ch;text-align:right}
 .split{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.seg button{border-radius:0;font-weight:600;font-size:13.5px;color:var(--muted);padding:7px 14px;min-height:36px}
+.seg button+button{border-left:1.5px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
 .fields{display:grid;gap:6px}
 .frow{display:grid;grid-template-columns:minmax(90px,1fr) minmax(110px,1.5fr) auto auto;gap:6px;align-items:center}
 .frow input{padding:7px 9px;font-size:14px}
@@ -179,10 +197,13 @@ dialog::backdrop{background:rgba(8,10,12,.6);backdrop-filter:blur(2px)}
 .prow .x{grid-column:2 / -1;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media (max-width:560px){.prow{grid-template-columns:auto 1fr auto}.prow .m{grid-column:2}.prow select{grid-column:2 / -1}}
 footer{margin-top:24px;color:var(--muted);font-size:13px;max-width:72ch;line-height:1.55}
+footer .keys kbd{font:500 11.5px "IBM Plex Mono",monospace;padding:1px 6px;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;background:var(--surface);color:var(--text)}
+@media (hover:none){footer .keys{display:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
 <div class="lock" id="lock">
+  <button class="btn icon theme" id="themeBtn2" type="button" aria-label="Switch theme"></button>
   <div class="panel">
     <svg class="door" id="door" viewBox="0 0 132 132" fill="none" aria-hidden="true">
       <circle cx="66" cy="66" r="62" stroke="currentColor" stroke-width="5" opacity=".35"/>
@@ -221,9 +242,9 @@ footer{margin-top:24px;color:var(--muted);font-size:13px;max-width:72ch;line-hei
     </div>
     <div class="tools">
       <button class="btn primary" id="newBtn" type="button">+ New entry</button>
+      <button class="btn icon" id="themeBtn" type="button" aria-label="Switch theme"></button>
       <button class="btn" id="settingsBtn" type="button">Settings</button>
-      <button class="btn" id="lockBtn" type="button">Lock</button>
-      <span class="countdown" id="countdown"></span>
+      <button class="btn" id="lockBtn" type="button" aria-label="Lock">Lock<span class="countdown" id="countdown"></span></button>
     </div>
     <div class="state" id="sync" data-state="boot"><i></i><span id="syncText">Connecting…</span></div>
   </header>
@@ -235,7 +256,7 @@ footer{margin-top:24px;color:var(--muted);font-size:13px;max-width:72ch;line-hei
     <main class="card list-card" id="list"></main>
     <aside class="card detail" id="detail" hidden></aside>
   </div>
-  <footer><p>Every entry is encrypted in this browser with a key derived from your master password before it is saved. The cloud copy that syncs between your devices is ciphertext only. Keep this artifact private and keep an encrypted backup from Settings somewhere safe.</p></footer>
+  <footer><p>Every entry is encrypted in this browser with a key derived from your master password before it is saved. The cloud copy that syncs between your devices is ciphertext only. Keep this artifact private and keep an encrypted backup from Settings somewhere safe.</p><p class="keys">Keys: <kbd>/</kbd> search · <kbd>↑</kbd> <kbd>↓</kbd> move through the list · <kbd>Enter</kbd> open the top match · <kbd>Esc</kbd> close, then clear the search</p></footer>
 </div>
 
 <dialog id="editor">
@@ -277,7 +298,7 @@ footer{margin-top:24px;color:var(--muted);font-size:13px;max-width:72ch;line-hei
     <div>
       <label>Extra fields <span style="color:var(--faint)">(account numbers, PINs, expiry, anything else)</span></label>
       <div class="fields" id="fFields"></div>
-      <div class="acts" style="margin-top:6px"><button class="btn sm" type="button" id="fAddField">+ Field</button><button class="btn sm quiet" type="button" id="fTemplate" hidden></button></div>
+      <div class="acts" style="margin-top:6px"><button class="btn sm" type="button" id="fAddField">+ Field</button><button class="btn sm" type="button" id="fAddWeb" title="Another address this login works on">+ Website</button><button class="btn sm quiet" type="button" id="fTemplate" hidden></button></div>
     </div>
     <div><label for="fNotes">Notes</label><textarea id="fNotes" maxlength="4000" placeholder="Recovery codes, security answers, PIN hints…"></textarea></div>
     <div class="acts"><span id="editDel"></span><span class="spacer"></span><button class="btn quiet" type="button" id="editCancel">Cancel</button><button class="btn primary" type="submit" id="editSave">Save</button></div>
@@ -298,6 +319,9 @@ footer{margin-top:24px;color:var(--muted);font-size:13px;max-width:72ch;line-hei
   <div class="dlg">
     <h2>Settings<button class="btn quiet x" type="button" id="setClose" aria-label="Close">✕</button></h2>
     <div class="split"><div><label for="autolock">Lock automatically after</label><select id="autolock"><option value="1">1 minute</option><option value="5">5 minutes</option><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="0">Never (until the tab closes)</option></select></div><span class="hint">Locking wipes the key from memory.</span></div>
+
+    <h3>Appearance</h3>
+    <div class="acts"><div class="seg" id="sTheme" role="group" aria-label="Theme"><button type="button" data-t="auto">Auto</button><button type="button" data-t="light">Light</button><button type="button" data-t="dark">Dark</button></div><span class="hint">Auto follows this device's setting. The choice is kept on this device only.</span></div>
 
     <h3>Backup</h3>
     <div class="acts"><button class="btn" type="button" id="expEnc">Download encrypted backup</button><button class="btn" type="button" id="expCsv">Download plain CSV…</button></div>
@@ -330,7 +354,7 @@ footer{margin-top:24px;color:var(--muted);font-size:13px;max-width:72ch;line-hei
 (function(){
   'use strict';
   var $=function(s,r){return (r||document).querySelector(s);};
-  var LS={meta:'sr.meta',entries:'sr.entries',pending:'sr.pending',autolock:'sr.autolock',cat:'sr.cat'};
+  var LS={meta:'sr.meta',entries:'sr.entries',pending:'sr.pending',autolock:'sr.autolock',cat:'sr.cat',theme:'sr.theme'};
   var BUILTIN={login:'Login',bank:'Bank',card:'Card',wifi:'Wi-Fi',note:'Secure note',id:'Identity',other:'Other'};
   var SPECIAL={all:1,fav:1,weak:1,reused:1,old:1},NEWCAT='\u0001new';
   /* A type is just a string on the entry: a built-in key, or the custom label itself. */
@@ -363,12 +387,33 @@ footer{margin-top:24px;color:var(--muted);font-size:13px;max-width:72ch;line-hei
   function ago(t){if(!t)return '';var d=Math.round((Date.now()-t)/86400000);return d<=0?'today':d===1?'yesterday':d<30?d+' days ago':d<365?Math.round(d/30)+' months ago':Math.round(d/365*10)/10+' years ago';}
   var toastT=null;function toast(msg){var t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('on');},2400);}
   function confirmBtn(label,question,onYes){var wrap=h('span');var b=h('button',{class:'btn sm danger',type:'button',text:label,onclick:function(){clear(wrap);wrap.appendChild(h('span',{class:'confirm'},[question,h('button',{class:'btn sm dangerfill',type:'button',text:'Yes',onclick:onYes}),h('button',{class:'btn sm quiet',type:'button',text:'No',onclick:function(){clear(wrap);wrap.appendChild(b);}})]));}});wrap.appendChild(b);return wrap;}
-  function copyText(text,what){var done=function(ok){toast(ok?'Copied '+what:'Copy is blocked here — reveal it and select instead');};
+  /* btn (optional): the copy button pressed; it shows a tick for a moment when the copy worked */
+  function copyText(text,what,btn){var done=function(ok){toast(ok?'Copied '+what:'Copy is blocked here — reveal it and select instead');if(ok&&btn)flashCopied(btn);};
     if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(function(){done(true);},function(){done(legacyCopy(text));});}else done(legacyCopy(text));}
   function legacyCopy(text){try{var ta=document.createElement('textarea');ta.value=text;ta.setAttribute('readonly','');ta.style.cssText='position:fixed;opacity:0;top:0;left:0';document.body.appendChild(ta);ta.select();var ok=document.execCommand('copy');ta.remove();return ok;}catch(e){return false;}}
   function svgIcon(d){var s=document.createElementNS('http://www.w3.org/2000/svg','svg');s.setAttribute('viewBox','0 0 24 24');s.setAttribute('fill','none');s.setAttribute('stroke','currentColor');s.setAttribute('stroke-width','2');s.setAttribute('stroke-linecap','round');s.setAttribute('stroke-linejoin','round');var p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('d',d);s.appendChild(p);return s;}
-  var IC={copy:'M20 9h-9a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2zM5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1',eye:'M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',open:'M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3',star:'M12 2.5l2.9 6.1 6.7.8-4.9 4.6 1.3 6.6L12 17.3 6 20.6l1.3-6.6L2.4 9.4l6.7-.8z',key:'M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4'};
+  var IC={copy:'M20 9h-9a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2zM5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1',eye:'M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',open:'M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3',star:'M12 2.5l2.9 6.1 6.7.8-4.9 4.6 1.3 6.6L12 17.3 6 20.6l1.3-6.6L2.4 9.4l6.7-.8z',key:'M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4',
+    user:'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',check:'M20 6 9 17l-5-5',
+    sun:'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41',moon:'M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z'};
   function iconBtn(name,label,onclick,cls){var b=h('button',{class:'btn icon '+(cls||''),type:'button','aria-label':label,title:label,onclick:onclick});b.appendChild(svgIcon(IC[name]));return b;}
+  function flashCopied(btn){var old=btn.querySelector('svg');if(!old||btn.classList.contains('ok'))return;var tick=svgIcon(IC.check);btn.replaceChild(tick,old);btn.classList.add('ok');
+    setTimeout(function(){if(tick.parentNode===btn)btn.replaceChild(old,tick);btn.classList.remove('ok');},1200);}
+  /* Links only ever leave as http(s): anything else (javascript:, a bare domain) gets https:// in front. */
+  function webHref(v){v=String(v||'').trim();return /^https?:\/\//i.test(v)?v:'https://'+v.replace(/^[a-z][a-z0-9+.-]*:\/\//i,'');}
+
+  /* ---------- appearance: Auto / Light / Dark, this device only (the head script applies it before paint) ---------- */
+  var THEME=load(LS.theme,'auto'),darkQ=window.matchMedia?window.matchMedia('(prefers-color-scheme: dark)'):null;
+  if(THEME!=='light'&&THEME!=='dark')THEME='auto';
+  function shownTheme(){return THEME==='auto'?(darkQ&&darkQ.matches?'dark':'light'):THEME;}
+  function applyTheme(){var root=document.documentElement;if(THEME==='auto')root.removeAttribute('data-theme');else root.setAttribute('data-theme',THEME);
+    var dark=shownTheme()==='dark',label=dark?'Switch to light':'Switch to dark';
+    ['#themeBtn','#themeBtn2'].forEach(function(s){var b=$(s);clear(b);b.appendChild(svgIcon(IC[dark?'sun':'moon']));b.setAttribute('aria-label',label);b.title=label;});
+    document.querySelectorAll('#sTheme button').forEach(function(b){b.setAttribute('aria-pressed',String(b.getAttribute('data-t')===THEME));});}
+  function setTheme(t){THEME=t;save(LS.theme,t);applyTheme();}
+  ['#themeBtn','#themeBtn2'].forEach(function(s){$(s).addEventListener('click',function(){setTheme(shownTheme()==='dark'?'light':'dark');});});
+  document.querySelectorAll('#sTheme button').forEach(function(b){b.addEventListener('click',function(){setTheme(b.getAttribute('data-t'));});});
+  if(darkQ){var onScheme=function(){if(THEME==='auto')applyTheme();};if(darkQ.addEventListener)darkQ.addEventListener('change',onScheme);else if(darkQ.addListener)darkQ.addListener(onScheme);}
+  applyTheme();
 
   /* ---------- crypto ---------- */
   var enc=new TextEncoder(),dec=new TextDecoder();
@@ -477,8 +522,9 @@ footer{margin-top:24px;color:var(--muted);font-size:13px;max-width:72ch;line-hei
 
   /* auto-lock */
   var alT=null,cdT=null,alUntil=0,AUTOLOCK=+load(LS.autolock,5);if(isNaN(AUTOLOCK))AUTOLOCK=5;
-  function armAutolock(){clearTimeout(alT);clearInterval(cdT);if(!KEY)return;if(!AUTOLOCK){$('#countdown').textContent='';return;}alUntil=Date.now()+AUTOLOCK*60000;alT=setTimeout(function(){if(KEY){lock();toast('Locked after '+AUTOLOCK+' min without activity');}},AUTOLOCK*60000);
-    var tick=function(){var s=Math.max(0,Math.round((alUntil-Date.now())/1000));$('#countdown').textContent='locks in '+Math.floor(s/60)+':'+('0'+s%60).slice(-2);};tick();cdT=setInterval(tick,1000);}
+  function armAutolock(){clearTimeout(alT);clearInterval(cdT);if(!KEY)return;$('#lockBtn').title=AUTOLOCK?'Lock now. It locks by itself after '+AUTOLOCK+' minute'+(AUTOLOCK===1?'':'s')+' without activity.':'Lock now';
+    if(!AUTOLOCK){$('#countdown').textContent='';return;}alUntil=Date.now()+AUTOLOCK*60000;alT=setTimeout(function(){if(KEY){lock();toast('Locked after '+AUTOLOCK+' min without activity');}},AUTOLOCK*60000);
+    var tick=function(){var s=Math.max(0,Math.round((alUntil-Date.now())/1000));$('#countdown').textContent=Math.floor(s/60)+':'+('0'+s%60).slice(-2);};tick();cdT=setInterval(tick,1000);}
   ['pointerdown','keydown','input','scroll'].forEach(function(ev){document.addEventListener(ev,function(){if(KEY)armAutolock();},{passive:true});});
   $('#autolock').value=String(AUTOLOCK);$('#autolock').addEventListener('change',function(){AUTOLOCK=+this.value;save(LS.autolock,AUTOLOCK);armAutolock();});
 
@@ -497,36 +543,42 @@ footer{margin-top:24px;color:var(--muted);font-size:13px;max-width:72ch;line-hei
     item('all','Everything',all.length);item('fav','Favourites',all.filter(function(p){return p.fav;}).length);
     Object.keys(BUILTIN).concat(customCats()).forEach(function(c){var n=all.filter(function(p){return p.category===c;}).length;if(n)item(c,catName(c),n);});
     var hb=$('#health');clear(hb);[['weak','Weak passwords'],['reused','Reused passwords'],['old','Older than a year']].forEach(function(x){var n=Object.keys(H[x[0]]).length;hb.appendChild(h('button',{class:'item'+(n?' h':''),type:'button','aria-pressed':String(catSel===x[0]),onclick:function(){catSel=x[0];save(LS.cat,catSel);renderAll();}},[x[1],h('span',{class:'n',text:String(n)})]));});}
+  function userLabel(c){return c==='wifi'?'Network name':c==='card'?'Card number':c==='bank'?'Customer ID / User ID':c==='id'?'Number / ID':'Username';}
+  var LISTED=[];   // ids in the order the list shows them, for the arrow keys
   function renderList(H){var box=$('#list');clear(box);var list=entries().filter(function(p){return match(p,H);}).sort(function(a,b){return (b.fav?1:0)-(a.fav?1:0)||a.title.localeCompare(b.title);});
+    LISTED=list.map(function(p){return p.id;});
     if(!list.length){box.appendChild(h('p',{class:'empty',text:entries().length?'Nothing matches.':'The vault is empty. Add your first entry, or import a CSV from your browser or another password manager in Settings.'}));return;}
-    list.forEach(function(p){var r=h('div',{class:'row',role:'button',tabindex:'0','aria-current':String(selected===p.id),onclick:function(e){if(e.target.closest('button'))return;selected=p.id;renderAll();},onkeydown:function(e){if(e.key==='Enter'&&!e.target.closest('button')){selected=p.id;renderAll();}}});
+    list.forEach(function(p){var r=h('div',{class:'row',role:'button',tabindex:'0','data-id':p.id,'aria-current':String(selected===p.id),onclick:function(e){if(e.target.closest('button'))return;selected=p.id;renderAll();},onkeydown:function(e){if(e.key==='Enter'&&!e.target.closest('button')){selected=p.id;renderAll();}}});
       r.appendChild(h('span',{class:'mg',text:mono(p.title),style:'background:'+hashColor(p.title)}));
       r.appendChild(h('span',{class:'t'},[h('b',{text:p.title}),h('span',{text:p.username||domain(p.url||'')||catName(p.category)})]));
       var side=h('span',{class:'side'});if(H.weak[p.id])side.appendChild(h('span',{class:'pill weak',text:'weak'}));if(H.reused[p.id])side.appendChild(h('span',{class:'pill reused',text:'reused'}));
-      if(p.password)side.appendChild(iconBtn('key','Copy password',function(e){e.stopPropagation();copyText(p.password,'password');}));
+      if(p.username){var ul=userLabel(p.category).toLowerCase();side.appendChild(iconBtn('user','Copy '+ul,function(e){e.stopPropagation();copyText(p.username,ul,e.currentTarget);}));}
+      if(p.password)side.appendChild(iconBtn('key','Copy password',function(e){e.stopPropagation();copyText(p.password,'password',e.currentTarget);}));
       var star=iconBtn('star',p.fav?'Remove from favourites':'Add to favourites',function(e){e.stopPropagation();p.fav=!p.fav;saveEntry(p);},'star');star.setAttribute('aria-pressed',String(!!p.fav));star.querySelector('path').setAttribute('fill',p.fav?'currentColor':'none');side.appendChild(star);
       r.appendChild(side);box.appendChild(r);});}
   function field(label,value,opts){opts=opts||{};if(!value&&!opts.always)return null;var val;
-    if(opts.link){val=h('span',{class:'val'});val.appendChild(h('a',{href:/^[a-z]+:\/\//i.test(value)?value:'https://'+value,target:'_blank',rel:'noopener noreferrer',text:value}));}
+    if(opts.link){var href=webHref(value);val=h('span',{class:'val link',title:href});val.appendChild(h('a',{href:href,target:'_blank',rel:'noopener noreferrer',text:String(value).trim().replace(/^https?:\/\//i,'')}));}
     else if(opts.secret){val=h('span',{class:'val masked',text:'••••••••••••'});}
     else val=h('span',{class:'val'+(opts.plain?' plain':''),text:value});
     var v=h('div',{class:'v'},[val]);
     if(opts.secret){var shown=false;v.appendChild(iconBtn('eye','Reveal',function(){shown=!shown;val.textContent=shown?value:'••••••••••••';val.classList.toggle('masked',!shown);}));}
-    if(opts.link)v.appendChild(iconBtn('open','Open site',function(){window.open(/^[a-z]+:\/\//i.test(value)?value:'https://'+value,'_blank','noopener');}));
-    if(value)v.appendChild(iconBtn('copy','Copy '+label.toLowerCase(),function(){copyText(value,label.toLowerCase());}));
+    if(opts.link)v.appendChild(iconBtn('open',label==='Website'?'Open site':'Open '+label.toLowerCase(),function(){window.open(webHref(value),'_blank','noopener');}));
+    if(value)v.appendChild(iconBtn('copy','Copy '+label.toLowerCase(),function(e){copyText(value,label.toLowerCase(),e.currentTarget);}));
     return h('div',{class:'field'},[h('label',{text:label}),v]);}
   function renderDetail(H){var box=$('#detail');clear(box);var p=selected&&PLAIN[selected];if(!p){box.hidden=true;return;}box.hidden=false;
-    var hd=h('div',{class:'hd'},[h('span',{class:'mg',text:mono(p.title),style:'background:'+hashColor(p.title)})]);
+    /* row 1: monogram, then star and close on the right; the title gets the full width below them */
     var sub=h('div',{class:'sub'},[h('span',{class:'pill cat',text:catName(p.category)})]);(p.tags||[]).forEach(function(t){sub.appendChild(h('span',{class:'pill',text:t}));});if(H.weak[p.id])sub.appendChild(h('span',{class:'pill weak',text:'weak password'}));if(H.reused[p.id])sub.appendChild(h('span',{class:'pill reused',text:'reused password'}));if(H.old[p.id])sub.appendChild(h('span',{class:'pill old',text:'over a year old'}));
-    hd.appendChild(h('div',{style:'flex:1;min-width:0'},[h('h2',{text:p.title}),sub]));hd.appendChild(iconBtn('star',p.fav?'Remove from favourites':'Add to favourites',function(){p.fav=!p.fav;saveEntry(p);},'star'));hd.lastChild.setAttribute('aria-pressed',String(!!p.fav));hd.lastChild.querySelector('path').setAttribute('fill',p.fav?'currentColor':'none');
-    hd.appendChild(h('button',{class:'btn quiet',type:'button',text:'✕','aria-label':'Close',onclick:function(){selected=null;renderAll();}}));box.appendChild(hd);
-    var uLabel=p.category==='wifi'?'Network name':p.category==='card'?'Card number':p.category==='bank'?'Customer ID / User ID':p.category==='id'?'Number / ID':'Username',pLabel=p.category==='wifi'?'Wi-Fi password':p.category==='card'?'Card PIN':p.category==='bank'?'Login password':'Password';
-    var fl=[field(uLabel,p.username),field(pLabel,p.password,{secret:true}),field('Website',p.url,{link:true})];
-    (p.fields||[]).forEach(function(f){if(f&&f.label&&f.value)fl.push(field(f.label,f.value,{secret:!!f.secret}));});
+    var star=iconBtn('star',p.fav?'Remove from favourites':'Add to favourites',function(){p.fav=!p.fav;saveEntry(p);},'star');star.setAttribute('aria-pressed',String(!!p.fav));star.querySelector('path').setAttribute('fill',p.fav?'currentColor':'none');
+    var hdrow=h('div',{class:'hdrow'},[h('span',{class:'mg',text:mono(p.title),style:'background:'+hashColor(p.title)}),star,h('button',{class:'btn icon',type:'button',text:'✕','aria-label':'Close',title:'Close (Esc)',onclick:function(){selected=null;renderAll();}})]);
+    box.appendChild(h('div',{class:'hd'},[hdrow,h('h2',{text:p.title}),sub]));
+    var pLabel=p.category==='wifi'?'Wi-Fi password':p.category==='card'?'Card PIN':p.category==='bank'?'Login password':'Password';
+    var fl=[field(userLabel(p.category),p.username),field(pLabel,p.password,{secret:true}),field('Website',p.url,{link:true})];
+    /* an extra field holding a web address (a second site for the same login) opens like Website */
+    (p.fields||[]).forEach(function(f){if(f&&f.label&&f.value)fl.push(field(f.label,f.value,{secret:!!f.secret,link:!f.secret&&isUrl(String(f.value).trim())}));});
     fl.push(field('Notes',p.notes,{plain:true}));fl.forEach(function(f){if(f)box.appendChild(f);});
     if(p.password){var s=strength(p.password),m=h('div',{class:'meter','data-s':String(s.score)});m.appendChild(h('i',{style:'width:'+[0,25,50,75,100][s.score]+'%'}));box.appendChild(h('div',{},[m,h('div',{class:'meterline'},[h('span',{text:s.label+' password'}),h('span',{text:'changed '+ago(p.pwChangedAt||p.createdAt)})])]));}
     box.appendChild(h('div',{class:'meta'},[h('span',{text:'Created '+fmtDate(p.createdAt)}),h('span',{text:'Updated '+fmtDate(p.updatedAt)})]));
-    if(p.history&&p.history.length){var d=h('details');d.appendChild(h('summary',{text:'Previous passwords ('+p.history.length+')'}));var hl=h('div',{class:'hist'});p.history.slice().reverse().forEach(function(x){var shown=false,val=h('span',{class:'val',text:'••••••••'});hl.appendChild(h('div',{},[val,h('span',{class:'hint',text:'until '+fmtDate(x.until)}),iconBtn('eye','Reveal',function(){shown=!shown;val.textContent=shown?x.password:'••••••••';}),iconBtn('copy','Copy',function(){copyText(x.password,'old password');})]));});d.appendChild(hl);box.appendChild(d);}
+    if(p.history&&p.history.length){var d=h('details');d.appendChild(h('summary',{text:'Previous passwords ('+p.history.length+')'}));var hl=h('div',{class:'hist'});p.history.slice().reverse().forEach(function(x){var shown=false,val=h('span',{class:'val',text:'••••••••'});hl.appendChild(h('div',{},[val,h('span',{class:'hint',text:'until '+fmtDate(x.until)}),iconBtn('eye','Reveal',function(){shown=!shown;val.textContent=shown?x.password:'••••••••';}),iconBtn('copy','Copy',function(e){copyText(x.password,'old password',e.currentTarget);})]));});d.appendChild(hl);box.appendChild(d);}
     box.appendChild(h('div',{class:'acts'},[h('button',{class:'btn primary',type:'button',text:'Edit',onclick:function(){openEditor(p);}}),h('span',{class:'spacer'}),confirmBtn('Delete','Delete this entry?',function(){storeDel(p.id);selected=null;renderAll();toast('Deleted');})]));}
   function renderAll(){if(!KEY)return;var H=health();renderRail(H);renderList(H);renderDetail(H);}
 
@@ -551,6 +603,8 @@ footer{margin-top:24px;color:var(--muted);font-size:13px;max-width:72ch;line-hei
   function setFields(list){var box=$('#fFields');clear(box);list.forEach(function(f){box.appendChild(fieldRow(f));});}
   function readFields(){var out=[];document.querySelectorAll('#fFields .frow').forEach(function(r){var ins=r.querySelectorAll('input'),label=ins[0].value.trim(),value=ins[1].value;if(!label&&!value)return;out.push({label:label||'Field',value:value,secret:r.querySelector('.lock').getAttribute('aria-pressed')==='true'});});return out;}
   $('#fAddField').addEventListener('click',function(){var r=fieldRow({label:'',value:'',secret:false});$('#fFields').appendChild(r);r.querySelector('input').focus();});
+  /* another site the same login works on: an ordinary extra field, which the detail view opens like Website */
+  $('#fAddWeb').addEventListener('click',function(){var r=fieldRow({label:'Other website',value:'',secret:false}),ins=r.querySelectorAll('input');ins[1].setAttribute('placeholder','https://');ins[1].setAttribute('inputmode','url');$('#fFields').appendChild(r);ins[0].focus();ins[0].select();});
   $('#fTemplate').addEventListener('click',function(){var tpl=TEMPLATES[$('#fCat').value]||[],have={};readFields().forEach(function(f){have[f.label.toLowerCase()]=1;});tpl.forEach(function(t){if(!have[t[0].toLowerCase()])$('#fFields').appendChild(fieldRow({label:t[0],value:'',secret:t[1]}));});});
   $('#fPass').addEventListener('input',function(){setMeter($('#fMeter'),$('#fMeterText'),$('#fMeterBits'),this.value);});
   $('#editClose').addEventListener('click',function(){$('#editor').close();});$('#editCancel').addEventListener('click',function(){$('#editor').close();});
@@ -695,8 +749,18 @@ footer{margin-top:24px;color:var(--muted);font-size:13px;max-width:72ch;line-hei
 
   /* ---------- search & keys ---------- */
   var qT=null;$('#q').addEventListener('input',function(){clearTimeout(qT);var v=this.value;qT=setTimeout(function(){query=v.trim();renderAll();},120);});
-  document.addEventListener('keydown',function(e){if(!KEY)return;if(e.key==='/'&&!e.ctrlKey&&!e.metaKey&&!/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)&&!document.querySelector('dialog[open]')){e.preventDefault();$('#q').focus();$('#q').select();}
-    if(e.key==='Escape'&&selected&&!document.querySelector('dialog[open]')){selected=null;renderAll();}});
+  /* select the i-th listed entry; focus moves to its row when the keys are driving the list */
+  function selectAt(i,focus){if(!LISTED.length)return;selected=LISTED[Math.max(0,Math.min(LISTED.length-1,i))];renderAll();
+    if(focus){var r=Array.prototype.filter.call(document.querySelectorAll('#list .row'),function(x){return x.getAttribute('data-id')===selected;})[0];if(r){r.focus();r.scrollIntoView({block:'nearest'});}}}
+  function step(dir){var i=LISTED.indexOf(selected);selectAt(i<0?0:i+dir,true);}
+  function clearSearch(){clearTimeout(qT);$('#q').value='';query='';renderAll();}
+  $('#q').addEventListener('keydown',function(e){
+    if(e.key==='Enter'||e.key==='ArrowDown'){e.preventDefault();clearTimeout(qT);query=this.value.trim();renderAll();if(e.key==='Enter')selectAt(0,false);else step(1);}
+    else if(e.key==='Escape'&&this.value){e.preventDefault();e.stopPropagation();clearSearch();}});
+  document.addEventListener('keydown',function(e){if(!KEY)return;var typing=/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName),dlg=document.querySelector('dialog[open]');
+    if(e.key==='/'&&!e.ctrlKey&&!e.metaKey&&!typing&&!dlg){e.preventDefault();$('#q').focus();$('#q').select();}
+    if((e.key==='ArrowDown'||e.key==='ArrowUp')&&!typing&&!dlg&&!e.altKey&&!e.ctrlKey&&!e.metaKey&&LISTED.length){e.preventDefault();step(e.key==='ArrowDown'?1:-1);}
+    if(e.key==='Escape'&&!dlg){if(selected){selected=null;renderAll();}else if($('#q').value)clearSearch();}});
   window.addEventListener('pagehide',function(){KEY=null;PLAIN={};});
 
   lockScreen();initCloud();
