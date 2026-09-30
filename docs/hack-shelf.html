@@ -128,8 +128,6 @@ label.ck .hint{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
 .rtopic[aria-pressed="true"],.rtag[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent)}
 .rtopic .n,.rtag .n{margin-left:auto;font:500 12px "Source Code Pro",ui-monospace,monospace;color:var(--faint);flex:none}
 .rtags{display:flex;flex-wrap:wrap;gap:5px}
-.rtag.dead{opacity:.45;cursor:not-allowed;text-decoration:line-through}
-.rtag.dead:hover{background:var(--surface)}
 .rtag{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:3px 9px;font:500 12.5px "Source Code Pro",ui-monospace,monospace;cursor:pointer;min-height:28px;max-width:100%;overflow-wrap:anywhere}
 .linkish{background:none;border:0;color:var(--accent);cursor:pointer;font:inherit;font-size:13px;padding:0;text-decoration:underline dotted;text-underline-offset:3px}
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;position:sticky;top:0;z-index:5;background:var(--bg);padding:2px 0 8px}
@@ -592,12 +590,6 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
     var n={};entries().forEach(function(e){(e.tags||[]).forEach(function(t){n[t]=(n[t]||0)+1;});});
     return Object.keys(n).map(function(t){return {tag:t,n:n[t]};}).sort(function(a,b){return b.n-a.n||(a.tag<b.tag?-1:1);});
   }
-  /* what each tag would leave if you clicked it now: the count among entries that already pass the topic, the search
-     and the tags picked so far. The order stays the all-time order so the chips don't shuffle as you filter. */
-  function tagFacets(){
-    var left={};visibleEntries().forEach(function(e){(e.tags||[]).forEach(function(t){left[t]=(left[t]||0)+1;});});
-    return allTags().map(function(x){return {tag:x.tag,n:left[x.tag]||0,total:x.n};});
-  }
   function findById(list,id){for(var i=0;i<(list||[]).length;i++)if(list[i].id===id)return list[i];return null;}
 
   /* ---------- settings (an ordinary item, because drive-sync only merges items) ---------- */
@@ -697,7 +689,8 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
     return entries().filter(function(e){
       if(FTOPIC==='__none'){if(topicOf(e))return false;}
       else if(FTOPIC&&!(e.topicId===FTOPIC&&topicOf(e)))return false;
-      for(var i=0;i<FTAGS.length;i++)if((e.tags||[]).indexOf(FTAGS[i])<0)return false;
+      /* several picked tags widen the list: an entry needs any one of them, not all */
+      if(FTAGS.length&&!FTAGS.some(function(t){return (e.tags||[]).indexOf(t)>=0;}))return false;
       return matchesQuery(e,words);
     });
   }
@@ -987,14 +980,13 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
     if(none&&topics().length)ts.appendChild(railTopic('__none','No topic',none,null));
     ts.appendChild(h('button',{type:'button',class:'linkish',text:'Edit topics',style:'margin:6px 8px 0',onclick:function(){openSettings(true);}}));
     box.appendChild(ts);
-    var tags=tagFacets(),tg=h('div',{class:'rsec'},[h('h3',{class:'sect',text:'Tags'})]),wrap=h('div',{class:'rtags'});
-    /* a picked tag is always shown and can always be unpicked; a tag with nothing left is greyed out and not clickable */
+    var tags=allTags(),tg=h('div',{class:'rsec'},[h('h3',{class:'sect',text:'Tags'})]),wrap=h('div',{class:'rtags'});
+    /* a picked tag is always shown, even past the first 30, so it can always be unpicked */
     var shown=ALL_TAGS?tags:tags.filter(function(x,i){return i<30||FTAGS.indexOf(x.tag)>=0;});
     shown.forEach(function(x){
-      var on=FTAGS.indexOf(x.tag)>=0,dead=!on&&x.n===0;
-      wrap.appendChild(h('button',{type:'button',class:'rtag'+(dead?' dead':''),'data-tag':x.tag,'aria-pressed':String(on),disabled:dead,
-        title:dead?'No entries are left with this filter on':'',onclick:function(){toggleTag(x.tag);}},['#'+x.tag,h('span',{class:'n',text:String(x.n)})]));
+      wrap.appendChild(h('button',{type:'button',class:'rtag','data-tag':x.tag,'aria-pressed':String(FTAGS.indexOf(x.tag)>=0),onclick:function(){toggleTag(x.tag);}},['#'+x.tag,h('span',{class:'n',text:String(x.n)})]));
     });
+    if(tags.length)tg.appendChild(h('p',{class:'hint',text:'Pick several to see entries with any of them. Tap a picked tag to drop it.'}));
     tg.appendChild(tags.length?wrap:h('p',{class:'hint',text:'No tags yet.'}));
     if(tags.length>30)tg.appendChild(h('button',{type:'button',class:'linkish',style:'margin-top:6px',text:ALL_TAGS?'Fewer tags':'All tags ('+tags.length+')',onclick:function(){ALL_TAGS=!ALL_TAGS;renderRail();}}));
     box.appendChild(tg);
@@ -1012,7 +1004,7 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
   function describeFilters(){
     var s='',ft=FTOPIC==='__none'?'No topic':(topicById(FTOPIC)||{}).name;
     if(ft)s+=' in '+ft;
-    if(FTAGS.length)s+=' with '+FTAGS.map(function(t){return '#'+t;}).join(' ');
+    if(FTAGS.length)s+=' tagged '+FTAGS.map(function(t){return '#'+t;}).join(' or ');
     return s;
   }
   function renderList(){
@@ -1079,7 +1071,7 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
       var sub=h('div',{class:'esub'});
       if(t)sub.appendChild(h('span',{class:'topic'},[h('span',{class:'dot',style:'background:var(--c'+normColor(t.color)+')'}),t.name]));
       if(ln)sub.appendChild(h('span',{class:'lchip',title:'Code in '+langName(ln),text:langName(ln)}));
-      (e.tags||[]).forEach(function(tag){sub.appendChild(h('button',{type:'button',class:'tag','data-tag':tag,title:'Show only #'+tag,text:'#'+tag,onclick:function(ev){ev.stopPropagation();FTAGS=FTAGS.indexOf(tag)>=0?FTAGS:FTAGS.concat([tag]);SHOWN=PAGE;if(VIEW!=='shelf')showView('shelf');else renderAll();}}));});
+      (e.tags||[]).forEach(function(tag){sub.appendChild(h('button',{type:'button',class:'tag','data-tag':tag,title:FTAGS.length?'Also show #'+tag:'Show only #'+tag,text:'#'+tag,onclick:function(ev){ev.stopPropagation();FTAGS=FTAGS.indexOf(tag)>=0?FTAGS:FTAGS.concat([tag]);SHOWN=PAGE;if(VIEW!=='shelf')showView('shelf');else renderAll();}}));});
       art.appendChild(sub);
     }
     if(!open){var s=summaryOf(e);if(s.text){var sm=h('div',{class:'summary'+(s.mono?' mono':'')});if(s.mono)hlInto(sm,s.text,s.lang);else sm.textContent=s.text;art.appendChild(sm);}return art;}
