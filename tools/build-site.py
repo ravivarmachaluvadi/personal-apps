@@ -8,6 +8,8 @@
       (already Drive-native; only the config.js/drive-sync.js tags are injected)
   site/hack-shelf.html                ->  docs/hack-shelf.html
       (Drive-native too; same injection, plus a ban on every markup-string API)
+  site/shoebox.html                   ->  docs/shoebox.html
+      (its own full-Drive sign-in; only config.js is injected, and any DELETE request is refused)
   seed/export/keycap/shortcuts/*.json ->  docs/data/keycap-atlas.json (starter set)
 
 Every replacement asserts that its anchor text exists, so a drifted source fails loudly.
@@ -320,6 +322,25 @@ _dupes = sorted({n for n in _decls if _decls.count(n) > 1})
 assert not _dupes, 'duplicate function declarations in hack shelf (the later one silently wins): ' + ', '.join(_dupes)
 wr('docs/hack-shelf.html', hs)
 
+# ---------------------------------------------------------------- Shoebox
+# A file manager over the whole of Google Drive. It has its own sign-in (the full-Drive scope, with the
+# token under its own key) and calls the Drive API itself, so only config.js is injected: drive-sync.js
+# would sign it in with the other pages' narrow scope. Deleting must only ever move things to Drive's
+# Trash, so the build refuses a DELETE request or an Empty Trash call anywhere in the page.
+sx = rd('site/shoebox.html')
+sx = rep(sx, '<title>Shoebox</title>', '<title>Shoebox</title>\n<script src="config.js"></script>')
+assert "SCOPE='https://www.googleapis.com/auth/drive';" in sx, 'anchor not found: shoebox full-Drive scope'
+assert "TOKEN_KEY='shoebox.token';" in sx, 'anchor not found: shoebox token key'
+assert 'drive-sync.js' not in sx and 'drivesync' not in sx, 'shoebox must not share the other pages\' sign-in'
+assert not re.search(r'''['"]DELETE['"]''', sx), 'shoebox must never send DELETE: deleting only moves things to Trash'
+assert 'emptyTrash' not in sx, 'shoebox must never empty Drive\'s Trash'
+for _api in ('innerHTML', 'outerHTML', 'insertAdjacentHTML', 'document.write'):
+    assert _api not in sx, 'shoebox must build DOM with h(), never ' + _api
+_decls = re.findall(r'^  function ([A-Za-z_$][\w$]*)\s*\(', sx, re.M)
+_dupes = sorted({n for n in _decls if _decls.count(n) > 1})
+assert not _dupes, 'duplicate function declarations in shoebox (the later one silently wins): ' + ', '.join(_dupes)
+wr('docs/shoebox.html', sx)
+
 # ---------------------------------------------------------------- starter data
 docs = []
 for f in sorted(glob.glob(os.path.join(ROOT, 'seed', 'export', 'keycap', 'shortcuts', '*.json'))):
@@ -331,6 +352,6 @@ docs.sort(key=lambda d: d.get('order', 0))
 if docs:
     with open(os.path.join(DOCS, 'data', 'keycap-atlas.json'), 'w', encoding='utf-8') as f:
         json.dump({'format': 'keycap-atlas', 'v': 1, 'shortcuts': docs}, f, ensure_ascii=False)
-    print('built docs/: keycap-atlas, strongroom, dumbbell-dojo, tally-board, spine-bell, event-log, hack-shelf, data/keycap-atlas.json (%d shortcuts)' % len(docs))
+    print('built docs/: keycap-atlas, strongroom, dumbbell-dojo, tally-board, spine-bell, event-log, hack-shelf, shoebox, data/keycap-atlas.json (%d shortcuts)' % len(docs))
 else:
-    print('built docs/: keycap-atlas, strongroom, dumbbell-dojo, tally-board, spine-bell, event-log, hack-shelf (seed/export absent, data/keycap-atlas.json kept as is)')
+    print('built docs/: keycap-atlas, strongroom, dumbbell-dojo, tally-board, spine-bell, event-log, hack-shelf, shoebox (seed/export absent, data/keycap-atlas.json kept as is)')

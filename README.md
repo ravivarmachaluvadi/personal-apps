@@ -1,7 +1,8 @@
 # Personal Apps
 
-Seven single-file web apps whose data lives as JSON files in **your own Google Drive**, not in any app's
-database. Open them from a laptop or a phone, sign in with Google once per device, and every device sees the
+Eight single-file web apps that keep everything in **your own Google Drive**, not in any app's database. Seven
+of them store their data as one JSON file each; the eighth, **Shoebox**, is a calmer way to look after the photos
+and PDFs already in your Drive. Open them from a laptop or a phone, sign in with Google once per device, and every device sees the
 same data. The **Continue with Google** button sits in the header of every page; until you tap it on a device,
 that device keeps its data only in its own browser (the header then says *changes waiting*).
 
@@ -14,8 +15,9 @@ that device keeps its data only in its own browser (the header then says *change
 | Spine Bell | `docs/spine-bell.html` | `spine-bell.json` — per-device counters and the daily diary |
 | Event Log | `docs/event-log.html` | `event-log.json` — event types, one-off and repeating events, settings |
 | Hack Shelf | `docs/hack-shelf.html` | `hack-shelf.json` — entries (write-up, code, fields, tags), topics, usage, settings |
+| Shoebox | `docs/shoebox.html` | none — it works on your Drive's own files and folders ([details](#shoebox-your-photos-and-papers-in-drive)) |
 
-`docs/index.html` is a launcher for all seven. `docs/drive-sync.js` is the shared storage layer; `docs/config.js`
+`docs/index.html` is a launcher for all eight. `docs/drive-sync.js` is the shared storage layer; `docs/config.js`
 holds the one setting you must fill in (the Google OAuth client ID).
 
 ## How the storage works
@@ -27,7 +29,8 @@ holds the one setting you must fill in (the Google OAuth client ID).
   changed since it last looked; if so it merges first (newest `updatedAt` wins per item, deletions are
   tombstones) and then writes. Other devices pick changes up within about 90 s, or immediately when the page is
   reopened or brought back to the foreground.
-- Access uses the `drive.file` scope, which only lets the pages see files they created themselves.
+- Access uses the `drive.file` scope, which only lets the pages see files they created themselves. Shoebox is
+  the exception: it has its own sign-in with access to the whole Drive (see its section).
 - The vault file contains only AES-256-GCM ciphertext plus the salt used to stretch the master password.
   The master password never leaves the browser. There is no reset.
 
@@ -60,7 +63,7 @@ Every page starts on **Auto** and follows the device. Where to switch:
 
 | Page | Switch |
 |---|---|
-| Launcher, Keycap Atlas, Dumbbell Dojo, Tally Board, Spine Bell | Sun/moon button in the header |
+| Launcher, Keycap Atlas, Dumbbell Dojo, Tally Board, Spine Bell, Shoebox | Sun/moon button in the header |
 | Strongroom | Sun/moon button in the header and on the lock screen, plus Settings → Appearance |
 | Event Log, Hack Shelf | Settings → Appearance (Auto / Light / Dark), saved with the page's data |
 
@@ -310,6 +313,64 @@ does. **Templates** — a command hack, a config snippet, a lesson learned, a fa
 sensitive field — open the editor pre-filled; nothing is saved until you press Save, and a template's topic is
 reused if one with that name exists, otherwise created on save. Reading the Guide writes nothing.
 
+## Shoebox: your photos and papers in Drive
+
+Shoebox shows your Google Drive as big thumbnails and plain folders. It keeps nothing of its own: every action
+is a change to your Drive, so the Drive website and app always agree with it.
+
+| Area | What it does |
+|---|---|
+| Browse | My Drive with folders first, a clickable folder path, grid or list, sort by name / newest / largest, *Load more* for big folders. Back and reload keep your place (it is in the address bar) |
+| Places | **My Drive**, **Starred** (Drive's own stars), **Recent** (newest files first) and **Trash** |
+| Find | Search by name across the whole Drive; *All / Photos / PDFs* filters every view |
+| Upload | The Upload button or drag-and-drop onto the page, several files at once, a progress bar each, Cancel and Retry |
+| Look | Tap a photo for full screen (arrow keys or swipe for the next); PDFs open inside the page |
+| Tidy | Rename, move (a folder picker), star, delete; **Select** to do any of these to many items at once |
+| Download | Files as they are; Google Docs, Sheets, Slides and Drawings as PDF |
+
+**Deleting only ever moves things to Drive's Trash.** Every delete shows *Undo* for a few seconds, a folder asks
+first and says how many items are inside, and the Trash view has *Restore*. Google empties Trash after 30 days;
+Shoebox itself never deletes anything permanently, and `tools/build-site.py` refuses to build the page if a
+`DELETE` request or an *Empty Trash* call ever appears in it.
+
+**Sign-in.** Shoebox has its own *Continue with Google*, separate from the other pages, because it needs the
+full-Drive permission (`https://www.googleapis.com/auth/drive`) where the others only see their own files. Its
+token is kept under `shoebox.token`. The first time, Google shows *Google hasn't verified this app*: that is
+expected for an app only you use; choose **Advanced**, then **Go to Personal Apps**. If the consent screen offers a
+Google Drive tick box, leave it ticked, or the page says it has no access. *Sign out* only forgets the token in
+this browser: revoking it would also sign the other pages out, because they share one Google client. To remove
+the permission completely, go to https://myaccount.google.com/permissions and remove *Personal Apps*. If Google
+ever refuses the full-Drive permission outright, add the `.../auth/drive` scope on the **Data Access** page of the
+console project.
+
+**Search matches the start of words**, because that is how Drive's name search works: *pass* finds
+`passport.pdf`, *port* does not.
+
+**Thumbnails.** Google's thumbnail links need a signed-in request, so the page tries three ways in turn: fetch
+the link with the token, load it as a plain image, or download the photo itself and shrink it in the browser
+(photos up to 30 MB). A way that keeps failing is skipped for the rest of the visit, and only thumbnails near the
+screen are fetched. Formats a browser cannot draw (iPhone HEIC photos in Chrome, for one) show an icon, and the
+viewer offers Download and *Open in Drive* instead.
+
+**PDFs** open in the browser's own viewer where it has one (desktop Chrome, Edge, Firefox, Safari). Android
+Chrome has none, so there the pages are drawn by PDF.js 6.3, loaded from cdnjs the first time you open a PDF.
+
+**Uploads.** Files up to 5 MB go up in one request; bigger ones use Drive's resumable upload. If the browser
+blocks the resumable route, the page first checks whether the file arrived anyway (same name, size and folder,
+changed in the last ten minutes), and only sends it again, in one request, if it did not, so a blocked answer
+never leaves two copies. Two files upload at a time. Whole folders cannot be uploaded yet; drop the files inside
+them instead.
+
+**Not in this version:** sharing links, *Shared with me* and shared drives, uploading a folder, downloading as
+zip, video playback, offline copies, emptying Trash.
+
+**Testing.** `python tools/check-shoebox.py` drives the built page in headless Chrome against a fake Google: a
+stub of Google's sign-in script and an in-memory Drive that answers every request the page makes. Any other
+request to a Google host is aborted and reported, so the checker cannot touch your real Drive. It needs Python
+Playwright and Chrome, and internet for one check (PDF.js from cdnjs). It covers browsing, every action above,
+Undo and Restore, both upload routes and their fallbacks, the thumbnail fallbacks, an expired sign-in, the phone
+(390 px) and laptop (1280 px) layouts in both themes, and text contrast.
+
 ## Sign-in details worth knowing
 
 - The Google token lasts one hour. After that the pages show *Continue with Google* again; one tap, no consent
@@ -332,7 +393,7 @@ the old `Documents/FromClaude/FromClaude/Personal` folder and are linked from th
 
 ## Repository layout
 
-- `docs/` — the site. `tools/build-site.py` regenerates the seven pages from the sources below; run it after
+- `docs/` — the site. `tools/build-site.py` regenerates the eight pages from the sources below; run it after
   editing any source. It leaves `docs/data/keycap-atlas.json` alone unless the gitignored `seed/export/` folder
   is present. `docs/sw.js` is the notification service worker (not built, edit in place).
 - `keycap-atlas.html`, `strongroom.html` — page sources (artifact-style fragments; the build adds the storage layer
@@ -348,6 +409,10 @@ the old `Documents/FromClaude/FromClaude/Personal` folder and are linked from th
 - `site/hack-shelf.html` — page source, built exactly like Event Log. Because it renders text and code you typed,
   the build refuses every markup-string API (`innerHTML`, `outerHTML`, `insertAdjacentHTML`, `document.write`),
   where Event Log's build refuses only `innerHTML`.
+- `site/shoebox.html` — page source for Shoebox. It does not use `drive-sync.js`: it has its own full-Drive
+  sign-in and calls the Drive API itself, so the build injects only `config.js`. The build also refuses every
+  markup-string API, any `DELETE` request or *Empty Trash* call, and a duplicate function declaration.
+- `tools/check-shoebox.py` — Shoebox's checker (see *Testing* in the Shoebox section).
 - `seed/shortcuts.txt`, `seed/build-seed.mjs` — the starter shortcut set and its builder.
 - `seed/ocr-notebook-to-csv.py` — turns OCR text of a scanned password notebook into the vault's import CSV.
 - `seed/text-notebook-to-csv.py` — the same for a notebook already typed as plain text (blank line between

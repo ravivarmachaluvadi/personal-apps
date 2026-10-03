@@ -1,0 +1,1319 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shoebox</title>
+<script>/* the light/dark choice for this page on this device, applied before first paint */try{var pageTheme=JSON.parse(localStorage.getItem('shoebox.theme'));if(pageTheme==='light'||pageTheme==='dark')document.documentElement.setAttribute('data-theme',pageTheme);}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Red+Hat+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F3EEE7; --surface:#FFFFFF; --surface-2:#F8F4EE; --line:#E2D8CB;
+  --text:#221C16; --muted:#5B5248; --faint:#6A6157;
+  --accent:#A63F17; --accent-ink:#FFFFFF; --accent-soft:#F8E6DC;
+  --good:#2E7D4F; --warn:#8A5A0F; --warn-soft:#FBEBCB;
+  --danger:#B42318; --danger-soft:#FBE0DC;
+  --k-folder:#B4730E; --k-image:#6D44B8; --k-pdf:#C2341E; --k-gdoc:#1F6FC5; --k-file:#6A6157;
+  --shadow:0 10px 26px rgba(34,28,22,.08);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#16120E; --surface:#201B16; --surface-2:#29231D; --line:#43392F;
+  --text:#F1EAE1; --muted:#B8AC9C; --faint:#A0958A;
+  --accent:#F2945F; --accent-ink:#2A1206; --accent-soft:#3D2619;
+  --good:#6BCF8B; --warn:#E2A33B; --warn-soft:#3A2E14;
+  --danger:#F27A6B; --danger-soft:#3C1F1B;
+  --k-folder:#E8B04B; --k-image:#B79BF0; --k-pdf:#F2826E; --k-gdoc:#7FB5F0; --k-file:#A0958A;
+  --shadow:0 10px 26px rgba(0,0,0,.35);
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#16120E; --surface:#201B16; --surface-2:#29231D; --line:#43392F;
+  --text:#F1EAE1; --muted:#B8AC9C; --faint:#A0958A;
+  --accent:#F2945F; --accent-ink:#2A1206; --accent-soft:#3D2619;
+  --good:#6BCF8B; --warn:#E2A33B; --warn-soft:#3A2E14;
+  --danger:#F27A6B; --danger-soft:#3C1F1B;
+  --k-folder:#E8B04B; --k-image:#B79BF0; --k-pdf:#F2826E; --k-gdoc:#7FB5F0; --k-file:#A0958A;
+  --shadow:0 10px 26px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+/* no scroll anchoring: these pages redraw whole sections when you click inside them, and Chrome anchored the
+   scroll to the control just clicked; once that control was replaced the page jumped. Set on body *, not on
+   html or body, where it allows a different jump */
+body *{overflow-anchor:none}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--text);font:15.5px/1.5 "Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+#app{max-width:1240px;margin:0 auto;padding:22px 16px 110px}
+header.top{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px}
+h1{font-family:Fraunces,Georgia,serif;font-weight:700;font-size:clamp(28px,5vw,38px);letter-spacing:-.02em;margin:0;line-height:1.1}
+.datel{color:var(--muted);font:13px "Red Hat Mono",ui-monospace,monospace}
+.headright{margin-left:auto;display:flex;align-items:center;gap:10px;min-width:0}
+#acct{display:flex;align-items:center;gap:8px;min-width:0;font-size:13px;color:var(--muted)}
+#acct .em{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px}
+.btn{font:600 13.5px "Plus Jakarta Sans",system-ui,sans-serif;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:10px;padding:7px 12px;cursor:pointer;min-height:38px;display:inline-flex;align-items:center;justify-content:center;gap:7px;text-decoration:none;white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn:focus-visible,#nav button:focus-visible,.it .open:focus-visible,.mrow:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.sm{padding:4px 10px;font-size:12.5px;min-height:30px}
+.btn.quiet{background:transparent;border-color:transparent;color:var(--muted)}
+.btn.danger{color:var(--danger)}
+.btn.danger.pri{background:var(--danger);border-color:var(--danger);color:var(--accent-ink)}
+.btn[disabled]{opacity:.45;cursor:default}
+.btn[disabled]:hover{border-color:var(--line)}
+.btn svg{width:17px;height:17px;flex:none}
+.btn.icon{padding:7px 9px}
+.btn[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+svg.i{display:block}
+input[type=text],input[type=search],select{font:14.5px "Plus Jakarta Sans",system-ui,sans-serif;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:8px 11px;min-height:40px;width:100%;min-width:0}
+input[type=checkbox]{accent-color:var(--accent)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:none;font:600 13px "Plus Jakarta Sans",system-ui,sans-serif;color:var(--muted);padding:7px 11px;cursor:pointer;min-height:36px}
+.seg button.on{background:var(--accent);color:var(--accent-ink)}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(16px);background:var(--text);color:var(--bg);padding:9px 10px 9px 18px;border-radius:999px;font:600 13.5px "Plus Jakarta Sans",system-ui,sans-serif;opacity:0;pointer-events:none;transition:.18s;z-index:70;max-width:min(560px,92vw);display:flex;align-items:center;gap:12px}
+.toast:not(.act){padding-right:18px}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.on.act{pointer-events:auto}
+.toast .undo{border:0;border-radius:999px;background:var(--bg);color:var(--text);font:700 13px "Plus Jakarta Sans",system-ui,sans-serif;padding:6px 13px;cursor:pointer;flex:none}
+body.selecting .toast{bottom:92px}
+
+/* layout: places on the left on a laptop, a row of pills above the files on a phone */
+.layout{display:grid;grid-template-columns:200px minmax(0,1fr);gap:24px;margin-top:18px;align-items:start}
+.rail{position:sticky;top:12px;display:grid;gap:16px}
+#nav{display:grid;gap:2px}
+#nav button{display:flex;align-items:center;gap:10px;border:0;background:none;border-radius:10px;padding:8px 10px;font:600 14.5px "Plus Jakarta Sans",system-ui,sans-serif;color:var(--muted);cursor:pointer;text-align:left;min-height:40px;white-space:nowrap}
+#nav button svg{width:18px;height:18px;flex:none}
+#nav button:hover{background:var(--surface-2);color:var(--text)}
+#nav button[aria-current="page"]{background:var(--accent-soft);color:var(--accent)}
+.storage{font-size:12.5px;color:var(--muted);display:grid;gap:6px;padding:0 10px}
+.storage .sbar{height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+.storage .sbar i{display:block;height:100%;background:var(--accent);border-radius:99px}
+body[data-auth="out"] .rail,body[data-auth="out"] .searchrow,body[data-auth="out"] .bar,
+body[data-auth="none"] .rail,body[data-auth="none"] .searchrow,body[data-auth="none"] .bar{display:none}
+body[data-auth="out"] .layout,body[data-auth="none"] .layout{grid-template-columns:minmax(0,1fr)}
+.searchrow{position:relative}
+.searchrow svg{position:absolute;left:12px;top:50%;margin-top:-9px;width:18px;height:18px;color:var(--faint);pointer-events:none}
+.searchrow input{padding-left:38px;border-radius:12px;min-height:44px;font-size:15px}
+.bar{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;justify-content:space-between;margin:14px 0 14px}
+.crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:0 2px;min-width:0;font:600 17px "Plus Jakarta Sans",system-ui,sans-serif}
+.crumbs button{border:0;background:none;padding:3px 6px;border-radius:8px;cursor:pointer;color:var(--muted);font:inherit;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.crumbs button:hover{background:var(--surface-2);color:var(--text)}
+.crumbs button:last-child{color:var(--text)}
+.crumbs .cs{color:var(--faint);font-weight:400}
+.crumbs .ttl{padding:3px 6px;color:var(--text)}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tools select{width:auto;min-height:38px;padding:6px 10px}
+.note{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:0 0 14px;color:var(--muted);font-size:13.5px}
+.err{background:var(--danger-soft);color:var(--danger);border-radius:12px;padding:10px 14px;margin:0 0 14px;font-size:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.empty{color:var(--muted);padding:34px 16px;text-align:center;border:1.5px dashed var(--line);border-radius:16px;font-size:14.5px}
+.empty b{display:block;color:var(--text);font-size:16px;margin-bottom:4px}
+.loading{color:var(--muted);padding:34px 4px;font-size:14.5px}
+.morewrap{display:flex;justify-content:center;margin:18px 0 0}
+
+/* files: one grid; folders first, then a full-width "Files" label so files start on a fresh row */
+#list.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:12px}
+.sep{grid-column:1/-1;font:500 11.5px "Red Hat Mono",ui-monospace,monospace;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);margin:6px 2px -2px}
+.sep:first-child{margin-top:0}
+.it{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:14px;min-width:0;transition:border-color .12s,box-shadow .12s}
+.it:hover{border-color:var(--accent)}
+.it[aria-selected="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.it .open{display:flex;flex-direction:column;width:100%;border:0;background:none;padding:0;text-align:left;color:inherit;cursor:pointer;font:inherit;border-radius:14px;min-width:0}
+.it .th{display:grid;place-items:center;aspect-ratio:4/3;background:var(--surface-2);border-radius:13px 13px 0 0;overflow:hidden;position:relative;flex:none}
+.it .th svg{width:36px;height:36px}
+.it .th img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .2s}
+.it .th img.ok{opacity:1}
+.k-folder{color:var(--k-folder)} .k-image{color:var(--k-image)} .k-pdf{color:var(--k-pdf)} .k-gdoc{color:var(--k-gdoc)} .k-file,.k-video{color:var(--k-file)}
+.it .txt{padding:8px 11px 10px;display:grid;gap:1px;min-width:0}
+.it .nm{font-weight:600;font-size:13.5px;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
+.it .mt{font:12px "Red Hat Mono",ui-monospace,monospace;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.it .ck{position:absolute;top:9px;left:9px;z-index:2;width:20px;height:20px;margin:0;opacity:0;cursor:pointer}
+.it .more{position:absolute;top:6px;right:6px;z-index:2;width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--text);display:grid;place-items:center;cursor:pointer;opacity:0;padding:0}
+.it .more svg{width:18px;height:18px}
+.it .star{position:absolute;right:10px;bottom:10px;color:var(--k-folder);pointer-events:none}
+.it .star svg{width:15px;height:15px;fill:currentColor}
+.it:hover .ck,.it:hover .more,.it:focus-within .ck,.it:focus-within .more,body.selecting .it .ck,.it .ck:checked{opacity:1}
+@media (hover:none){.it .more{opacity:1}}
+.it.fold .open{flex-direction:row;align-items:center;gap:10px;padding:11px 44px 11px 12px;min-height:58px}
+.it.fold .th{aspect-ratio:auto;background:none;border-radius:0;display:block}
+.it.fold .th svg{width:26px;height:26px}
+.it.fold .txt{padding:0}
+.it.fold .ck{top:50%;margin-top:-10px;left:12px}
+body.selecting .it.fold .open{padding-left:42px}
+.it.fold .star{bottom:auto;top:50%;margin-top:-8px;right:44px}
+/* list view: the same items as rows */
+#list.rows{display:grid;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+#list.rows .sep{display:none}
+#list.rows .it{border:0;border-bottom:1px solid var(--line);border-radius:0;box-shadow:none}
+#list.rows .it:last-child{border-bottom:0}
+#list.rows .it[aria-selected="true"]{background:var(--accent-soft)}
+#list.rows .it .open,#list.rows .it.fold .open{flex-direction:row;align-items:center;gap:12px;padding:7px 52px 7px 44px;min-height:56px;border-radius:0}
+#list.rows .it .th{width:42px;height:42px;aspect-ratio:auto;border-radius:8px;display:grid}
+#list.rows .it.fold .th{background:var(--surface-2)}
+#list.rows .it .th svg{width:22px;height:22px}
+#list.rows .it .txt{padding:0;display:flex;gap:14px;align-items:baseline;flex:1;min-width:0}
+#list.rows .it .nm{flex:1;-webkit-line-clamp:1}
+#list.rows .it .ck{top:50%;margin-top:-10px;left:13px;opacity:1}
+#list.rows .it .more{top:50%;margin-top:-16px;right:10px;opacity:1;border-color:transparent;background:transparent}
+#list.rows .it .star{bottom:auto;top:50%;margin-top:-8px;right:48px}
+
+/* selection bar and upload tray, pinned to the bottom of the screen */
+#selbar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:40;display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center;background:var(--text);color:var(--bg);border-radius:16px;padding:8px 10px;box-shadow:0 14px 34px rgba(0,0,0,.28);max-width:calc(100vw - 24px)}
+#selCount{font:600 13.5px "Plus Jakarta Sans",system-ui,sans-serif;padding:0 8px 0 6px;white-space:nowrap}
+#selbar button{display:inline-flex;align-items:center;gap:6px;border:1px solid transparent;background:transparent;color:inherit;font:600 13px "Plus Jakarta Sans",system-ui,sans-serif;border-radius:10px;padding:7px 10px;cursor:pointer;min-height:36px}
+#selbar button:hover{border-color:var(--bg)}
+#selbar button[disabled]{opacity:.4;cursor:default}
+#selbar button svg{width:16px;height:16px}
+#tray{position:fixed;right:16px;bottom:16px;width:min(360px,calc(100vw - 24px));background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);z-index:35;max-height:46vh;overflow:auto}
+body.selecting #tray{bottom:92px}
+.trh{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px 8px 14px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);font-size:14px}
+.up{padding:9px 14px;border-bottom:1px dashed var(--line);display:grid;gap:6px;font-size:13px}
+.up:last-child{border-bottom:0}
+.upn{display:flex;gap:10px;align-items:center;min-width:0}
+.upn .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.ups{color:var(--muted);font:12px "Red Hat Mono",ui-monospace,monospace;white-space:nowrap}
+.up[data-state="done"] .ups{color:var(--good)}
+.up[data-state="failed"] .ups{color:var(--danger);white-space:normal}
+.pbar{height:5px;border-radius:99px;background:var(--line);overflow:hidden}
+.pbar i{display:block;height:100%;background:var(--accent);transition:width .15s}
+#drop{position:fixed;inset:10px;z-index:80;border:3px dashed var(--accent);border-radius:20px;background:color-mix(in srgb,var(--bg) 82%,transparent);display:grid;place-items:center;pointer-events:none;font:700 20px "Plus Jakarta Sans",system-ui,sans-serif;color:var(--accent);text-align:center;padding:20px}
+
+/* signed out */
+.hero{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px 26px 22px;box-shadow:var(--shadow);max-width:640px}
+.hero h2{font-family:Fraunces,Georgia,serif;font-size:24px;margin:0 0 8px;letter-spacing:-.01em;line-height:1.2}
+.hero p{color:var(--muted);margin:0 0 14px}
+.hero .hint{font-size:13px;margin:14px 0 0}
+.hero .why{color:var(--danger);font-weight:600;margin:12px 0 0;font-size:14px}
+.gbtn{display:inline-flex;align-items:center;gap:10px;background:var(--surface);border:1.5px solid var(--line);color:var(--text);font:600 14.5px "Plus Jakarta Sans",system-ui,sans-serif;padding:10px 16px;border-radius:12px;cursor:pointer;min-height:46px}
+.gbtn:hover{border-color:var(--accent)}
+.gbtn svg{width:18px;height:18px}
+
+/* dialogs: header and action row stay pinned while a long list scrolls */
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--text);padding:0;max-width:min(560px,94vw);width:100%;box-shadow:var(--shadow);max-height:90vh;overflow:auto;overscroll-behavior:contain}
+dialog::backdrop{background:rgba(12,10,8,.5)}
+.dlg{padding:18px 20px 20px;display:grid;gap:13px}
+.dlgh{display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:0;z-index:3;background:var(--surface);margin:-18px -20px 0;padding:14px 16px 10px 20px;border-bottom:1px solid var(--line);font:600 17px "Plus Jakarta Sans",system-ui,sans-serif}
+.dlgh span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dlg .end{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;position:sticky;bottom:0;z-index:3;background:var(--surface);margin:0 -20px -20px;padding:12px 20px;border-top:1px solid var(--line)}
+.dlg .derr{color:var(--danger);font-size:13.5px}
+#menuDlg{max-width:min(400px,94vw)}
+.facts{color:var(--muted);font:12.5px "Red Hat Mono",ui-monospace,monospace;display:grid;gap:2px}
+.acts{display:grid;gap:2px;margin:0 -8px}
+.acts button,.acts a{display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;border-radius:10px;padding:9px 10px;font:600 14.5px "Plus Jakarta Sans",system-ui,sans-serif;color:var(--text);cursor:pointer;text-align:left;text-decoration:none;min-height:42px}
+.acts button:hover,.acts a:hover{background:var(--surface-2)}
+.acts svg{width:18px;height:18px;color:var(--muted);flex:none}
+.acts .danger,.acts .danger svg{color:var(--danger)}
+#moveDlg{max-width:min(520px,94vw);height:min(600px,90vh)}
+#moveDlg .dlg{min-height:100%;grid-template-rows:auto auto 1fr auto auto}
+#moveCrumbs{font-size:15px}
+#moveList{display:grid;gap:2px;min-height:160px;align-content:start}
+.mrow{display:flex;align-items:center;gap:11px;width:100%;border:0;background:none;border-radius:10px;padding:9px 10px;font:600 14.5px "Plus Jakarta Sans",system-ui,sans-serif;color:var(--text);cursor:pointer;text-align:left;min-height:44px}
+.mrow:hover{background:var(--surface-2)}
+.mrow svg{width:20px;height:20px;color:var(--k-folder);flex:none}
+.mrow span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mrow i{font-style:normal;font-weight:500;font-size:12.5px;color:var(--faint)}
+.mrow[disabled]{cursor:default;opacity:.55}
+.mrow[disabled]:hover{background:none}
+
+/* viewer: always dark, whatever the page theme, so photos read true */
+#viewer{max-width:100vw;max-height:100dvh;width:100vw;height:100dvh;margin:0;border:0;border-radius:0;padding:0;background:#0E0B09;color:#F3EEE7;overflow:hidden;color-scheme:dark}
+#viewer[open]{display:grid;grid-template-rows:auto minmax(0,1fr)}
+#viewer::backdrop{background:#0E0B09}
+.vtop{display:flex;align-items:center;gap:8px;padding:8px 10px 8px 16px;background:#1A1512;border-bottom:1px solid #3A3029;min-width:0}
+#vName{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+#vPos{color:#B8AC9C;font:12.5px "Red Hat Mono",ui-monospace,monospace;white-space:nowrap}
+.vtop .btn{background:#26201B;border-color:#3A3029;color:#F3EEE7}
+.vtop .btn:hover{border-color:#F2945F}
+#vBody{position:relative;display:grid;place-items:center;overflow:auto;min-height:0;touch-action:pan-y pinch-zoom}
+#vBody img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+#vBody iframe{width:100%;height:100%;border:0;background:#fff;align-self:stretch;justify-self:stretch}
+.vmsg{color:#D8CEC2;text-align:center;padding:24px;display:grid;gap:12px;justify-items:center;max-width:460px}
+.pdfpages{display:grid;gap:12px;justify-items:center;padding:14px 10px 40px;align-self:start;width:100%}
+.pdfpages canvas{max-width:100%;height:auto;background:#fff;box-shadow:0 6px 24px rgba(0,0,0,.5)}
+.vnav{position:absolute;top:50%;margin-top:-26px;width:48px;height:52px;border:0;border-radius:12px;background:rgba(26,21,18,.72);color:#F3EEE7;cursor:pointer;display:grid;place-items:center;z-index:3}
+.vnav:hover{background:rgba(60,48,40,.9)}
+.vnav svg{width:26px;height:26px}
+#vPrev{left:10px} #vNext{right:10px}
+.lbl{display:inline}
+
+@media (max-width:879px){
+  .layout{grid-template-columns:minmax(0,1fr);gap:12px}
+  .rail{position:static;gap:8px}
+  #nav{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+  #nav::-webkit-scrollbar{display:none}
+  #nav button{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 13px;min-height:38px;font-size:14px}
+  #nav button svg{width:16px;height:16px}
+  #nav button[aria-current="page"]{border-color:var(--accent)}
+  .storage{grid-template-columns:auto minmax(0,1fr);align-items:center;gap:10px;padding:0 4px}
+}
+@media (max-width:480px){
+  #app{padding:16px 12px 120px}
+  header.top{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px}
+  header.top h1{grid-column:1;grid-row:1}
+  header.top .headright{grid-column:2;grid-row:1}
+  header.top .datel{grid-column:1/-1;grid-row:2}
+  #nav{gap:5px}
+  #nav button{padding:5px 10px;font-size:13px;gap:6px;min-height:36px}
+  #nav button svg{width:15px;height:15px}
+  #selbar{left:8px;right:8px;bottom:8px;transform:none;max-width:none;flex-wrap:nowrap;justify-content:space-between;gap:2px;padding:6px;border-radius:14px}
+  #selCount{font-size:12px;padding:0 4px;white-space:normal;line-height:1.2;max-width:64px}
+  #selbar button{flex-direction:column;gap:2px;font-size:11px;padding:5px 2px;min-height:46px;flex:1 1 0;min-width:0}
+  body.selecting #tray,body.selecting .toast{bottom:76px}
+  #tray{right:12px;bottom:12px}
+  #acct .em{display:none}
+  .tools{gap:6px}
+  .lbl{display:none}
+  .tools .btn{padding:7px 10px}
+  .seg button{padding:7px 9px}
+  #list.grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .it .txt{padding:6px 8px 8px}
+  .it .nm{font-size:12.5px}
+  .it .mt{font-size:11px}
+  .it .more{width:30px;height:30px;top:4px;right:4px}
+  .it .ck{top:7px;left:7px}
+  .it.fold .open{flex-direction:column;align-items:flex-start;gap:6px;padding:10px 8px 10px 10px;min-height:0}
+  body.selecting .it.fold .open{padding-left:10px;padding-top:34px}
+  .it.fold .ck{top:9px;margin-top:0;left:9px}
+  .it.fold .star{top:auto;bottom:9px;right:9px;margin-top:0}
+  #list.rows .it .open,#list.rows .it.fold .open{padding:7px 48px 7px 42px}
+  #list.rows .it .mt{display:none}
+  .hero{padding:20px 18px 18px}
+  #menuDlg{margin:auto auto 0;max-width:100vw;width:100vw;border-radius:18px 18px 0 0;border-bottom:0}
+  #moveDlg{max-width:100vw;width:100vw;height:100%;max-height:100%;border-radius:0;margin:0;border:0}
+  .vtop .btn .lbl{display:none}
+  .vnav{width:40px;height:46px;margin-top:-23px}
+}
+</style>
+</head>
+<body data-auth="out">
+<main id="app">
+  <header class="top">
+    <h1>Shoebox</h1>
+    <div class="datel">photos and papers in your Google Drive</div>
+    <div class="headright">
+      <div id="acct"></div>
+      <button class="btn icon" id="themeBtn" type="button" aria-label="Switch theme"></button>
+    </div>
+  </header>
+  <div class="layout">
+    <aside class="rail">
+      <nav id="nav" aria-label="Places">
+        <button type="button" data-view="drive"></button>
+        <button type="button" data-view="starred"></button>
+        <button type="button" data-view="recent"></button>
+        <button type="button" data-view="trash"></button>
+      </nav>
+      <div class="storage" id="storage"></div>
+    </aside>
+    <section>
+      <form class="searchrow" id="searchForm" role="search">
+        <input type="search" id="q" placeholder="Search your Drive by name" aria-label="Search your Drive by name" enterkeyhint="search" autocomplete="off">
+      </form>
+      <div class="bar">
+        <div class="crumbs" id="crumbs" aria-label="Where you are"></div>
+        <div class="tools">
+          <button class="btn pri" id="upBtn" type="button"></button>
+          <input type="file" id="upInput" multiple hidden>
+          <button class="btn" id="newFolderBtn" type="button"></button>
+          <div class="seg" id="filter" role="group" aria-label="Show">
+            <button type="button" data-f="all">All</button><button type="button" data-f="photos">Photos</button><button type="button" data-f="pdfs">PDFs</button>
+          </div>
+          <select id="sortSel" aria-label="Sort by">
+            <option value="name">Name</option><option value="modified">Newest</option><option value="size">Largest</option>
+          </select>
+          <button class="btn icon" id="viewBtn" type="button"></button>
+          <button class="btn" id="selBtn" type="button" aria-pressed="false"></button>
+        </div>
+      </div>
+      <div id="main"></div>
+    </section>
+  </div>
+</main>
+
+<div id="selbar" role="toolbar" aria-label="Selected items" hidden></div>
+<div id="tray" aria-label="Uploads" hidden></div>
+<div id="drop" hidden></div>
+
+<dialog id="menuDlg" aria-labelledby="menuName"><div class="dlg">
+  <div class="dlgh"><span id="menuName"></span><button class="btn quiet sm" type="button" data-close aria-label="Close">&#x2715;</button></div>
+  <div class="facts" id="menuFacts"></div>
+  <div class="acts" id="menuActs"></div>
+</div></dialog>
+
+<dialog id="nameDlg" aria-labelledby="nameTitle"><form class="dlg" id="nameForm">
+  <div class="dlgh"><span id="nameTitle"></span><button class="btn quiet sm" type="button" data-close aria-label="Close">&#x2715;</button></div>
+  <input type="text" id="nameInp" maxlength="250" autocomplete="off" aria-labelledby="nameTitle">
+  <div class="derr" id="nameErr" hidden></div>
+  <div class="end"><button class="btn quiet" type="button" data-close>Cancel</button><button class="btn pri" id="nameOk" type="submit"></button></div>
+</form></dialog>
+
+<dialog id="moveDlg" aria-labelledby="moveTitle"><div class="dlg">
+  <div class="dlgh"><span id="moveTitle"></span><button class="btn quiet sm" type="button" data-close aria-label="Close">&#x2715;</button></div>
+  <div class="crumbs" id="moveCrumbs"></div>
+  <div id="moveList"></div>
+  <div class="derr" id="moveErr" hidden></div>
+  <div class="end"><button class="btn quiet" type="button" data-close>Cancel</button><button class="btn pri" id="moveHere" type="button">Move here</button></div>
+</div></dialog>
+
+<dialog id="confirmDlg" aria-labelledby="confirmText"><div class="dlg">
+  <div class="dlgh"><span>Move to Trash?</span><button class="btn quiet sm" type="button" data-close aria-label="Close">&#x2715;</button></div>
+  <p id="confirmText" style="margin:0"></p>
+  <div class="end"><button class="btn quiet" type="button" data-close>Cancel</button><button class="btn danger pri" id="confirmYes" type="button">Move to Trash</button></div>
+</div></dialog>
+
+<dialog id="viewer" aria-label="Preview">
+  <div class="vtop">
+    <span id="vName"></span><span id="vPos"></span>
+    <button class="btn sm" id="vDl" type="button"></button>
+    <a class="btn sm" id="vDrive" target="_blank" rel="noopener"></a>
+    <button class="btn sm" id="vClose" type="button" aria-label="Close"></button>
+  </div>
+  <div id="vBody"></div>
+  <button class="vnav" id="vPrev" type="button" aria-label="Previous"></button>
+  <button class="vnav" id="vNext" type="button" aria-label="Next"></button>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  'use strict';
+  function $(s){return document.querySelector(s);}
+  function $$(s,root){return Array.prototype.slice.call((root||document).querySelectorAll(s));}
+
+  /* ---------- settings: Shoebox has its own Google sign-in, separate from the other pages ----------
+     It needs the whole Drive (the other pages only ever see the files they made), so it asks for the
+     full-Drive scope and keeps its token under its own key. Signing out only forgets that token here:
+     revoking it would also sign every other page out, because they share one Google client. */
+  var CFG=window.APP_CONFIG||{};
+  var SCOPE='https://www.googleapis.com/auth/drive';
+  var TOKEN_KEY='shoebox.token';
+  var DRIVE='https://www.googleapis.com/drive/v3',UPLOAD='https://www.googleapis.com/upload/drive/v3';
+  var FOLDER='application/vnd.google-apps.folder',SHORTCUT='application/vnd.google-apps.shortcut',GAPPS='application/vnd.google-apps.';
+  var SMALL=5*1024*1024; /* up to this size a file goes up in one request; bigger files use a resumable upload */
+  var PDFJS='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/6.3.289/';
+  var FIELDS='id,name,mimeType,size,quotaBytesUsed,modifiedTime,starred,trashed,explicitlyTrashed,parents,hasThumbnail,thumbnailLink,webViewLink,shortcutDetails(targetId,targetMimeType),capabilities(canRename,canTrash,canUntrash,canMoveItemWithinDrive,canAddChildren,canDownload)';
+  var EXPORTS={'application/vnd.google-apps.document':1,'application/vnd.google-apps.spreadsheet':1,'application/vnd.google-apps.presentation':1,'application/vnd.google-apps.drawing':1};
+
+  function lsGet(k,d){try{var v=JSON.parse(localStorage.getItem(k));return v==null?d:v;}catch(e){return d;}}
+  function lsSet(k,v){try{if(v==null)localStorage.removeItem(k);else localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+  function wait(ms){return new Promise(function(r){setTimeout(r,ms);});}
+  function plural(n,one,many){return n+' '+(n===1?one:(many||one+'s'));}
+  function oneOf(v,list,d){return list.indexOf(v)>=0?v:d;}
+
+  /* ---------- DOM helpers ---------- */
+  function h(tag,attrs,kids){
+    var e=document.createElement(tag);
+    if(attrs)Object.keys(attrs).forEach(function(k){
+      var v=attrs[k];if(v==null)return;
+      if(k==='class')e.className=v;
+      else if(k==='text')e.textContent=v;
+      else if(k==='value')e.value=v;
+      else if(k==='checked')e.checked=!!v;
+      else if(k==='disabled')e.disabled=!!v;
+      else if(k.slice(0,2)==='on')e.addEventListener(k.slice(2),v);
+      else if(k==='style')e.style.cssText=v;
+      else e.setAttribute(k,v);
+    });
+    (kids||[]).forEach(function(c){if(c==null||c===false)return;e.appendChild(typeof c==='string'?document.createTextNode(c):c);});
+    return e;
+  }
+  function clear(el){while(el.firstChild)el.removeChild(el.firstChild);}
+  var NS='http://www.w3.org/2000/svg';
+  var ICON={
+    drive:'M22 12H2M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11zM6 16h.01M10 16h.01',
+    folder:'M3 7.5A2.5 2.5 0 0 1 5.5 5H9l2 2.5h7.5A2.5 2.5 0 0 1 21 10v7.5a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5z',
+    newFolder:'M3 7.5A2.5 2.5 0 0 1 5.5 5H9l2 2.5h7.5A2.5 2.5 0 0 1 21 10v7.5a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5zM12 11v6M9 14h6',
+    image:'M5 4h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM8.5 11a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM21 15l-5-5L5 20',
+    file:'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5',
+    pdf:'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h4',
+    gdoc:'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 12h6M9 15h6M9 18h4',
+    video:'M4 5h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zM22 8l-4 3 4 3z',
+    star:'M12 3.2l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17.2l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z',
+    recent:'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2',
+    trash:'M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3',
+    more:'M12 5.5h.01M12 12h.01M12 18.5h.01',
+    upload:'M20 15v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3M16 8l-4-4-4 4M12 4v11',
+    download:'M20 15v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3M8 11l4 4 4-4M12 15V4',
+    grid:'M4 4h6v6H4zM14 4h6v6h-6zM14 14h6v6h-6zM4 14h6v6H4z',
+    rows:'M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01',
+    select:'M9 11l3 3 8-8M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9',
+    move:'M3 7.5A2.5 2.5 0 0 1 5.5 5H9l2 2.5h7.5A2.5 2.5 0 0 1 21 10v7.5a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5zM10 13.5h6M13.5 11l2.5 2.5-2.5 2.5',
+    rename:'M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z',
+    restore:'M3 7v5h5M3.5 12A8.5 8.5 0 1 0 6 6.1L3 9',
+    drivelink:'M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3',
+    eye:'M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
+    x:'M18 6 6 18M6 6l12 12',
+    left:'M15 18l-6-6 6-6',
+    right:'M9 18l6-6-6-6',
+    search:'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3',
+    sun:'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41',
+    moon:'M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z'
+  };
+  function icon(name){
+    var svg=document.createElementNS(NS,'svg'),p=document.createElementNS(NS,'path');
+    [['viewBox','0 0 24 24'],['fill','none'],['stroke','currentColor'],['stroke-width',name==='more'?'3':'1.9'],['stroke-linecap','round'],['stroke-linejoin','round'],['aria-hidden','true'],['class','i']].forEach(function(a){svg.setAttribute(a[0],a[1]);});
+    p.setAttribute('d',ICON[name]||ICON.file);svg.appendChild(p);return svg;
+  }
+  function googleIcon(){
+    var svg=document.createElementNS(NS,'svg');svg.setAttribute('viewBox','0 0 48 48');svg.setAttribute('aria-hidden','true');
+    [['#EA4335','M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.3l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z'],['#4285F4','M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z'],['#FBBC05','M10.5 28.6A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.6l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.7l7.9-6.1z'],['#34A853','M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.9l-7.9 6.1C6.5 42.6 14.6 48 24 48z']].forEach(function(p){var e=document.createElementNS(NS,'path');e.setAttribute('fill',p[0]);e.setAttribute('d',p[1]);svg.appendChild(e);});
+    return svg;
+  }
+  function setKids(el,kids){clear(el);kids.forEach(function(k){if(k)el.appendChild(typeof k==='string'?document.createTextNode(k):k);});}
+  var tTimer=null;
+  /* a message at the bottom; with opts.undo it carries an Undo button and stays a little longer */
+  function toast(msg,opts){
+    opts=opts||{};var t=$('#toast');clear(t);t.appendChild(h('span',{text:msg}));
+    if(opts.undo)t.appendChild(h('button',{class:'undo',type:'button',text:'Undo',onclick:function(){hideToast();opts.undo();}}));
+    t.classList.toggle('act',!!opts.undo);t.classList.add('on');clearTimeout(tTimer);
+    if(!opts.sticky)tTimer=setTimeout(hideToast,opts.undo?8000:2800);
+  }
+  function hideToast(){$('#toast').classList.remove('on');}
+
+  /* ---------- formatting ---------- */
+  var MOS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function fmtSize(n){n=+n;if(!(n>=0))return '';var u=['bytes','KB','MB','GB','TB'],i=0;while(n>=1024&&i<u.length-1){n/=1024;i++;}return (i===0?n:(n<10?n.toFixed(1):Math.round(n)))+' '+u[i];}
+  function fmtGB(n){return (n/1073741824).toFixed(1).replace(/\.0$/,'');}
+  function fmtDate(iso){
+    var d=new Date(iso);if(isNaN(d))return '';var now=new Date();
+    var day=function(x){return new Date(x.getFullYear(),x.getMonth(),x.getDate()).getTime();};
+    var diff=Math.round((day(now)-day(d))/86400000);
+    if(diff===0)return 'Today';if(diff===1)return 'Yesterday';
+    return d.getDate()+' '+MOS[d.getMonth()]+(d.getFullYear()===now.getFullYear()?'':' '+d.getFullYear());
+  }
+
+  /* ---------- sign-in (Google Identity Services token client; one hour per token, no refresh) ---------- */
+  var auth={token:'',exp:0,email:'',client:null,gis:null,reason:''};
+  (function restore(){var t=lsGet(TOKEN_KEY,null);if(t&&t.token&&t.exp>Date.now()+30000){auth.token=t.token;auth.exp=t.exp;auth.email=t.email||'';}})();
+  function configured(){return !!CFG.googleClientId;}
+  function signedIn(){return !!auth.token&&auth.exp>Date.now();}
+  function saveToken(){lsSet(TOKEN_KEY,auth.token?{token:auth.token,exp:auth.exp,email:auth.email}:null);}
+  function loadGis(){
+    if(auth.gis)return auth.gis;
+    auth.gis=new Promise(function(res,rej){
+      if(window.google&&window.google.accounts&&window.google.accounts.oauth2)return res();
+      var s=document.createElement('script');s.src='https://accounts.google.com/gsi/client';s.async=true;s.defer=true;
+      s.onload=function(){res();};s.onerror=function(){auth.gis=null;rej(new Error('gis'));};
+      document.head.appendChild(s);
+    });
+    return auth.gis;
+  }
+  /* call from a click: browsers block Google's pop-up otherwise */
+  function signIn(){
+    return new Promise(function(resolve,reject){
+      if(!configured()){auth.reason='not_configured';return reject({code:'not_configured'});}
+      loadGis().then(function(){
+        if(!auth.client)auth.client=window.google.accounts.oauth2.initTokenClient({client_id:CFG.googleClientId,scope:SCOPE,callback:function(){},error_callback:function(){}});
+        var c=auth.client;
+        c.callback=function(resp){
+          if(!resp||resp.error){auth.reason=(resp&&resp.error)||'error';return reject({code:auth.reason});}
+          /* Google's consent screen lets you untick Drive; without it nothing here would work */
+          if(resp.scope&&String(resp.scope).split(' ').indexOf(SCOPE)<0){auth.reason='scope';return reject({code:'scope'});}
+          auth.token=resp.access_token;auth.exp=Date.now()+((+resp.expires_in||3600)*1000)-60000;auth.reason='';
+          saveToken();resolve();
+        };
+        c.error_callback=function(err){auth.reason=(err&&err.type)||'error';reject({code:auth.reason});};
+        try{c.requestAccessToken({prompt:''});}catch(e){auth.reason='request_failed';reject({code:'request_failed'});}
+      },function(){auth.reason='gis_load';reject({code:'gis_load'});});
+    });
+  }
+  function forget(){auth.token='';auth.exp=0;saveToken();}
+  function expire(){if(!auth.token)return;forget();auth.reason='expired';render();}
+  function signOut(){forget();auth.email='';auth.reason='';S.items=[];S.about=null;S.err=null;endSelect();render();}
+  setInterval(function(){if(auth.token&&!signedIn())expire();},30000);
+
+  /* ---------- Drive REST ---------- */
+  function errOf(status,text){
+    var j=null;try{j=JSON.parse(text);}catch(e){}
+    var e=(j&&j.error)||{},reason=(e.errors&&e.errors[0]&&e.errors[0].reason)||'';
+    return {code:status===404?'not_found':status===403?'forbidden':'http',status:status,message:String(e.message||text||'').slice(0,300),reason:reason};
+  }
+  function retryable(status,reason){return status===429||status>=500||/rateLimitExceeded/.test(reason||'');}
+  function api(url,opts,tries){
+    opts=opts||{};tries=tries||0;
+    if(!signedIn())return Promise.reject({code:'signed_out'});
+    var headers=Object.assign({Authorization:'Bearer '+auth.token},opts.headers||{});
+    return fetch(url,Object.assign({},opts,{headers:headers})).then(function(r){
+      if(r.ok)return r;
+      if(r.status===401){expire();throw {code:'signed_out'};}
+      return r.text().then(function(t){
+        var err=errOf(r.status,t);
+        if(retryable(r.status,err.reason)&&tries<3)return wait(500*Math.pow(3,tries)+Math.random()*250).then(function(){return api(url,opts,tries+1);});
+        throw err;
+      });
+    },function(){throw {code:'network'};});
+  }
+  function enc(o){return Object.keys(o).filter(function(k){return o[k]!=null&&o[k]!=='';}).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(o[k]);}).join('&');}
+  function q(s){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
+  function getJSON(url){return api(url).then(function(r){return r.json();});}
+  function sendJSON(method,url,body){return api(url,{method:method,headers:{'Content-Type':'application/json; charset=UTF-8'},body:JSON.stringify(body||{})}).then(function(r){return r.json();});}
+  var D={
+    list:function(query,orderBy,pageToken,fields){return getJSON(DRIVE+'/files?'+enc({q:query,orderBy:orderBy,pageSize:100,pageToken:pageToken,spaces:'drive',fields:'nextPageToken,files('+(fields||FIELDS)+')'}));},
+    get:function(id,fields){return getJSON(DRIVE+'/files/'+encodeURIComponent(id)+'?'+enc({fields:fields||FIELDS}));},
+    about:function(){return getJSON(DRIVE+'/about?'+enc({fields:'storageQuota(limit,usage),user(emailAddress)'}));},
+    patch:function(id,body,params){return sendJSON('PATCH',DRIVE+'/files/'+encodeURIComponent(id)+'?'+enc(Object.assign({fields:FIELDS},params||{})),body);},
+    folder:function(name,parent){return sendJSON('POST',DRIVE+'/files?'+enc({fields:FIELDS}),{name:name,mimeType:FOLDER,parents:[parent]});},
+    media:function(id){return api(DRIVE+'/files/'+encodeURIComponent(id)+'?alt=media').then(function(r){return r.blob();});},
+    pdf:function(id){return api(DRIVE+'/files/'+encodeURIComponent(id)+'/export?'+enc({mimeType:'application/pdf'})).then(function(r){return r.blob();});}
+  };
+  function errText(e,what){
+    e=e||{};
+    if(e.code==='signed_out')return 'Your Google sign-in ran out. Continue with Google, then try again.';
+    if(e.code==='network')return 'No connection, so I couldn\'t '+what+'.';
+    if(e.code==='not_found')return 'That isn\'t in your Drive any more.';
+    if(e.code==='aborted')return 'Cancelled.';
+    if(e.code==='blocked')return 'The browser blocked Google\'s answer, so I couldn\'t '+what+'.';
+    return 'Couldn\'t '+what+(e.message?': '+e.message:'.');
+  }
+  function fail(what){return function(e){toast(errText(e,what));};}
+
+  /* ---------- state ---------- */
+  var S={route:{view:'drive',id:'root'},items:[],next:null,loading:false,more:false,err:null,crumbs:null,
+    sel:{},selecting:false,rootId:null,about:null,gen:0,
+    view:oneOf(lsGet('shoebox.view','grid'),['grid','rows'],'grid'),
+    sort:oneOf(lsGet('shoebox.sort','name'),['name','modified','size'],'name'),
+    filter:oneOf(lsGet('shoebox.filter','all'),['all','photos','pdfs'],'all')};
+  var NAMES={}; /* id -> {name, parents}: folder paths are walked from here before asking Drive */
+  function remember(f){if(f&&f.id)NAMES[f.id]={name:f.name,parents:f.parents||[]};}
+  function realId(id){return id==='root'&&S.rootId?S.rootId:id;}
+  function isFolder(f){return kindOf(f)==='folder';}
+  function effMime(f){return f.mimeType===SHORTCUT&&f.shortcutDetails?f.shortcutDetails.targetMimeType:f.mimeType;}
+  function effId(f){return f.mimeType===SHORTCUT&&f.shortcutDetails?f.shortcutDetails.targetId:f.id;}
+  function kindOf(f){
+    var m=effMime(f)||'';
+    if(m===FOLDER)return 'folder';
+    if(/^image\//.test(m))return 'image';
+    if(m==='application/pdf')return 'pdf';
+    if(/^video\//.test(m))return 'video';
+    if(m.indexOf(GAPPS)===0)return 'gdoc';
+    return 'file';
+  }
+  function previewable(f){var k=kindOf(f);return k==='image'||k==='pdf';}
+  function itemById(id){for(var i=0;i<S.items.length;i++)if(S.items[i].id===id)return S.items[i];return null;}
+  function replaceItem(f){remember(f);for(var i=0;i<S.items.length;i++)if(S.items[i].id===f.id){S.items[i]=f;return;}}
+  function dropItems(ids){S.items=S.items.filter(function(f){return ids.indexOf(f.id)<0;});ids.forEach(function(id){delete S.sel[id];});}
+  var coll=new Intl.Collator(undefined,{numeric:true,sensitivity:'base'});
+  /* the same order Drive returns, so an upload or a rename lands where the next load would put it */
+  function sortItems(){
+    var r=S.route.view;
+    S.items.sort(function(a,b){
+      var fa=isFolder(a)?0:1,fb=isFolder(b)?0:1;
+      if(r!=='recent'&&fa!==fb)return fa-fb;
+      if(r==='recent'||S.sort==='modified')return String(b.modifiedTime).localeCompare(String(a.modifiedTime));
+      if(S.sort==='size')return (+b.quotaBytesUsed||+b.size||0)-(+a.quotaBytesUsed||+a.size||0);
+      return coll.compare(a.name,b.name);
+    });
+  }
+
+  /* ---------- where you are: the address bar holds it, so Back and reloads work ---------- */
+  function parseHash(){
+    var p=location.hash.replace(/^#\/?/,'').split('/');
+    if(p[0]==='f'&&p[1])return {view:'drive',id:decodeURIComponent(p[1])};
+    if(p[0]==='starred'||p[0]==='recent'||p[0]==='trash')return {view:p[0]};
+    if(p[0]==='search'&&p[1])return {view:'search',text:decodeURIComponent(p.slice(1).join('/'))};
+    return {view:'drive',id:'root'};
+  }
+  function hashOf(r){
+    if(r.view==='drive')return r.id&&r.id!=='root'&&r.id!==S.rootId?'#/f/'+encodeURIComponent(r.id):'#/';
+    if(r.view==='search')return '#/search/'+encodeURIComponent(r.text);
+    return '#/'+r.view;
+  }
+  function go(r){var hh=hashOf(r);if(location.hash===hh||(hh==='#/'&&!location.hash))load(r);else location.hash=hh;}
+  function route(){S.route=parseHash();if(!signedIn()){render();return;}load(S.route);}
+  window.addEventListener('hashchange',route);
+
+  var MIME_Q={photos:"mimeType contains 'image/'",pdfs:"mimeType='application/pdf'"};
+  var ORDER={name:'folder,name_natural',modified:'folder,modifiedTime desc',size:'folder,quotaBytesUsed desc'};
+  function filterQ(withFolders){var m=MIME_Q[S.filter];if(!m)return '';return withFolders?" and (mimeType='"+FOLDER+"' or "+m+")":' and '+m;}
+  function queryFor(r){
+    if(r.view==='starred')return {q:'starred=true and trashed=false'+filterQ(true),order:ORDER[S.sort]};
+    if(r.view==='recent')return {q:"mimeType!='"+FOLDER+"' and trashed=false"+filterQ(false),order:'modifiedTime desc'};
+    if(r.view==='trash')return {q:'trashed=true'+filterQ(true),order:ORDER[S.sort]};
+    if(r.view==='search')return {q:"name contains '"+q(r.text)+"' and trashed=false"+filterQ(true),order:ORDER[S.sort]};
+    return {q:"'"+q(realId(r.id))+"' in parents and trashed=false"+filterQ(true),order:ORDER[S.sort]};
+  }
+  /* Trash lists only what you deleted, not every file that went with a deleted folder */
+  function keep(r,files){return r.view==='trash'?files.filter(function(f){return f.explicitlyTrashed!==false;}):files;}
+  function crumbsFor(r){
+    if(r.view!=='drive')return Promise.resolve(null);
+    var out=[],guard=0;
+    function step(id){
+      if(id==='root'||id===S.rootId||guard++>40){out.unshift({id:'root',name:'My Drive'});return Promise.resolve(out);}
+      var k=NAMES[id];
+      var p=k?Promise.resolve(k):D.get(id,'id,name,parents').then(function(f){remember(f);return NAMES[id];});
+      return p.then(function(k2){out.unshift({id:id,name:k2.name});return k2.parents&&k2.parents.length?step(k2.parents[0]):out;});
+    }
+    return step(r.id);
+  }
+  /* quiet: keep the current list on screen until the new one arrives (after Undo, say) */
+  function load(r,quiet){
+    var gen=++S.gen;S.route=r;S.err=null;S.more=false;
+    if(!quiet){S.items=[];S.next=null;S.crumbs=r.view==='drive'?S.crumbs:null;S.sel={};S.loading=true;}
+    render();
+    var qq=queryFor(r);
+    Promise.all([D.list(qq.q,qq.order),crumbsFor(r)]).then(function(res){
+      if(gen!==S.gen)return;
+      var files=keep(r,res[0].files||[]);files.forEach(remember);
+      S.items=files;S.next=res[0].nextPageToken||null;S.crumbs=res[1];S.loading=false;
+      if(quiet)Object.keys(S.sel).forEach(function(id){if(!itemById(id))delete S.sel[id];});
+      render();
+    },function(e){if(gen!==S.gen)return;S.loading=false;S.err=e;render();});
+  }
+  function loadMore(){
+    if(!S.next||S.more)return;
+    var gen=S.gen,r=S.route,qq=queryFor(r);S.more=true;renderMain();
+    D.list(qq.q,qq.order,S.next).then(function(res){
+      if(gen!==S.gen)return;
+      var files=keep(r,res.files||[]);files.forEach(remember);
+      S.items=S.items.concat(files);S.next=res.nextPageToken||null;S.more=false;renderMain();
+    },function(e){if(gen!==S.gen)return;S.more=false;renderMain();toast(errText(e,'load more'));});
+  }
+  function afterSignIn(){
+    S.err=null;render();
+    return Promise.all([D.about(),D.get('root','id')]).then(function(r){
+      S.about=r[0];S.rootId=r[1].id;remember({id:S.rootId,name:'My Drive',parents:[]});
+      if(r[0].user&&r[0].user.emailAddress)auth.email=r[0].user.emailAddress;saveToken();
+      route();
+    },function(e){S.err=e;render();});
+  }
+
+  /* ---------- rendering ---------- */
+  function render(){
+    document.body.setAttribute('data-auth',!configured()?'none':signedIn()?'in':'out');
+    renderAcct();renderNav();renderStorage();renderBar();renderMain();renderSelbar();
+  }
+  function renderAcct(){
+    var a=$('#acct');clear(a);
+    if(!signedIn())return;
+    a.appendChild(h('span',{class:'em',text:auth.email||'Signed in',title:auth.email||''}));
+    a.appendChild(h('button',{class:'btn sm quiet',id:'signOut',type:'button',text:'Sign out',onclick:signOut}));
+  }
+  var NAV={drive:['drive','My Drive'],starred:['star','Starred'],recent:['recent','Recent'],trash:['trash','Trash']};
+  function renderNav(){
+    $$('#nav button').forEach(function(b){
+      var v=b.getAttribute('data-view');
+      if(!b.firstChild)setKids(b,[icon(NAV[v][0]),h('span',{text:NAV[v][1]})]);
+      if(S.route.view===v)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');
+    });
+  }
+  function renderStorage(){
+    var el=$('#storage'),sq=S.about&&S.about.storageQuota;clear(el);
+    if(!sq||!signedIn())return;
+    var used=+sq.usage||0,lim=+sq.limit||0;
+    el.appendChild(h('span',{text:lim?fmtGB(used)+' of '+fmtGB(lim)+' GB used':fmtGB(used)+' GB used'}));
+    if(lim)el.appendChild(h('div',{class:'sbar',role:'img','aria-label':Math.round(100*used/lim)+'% of your Google storage used'},[h('i',{style:'width:'+Math.min(100,Math.round(100*used/lim))+'%'})]));
+  }
+  var lastSearch=null;
+  function renderBar(){
+    var r=S.route,inFolder=r.view==='drive',c=$('#crumbs');clear(c);
+    if(inFolder){
+      (S.crumbs||[]).forEach(function(cr,i){
+        if(i)c.appendChild(h('span',{class:'cs','aria-hidden':'true',text:'/'}));
+        c.appendChild(h('button',{type:'button','data-id':cr.id,text:cr.name,title:cr.name,onclick:function(){go({view:'drive',id:cr.id});}}));
+      });
+    }else{
+      c.appendChild(h('span',{class:'ttl',text:r.view==='search'?'Search: “'+r.text+'”':NAV[r.view][1]}));
+    }
+    /* the box follows Back and Forward, but never overwrites what you are typing into it */
+    var key=r.view==='search'?r.text:'';
+    if(key!==lastSearch&&document.activeElement!==$('#q')){lastSearch=key;$('#q').value=key;}
+    var up=$('#upBtn'),nf=$('#newFolderBtn');
+    if(!up.firstChild){setKids(up,[icon('upload'),h('span',{text:'Upload'})]);setKids(nf,[icon('newFolder'),h('span',{class:'lbl',text:'New folder'})]);nf.setAttribute('aria-label','New folder');}
+    up.disabled=nf.disabled=!inFolder;
+    up.title=inFolder?'Upload files into this folder (or drop them on the page)':'Open a folder in My Drive to upload into it';
+    nf.title=inFolder?'New folder here':'Open a folder in My Drive to make a folder in it';
+    $$('#filter button').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-f')===S.filter);b.setAttribute('aria-pressed',b.getAttribute('data-f')===S.filter?'true':'false');});
+    var ss=$('#sortSel');ss.value=S.sort;ss.disabled=r.view==='recent';ss.title=r.view==='recent'?'Recent is always newest first':'Sort';
+    var vb=$('#viewBtn'),toRows=S.view==='grid';setKids(vb,[icon(toRows?'rows':'grid')]);vb.setAttribute('aria-label',toRows?'Show as a list':'Show as a grid');vb.title=vb.getAttribute('aria-label');
+    var sb=$('#selBtn');if(!sb.firstChild)setKids(sb,[icon('select'),h('span',{class:'lbl',text:'Select'})]);
+    sb.setAttribute('aria-pressed',S.selecting?'true':'false');sb.setAttribute('aria-label','Select several');
+  }
+  function signinCard(){
+    var why={expired:'Your Google sign-in lasts an hour. Continue to carry on where you were.',
+      popup_failed_to_open:'Your browser blocked Google\'s window. Allow pop-ups for this site, then try again.',
+      popup_closed:'Google\'s window was closed before you finished.',access_denied:'Sign-in was cancelled.',
+      gis_load:'Couldn\'t load Google sign-in. Are you offline?',
+      scope:'Google didn\'t give Shoebox access to your Drive. Try again and leave the Google Drive box ticked.'}[auth.reason]||'';
+    var b=h('button',{class:'gbtn',id:'signin',type:'button',onclick:function(){
+      b.disabled=true;signIn().then(afterSignIn,function(){render();}).then(function(){b.disabled=false;});
+    }},[googleIcon(),'Continue with Google']);
+    return h('div',{class:'hero'},[
+      h('h2',{text:'Your photos and papers, from Google Drive'}),
+      h('p',{text:'Shoebox shows your Drive as big thumbnails and plain folders: upload, download, preview photos and PDFs, rename, move, star and tidy up. Everything stays in your Drive; this page keeps nothing of its own.'}),
+      b,
+      why?h('p',{class:'why',text:why}):null,
+      h('p',{class:'hint',text:'The first time, Google warns that it hasn\'t verified this app. That is expected for a page only you use: choose Advanced, then go to Personal Apps. Shoebox asks to see and change your whole Drive; deleting only ever moves things to Drive\'s Trash, where they stay for 30 days.'})
+    ]);
+  }
+  function emptyState(){
+    var r=S.route,f=S.filter==='photos'?'photos':S.filter==='pdfs'?'PDFs':'';
+    if(r.view==='search')return h('div',{class:'empty'},[h('b',{text:'No '+(f||'files or folders')+' match “'+r.text+'”'}),'Drive matches the start of words: “pass” finds passport.pdf, “port” does not.']);
+    if(r.view==='starred')return h('div',{class:'empty'},[h('b',{text:f?'No starred '+f:'Nothing starred yet'}),'Star a folder from its ⋮ menu to keep it one tap away. Stars show in Google Drive too.']);
+    if(r.view==='recent')return h('div',{class:'empty'},[h('b',{text:'No '+(f||'files')+' yet'})]);
+    if(r.view==='trash')return h('div',{class:'empty'},[h('b',{text:'Trash is empty'})]);
+    return h('div',{class:'empty'},[h('b',{text:f?'No '+f+' in this folder':'This folder is empty'}),'Drop files here, or use Upload.']);
+  }
+  var moreIO=null;
+  function renderMain(){
+    var m=$('#main');clear(m);
+    if(!configured()){m.appendChild(h('div',{class:'hero'},[h('h2',{text:'Google sign-in is not set up'}),h('p',{text:'This copy of the page has no Google client ID (config.js), so it cannot reach your Drive. Open the hosted page instead; see the README.'})]));return;}
+    if(!signedIn()){m.appendChild(signinCard());return;}
+    var r=S.route;
+    if(r.view==='trash')m.appendChild(h('div',{class:'note',text:'Google deletes things in Trash for good after 30 days. Shoebox never deletes anything itself: restore what you need here, or empty Trash in Google Drive.'}));
+    if(S.err){
+      var e=S.err,retry=h('button',{class:'btn sm',type:'button',text:'Try again',onclick:function(){S.about?load(S.route):afterSignIn();}});
+      m.appendChild(h('div',{class:'err'},[h('span',{text:e.code==='not_found'&&r.view==='drive'?'This folder isn\'t in your Drive any more.':errText(e,'load this')}),e.code==='not_found'?h('button',{class:'btn sm',type:'button',text:'Go to My Drive',onclick:function(){go({view:'drive',id:'root'});}}):retry]));
+      if(!S.items.length)return;
+    }
+    if(S.loading&&!S.items.length){m.appendChild(h('div',{class:'loading',text:'Loading…'}));return;}
+    if(!S.items.length){m.appendChild(emptyState());return;}
+    var list=h('div',{id:'list',class:S.view==='rows'?'rows':'grid',role:'list'});
+    var folders=S.items.filter(isFolder),files=S.items.filter(function(f){return !isFolder(f);});
+    var both=folders.length&&files.length;
+    if(both)list.appendChild(h('div',{class:'sep',text:'Folders'}));
+    folders.forEach(function(f){list.appendChild(itemEl(f));});
+    if(both)list.appendChild(h('div',{class:'sep',text:'Files'}));
+    files.forEach(function(f){list.appendChild(itemEl(f));});
+    m.appendChild(list);
+    if(S.next){
+      var mb=h('button',{class:'btn',id:'moreBtn',type:'button',text:S.more?'Loading…':'Load more',disabled:S.more,onclick:loadMore});
+      m.appendChild(h('div',{class:'morewrap'},[mb]));
+      if('IntersectionObserver' in window){
+        if(moreIO)moreIO.disconnect();
+        moreIO=new IntersectionObserver(function(en){if(en.some(function(x){return x.isIntersecting;}))loadMore();},{rootMargin:'400px'});
+        moreIO.observe(mb);
+      }
+    }
+  }
+  function metaText(f){
+    if(isFolder(f))return f.mimeType===SHORTCUT?'Shortcut':fmtDate(f.modifiedTime);
+    var s=f.size!=null?fmtSize(f.size):'';
+    return [s,fmtDate(f.modifiedTime)].filter(Boolean).join(' · ');
+  }
+  function itemEl(f){
+    var k=kindOf(f),sel=!!S.sel[f.id];
+    var th=h('span',{class:'th k-'+k},[icon(k==='video'?'video':k)]);
+    if((k==='image'||k==='pdf')&&f.mimeType!==SHORTCUT&&(f.thumbnailLink||k==='image')){
+      var img=h('img',{alt:'',decoding:'async',referrerpolicy:'no-referrer'});
+      th.appendChild(img);wantThumb(f,img);
+    }
+    var el=h('div',{class:'it'+(k==='folder'?' fold':''),role:'listitem','data-id':f.id,'data-name':f.name,'data-kind':k,'data-starred':f.starred?'1':'0','aria-selected':sel?'true':'false'},[
+      h('input',{type:'checkbox',class:'ck','aria-label':'Select '+f.name,checked:sel,onchange:function(ev){toggleSel(f.id,ev.target.checked);}}),
+      h('button',{class:'open',type:'button',title:f.name,onclick:function(){onOpen(f.id);}},[th,h('span',{class:'txt'},[h('span',{class:'nm',text:f.name}),h('span',{class:'mt',text:metaText(f)})])]),
+      f.starred?h('span',{class:'star',title:'Starred'},[icon('star')]):null,
+      h('button',{class:'more',type:'button','aria-label':'More for '+f.name,title:'More',onclick:function(ev){ev.stopPropagation();openMenu(f.id);}},[icon('more')])
+    ]);
+    el.addEventListener('contextmenu',function(ev){if(S.selecting)return;ev.preventDefault();openMenu(f.id);});
+    return el;
+  }
+
+  /* ---------- thumbnails ----------
+     Google says a private file's thumbnailLink needs a signed-in request, and whether a browser may make
+     one directly is not documented. So three ways are tried in turn: fetch the link with the token, load
+     it as a plain image, or download the photo itself and shrink it here. A way that keeps failing before
+     it ever works is skipped for the rest of the visit. Only thumbnails near the screen are fetched. */
+  var TH={cache:{},ok:[false,false,false],bad:[0,0,0],q:[],busy:0,io:null};
+  function thumbKey(f){return f.id+'@'+f.modifiedTime;}
+  function setImg(img,url){img.onload=function(){img.classList.add('ok');};img.src=url;}
+  function wantThumb(f,img){
+    var c=TH.cache[thumbKey(f)];if(c){setImg(img,c);return;}
+    img._f=f;
+    if(!('IntersectionObserver' in window)){TH.q.push(img);pumpThumbs();return;}
+    if(!TH.io)TH.io=new IntersectionObserver(function(en){en.forEach(function(x){if(!x.isIntersecting)return;TH.io.unobserve(x.target);var im=x.target.querySelector('img');if(im&&im._f){TH.q.push(im);}});pumpThumbs();},{rootMargin:'300px'});
+    TH.io.observe(img.parentNode);
+  }
+  function pumpThumbs(){
+    while(TH.busy<6&&TH.q.length){
+      var img=TH.q.shift();if(!img.isConnected||!img._f)continue;
+      TH.busy++;
+      (function(im){thumbFor(im._f).then(function(url){setImg(im,url);},function(){}).then(function(){TH.busy--;pumpThumbs();});})(img);
+    }
+  }
+  function byBearer(f,link){return fetch(link,{headers:{Authorization:'Bearer '+auth.token},referrerPolicy:'no-referrer'}).then(function(r){if(!r.ok)throw 0;return r.blob();}).then(function(b){if(!/^image\//.test(b.type))throw 0;return URL.createObjectURL(b);});}
+  function byImg(f,link){return new Promise(function(res,rej){var im=new Image();im.referrerPolicy='no-referrer';im.onload=function(){res(link);};im.onerror=function(){rej();};im.src=link;});}
+  function canShrink(f){return /^image\/(jpeg|png|gif|webp|bmp|avif)$/.test(effMime(f))&&(+f.size||0)<=30*1024*1024;}
+  function byMedia(f){
+    return D.media(f.id).then(function(blob){return createImageBitmap(blob);}).then(function(bm){
+      var s=Math.min(1,480/Math.max(bm.width,bm.height)),c=document.createElement('canvas');
+      c.width=Math.max(1,Math.round(bm.width*s));c.height=Math.max(1,Math.round(bm.height*s));
+      c.getContext('2d').drawImage(bm,0,0,c.width,c.height);if(bm.close)bm.close();
+      return new Promise(function(res,rej){c.toBlob(function(b){if(b)res(URL.createObjectURL(b));else rej();},'image/jpeg',0.82);});
+    });
+  }
+  function thumbFor(f){
+    var key=thumbKey(f);if(TH.cache[key])return Promise.resolve(TH.cache[key]);
+    var link=f.thumbnailLink?String(f.thumbnailLink).replace(/=s\d+$/,'=s480'):'';
+    var ways=[link?byBearer:null,link?byImg:null,canShrink(f)?byMedia:null],i=0;
+    function next(){
+      while(i<3&&(!ways[i]||(!TH.ok[i]&&TH.bad[i]>=3)))i++;
+      if(i>=3)return Promise.reject();
+      var w=i++;
+      return ways[w](f,link).then(function(url){TH.ok[w]=true;TH.cache[key]=url;return url;},function(){TH.bad[w]++;return next();});
+    }
+    return next();
+  }
+
+  /* ---------- selection ---------- */
+  function selected(){return S.items.filter(function(f){return S.sel[f.id];});}
+  function toggleSel(id,on){
+    if(on)S.sel[id]=1;else delete S.sel[id];
+    S.selecting=true;
+    $$('#list .it').forEach(function(el){var s=!!S.sel[el.getAttribute('data-id')];el.setAttribute('aria-selected',s?'true':'false');var ck=el.querySelector('.ck');if(ck)ck.checked=s;});
+    renderSelbar();renderBar();
+  }
+  function endSelect(){S.sel={};S.selecting=false;}
+  function renderSelbar(){
+    var bar=$('#selbar');document.body.classList.toggle('selecting',S.selecting&&signedIn());
+    if(!S.selecting||!signedIn()){bar.hidden=true;return;}
+    bar.hidden=false;clear(bar);
+    var list=selected(),n=list.length,trash=S.route.view==='trash';
+    bar.appendChild(h('span',{id:'selCount',text:n?n+' selected':'None selected'}));
+    function b(act,ic,label,fn){bar.appendChild(h('button',{type:'button','data-sel':act,disabled:act!=='clear'&&!n,onclick:function(){fn(selected());}},[icon(ic),h('span',{text:label})]));}
+    if(trash)b('restore','restore','Restore',restore);
+    else{
+      b('download','download','Download',downloadMany);
+      b('move','move','Move',openMove);
+      var allStarred=n&&list.every(function(f){return f.starred;});
+      b('star','star',allStarred?'Unstar':'Star',function(l){setStar(l,!allStarred);});
+      b('trash','trash','Delete',trashItems);
+    }
+    b('clear','x','Done',function(){endSelect();render();});
+  }
+
+  /* ---------- opening things ---------- */
+  function onOpen(id){
+    var f=itemById(id);if(!f)return;
+    if(S.selecting){toggleSel(id,!S.sel[id]);return;}
+    if(S.route.view==='trash'){openMenu(id);return;}
+    openItem(f);
+  }
+  function openItem(f){
+    var k=kindOf(f);
+    if(k==='folder'){go({view:'drive',id:effId(f)});return;}
+    if(previewable(f)){openViewer(f.id);return;}
+    if(k==='gdoc'){window.open(f.webViewLink||'https://drive.google.com/open?id='+encodeURIComponent(effId(f)),'_blank','noopener');return;}
+    openMenu(f.id);
+  }
+
+  /* ---------- the item menu ---------- */
+  var MENU_ID=null;
+  function openMenu(id){
+    var f=itemById(id);if(!f)return;MENU_ID=id;
+    var k=kindOf(f),trash=S.route.view==='trash',acts=$('#menuActs');
+    $('#menuName').textContent=f.name;
+    setKids($('#menuFacts'),[h('span',{text:({folder:'Folder',image:'Photo',pdf:'PDF',gdoc:'Google file',video:'Video',file:'File'})[k]+(f.size!=null?' · '+fmtSize(f.size):'')}),h('span',{text:'Changed '+fmtDate(f.modifiedTime)})]);
+    clear(acts);
+    function a(act,ic,label,fn,cls){acts.appendChild(h('button',{type:'button','data-act':act,class:cls||null,onclick:function(){$('#menuDlg').close();var cur=itemById(id);if(cur)fn(cur);}},[icon(ic),h('span',{text:label})]));}
+    if(trash){a('restore','restore','Restore',function(x){restore([x]);});}
+    else{
+      if(k==='folder')a('open','folder','Open',openItem);
+      else if(previewable(f))a('open','eye','View',openItem);
+      if(k!=='folder')a('download','download',k==='gdoc'?'Download as PDF':'Download',function(x){downloadMany([x]);});
+      a('rename','rename','Rename',rename);
+      a('move','move','Move to…',function(x){openMove([x]);});
+      a('star','star',f.starred?'Remove star':'Star',function(x){setStar([x],!x.starred);});
+      a('trash','trash','Delete',function(x){trashItems([x]);},'danger');
+    }
+    if(f.webViewLink)acts.appendChild(h('a',{href:f.webViewLink,target:'_blank',rel:'noopener','data-act':'drive',onclick:function(){$('#menuDlg').close();}},[icon('drivelink'),h('span',{text:'Open in Google Drive'})]));
+    $('#menuDlg').showModal();
+  }
+
+  /* ---------- name dialog: new folder and rename ---------- */
+  var NAME_CB=null;
+  function askName(title,initial,okLabel,onOk){
+    var inp=$('#nameInp');$('#nameTitle').textContent=title;$('#nameOk').textContent=okLabel;$('#nameErr').hidden=true;
+    inp.value=initial||'';NAME_CB=onOk;$('#nameDlg').showModal();inp.focus();
+    var dot=inp.value.lastIndexOf('.');try{inp.setSelectionRange(0,dot>0?dot:inp.value.length);}catch(e){}
+  }
+  function newFolder(){
+    var parent=realId(S.route.id);
+    askName('New folder','','Create',function(name){
+      return D.folder(name,parent).then(function(f){
+        remember(f);if(S.route.view==='drive'&&realId(S.route.id)===parent&&!itemById(f.id)){S.items.push(f);sortItems();}
+        render();toast('Made “'+name+'”');
+      });
+    });
+  }
+  function rename(f){
+    askName('Rename',f.name,'Rename',function(name){
+      if(name===f.name)return Promise.resolve();
+      return D.patch(f.id,{name:name}).then(function(nf){replaceItem(nf);sortItems();render();toast('Renamed to “'+name+'”');});
+    });
+  }
+
+  /* ---------- star ---------- */
+  function setStar(list,on){
+    Promise.all(list.map(function(f){return D.patch(f.id,{starred:on}).then(function(nf){return {nf:nf};},function(e){return {err:e};});})).then(function(res){
+      var ok=res.filter(function(x){return x.nf;}).map(function(x){return x.nf;}),bad=res.filter(function(x){return x.err;});
+      ok.forEach(function(nf){if(S.route.view==='starred'&&!on)dropItems([nf.id]);else replaceItem(nf);});
+      if(S.selecting)endSelect();render();
+      if(bad.length)toast(errText(bad[0].err,'star that'));
+      else toast(on?(ok.length===1?'Starred “'+ok[0].name+'”':'Starred '+ok.length+' items'):(ok.length===1?'Removed the star':'Removed '+ok.length+' stars'));
+    });
+  }
+
+  /* ---------- delete: always to Drive's Trash, with Undo ---------- */
+  var CONFIRM_CB=null;
+  function confirmBox(text){return new Promise(function(res){$('#confirmText').textContent=text;CONFIRM_CB=res;$('#confirmDlg').showModal();});}
+  function countInside(f){
+    return D.list("'"+q(effId(f))+"' in parents and trashed=false",'folder',undefined,'id').then(function(r){var n=(r.files||[]).length;return r.nextPageToken?n+'+':n;});
+  }
+  function trashItems(list){
+    var folders=list.filter(function(f){return isFolder(f)&&f.mimeType!==SHORTCUT;});
+    var ask;
+    if(!folders.length)ask=Promise.resolve(true);
+    else if(list.length===1)ask=countInside(folders[0]).then(function(n){
+      var inside=n===0?'It is empty.':n===1?'It holds 1 item, which goes with it.':'It holds '+n+' items, which go with it.';
+      return confirmBox('Move “'+folders[0].name+'” to Drive\'s Trash? '+inside+' You can restore it from Trash for 30 days.');
+    });
+    else ask=Promise.resolve(confirmBox('Move '+plural(list.length,'item')+' to Drive\'s Trash, including '+plural(folders.length,'folder')+' and everything inside '+(folders.length===1?'it':'them')+'? You can restore them from Trash for 30 days.'));
+    ask.then(function(yes){
+      if(!yes)return;
+      return Promise.all(list.map(function(f){return D.patch(f.id,{trashed:true}).then(function(nf){return {nf:nf};},function(e){return {err:e};});})).then(function(res){
+        var ok=res.filter(function(x){return x.nf;}).map(function(x){return x.nf;}),bad=res.filter(function(x){return x.err;});
+        dropItems(ok.map(function(f){return f.id;}));if(S.selecting)endSelect();render();
+        if(bad.length&&!ok.length){toast(errText(bad[0].err,'move that to Trash'));return;}
+        toast((ok.length===1?'Moved “'+ok[0].name+'”':'Moved '+ok.length+' items')+' to Trash'+(bad.length?' ('+bad.length+' failed)':''),{undo:function(){
+          Promise.all(ok.map(function(f){return D.patch(f.id,{trashed:false});})).then(function(){load(S.route,true);toast('Put back');},fail('put that back'));
+        }});
+      });
+    },fail('check that folder'));
+  }
+  function restore(list){
+    Promise.all(list.map(function(f){return D.patch(f.id,{trashed:false}).then(function(nf){return {nf:nf};},function(e){return {err:e};});})).then(function(res){
+      var ok=res.filter(function(x){return x.nf;}).map(function(x){return x.nf;}),bad=res.filter(function(x){return x.err;});
+      dropItems(ok.map(function(f){return f.id;}));if(S.selecting)endSelect();render();
+      if(bad.length)toast(errText(bad[0].err,'restore that'));
+      else toast(ok.length===1?'Restored “'+ok[0].name+'”':'Restored '+ok.length+' items');
+    });
+  }
+
+  /* ---------- move ---------- */
+  var MV={items:[],at:'root',path:[],rows:[],next:null,gen:0,blocked:[]};
+  function openMove(list){
+    if(!list.length)return;
+    MV.items=list;MV.blocked=list.filter(isFolder).map(function(f){return f.id;});
+    $('#moveTitle').textContent=list.length===1?'Move “'+list[0].name+'” to…':'Move '+list.length+' items to…';
+    $('#moveErr').hidden=true;$('#moveDlg').showModal();
+    mvGo(S.route.view==='drive'?S.route.id:'root');
+  }
+  function mvGo(id){
+    var gen=++MV.gen;MV.at=id;MV.rows=[];MV.next=null;
+    setKids($('#moveList'),[h('div',{class:'loading',text:'Loading…'})]);$('#moveHere').disabled=true;
+    Promise.all([D.list("'"+q(realId(id))+"' in parents and trashed=false and mimeType='"+FOLDER+"'",'name_natural',undefined,'id,name,parents,mimeType'),crumbsFor({view:'drive',id:id})]).then(function(r){
+      if(gen!==MV.gen)return;(r[0].files||[]).forEach(remember);
+      MV.rows=r[0].files||[];MV.next=r[0].nextPageToken||null;MV.path=r[1];renderMove();
+    },function(e){if(gen!==MV.gen)return;$('#moveErr').textContent=errText(e,'list folders');$('#moveErr').hidden=false;clear($('#moveList'));});
+  }
+  function renderMove(){
+    var c=$('#moveCrumbs');clear(c);
+    MV.path.forEach(function(cr,i){if(i)c.appendChild(h('span',{class:'cs','aria-hidden':'true',text:'/'}));c.appendChild(h('button',{type:'button','data-id':cr.id,text:cr.name,onclick:function(){mvGo(cr.id);}}));});
+    var l=$('#moveList');clear(l);
+    if(!MV.rows.length)l.appendChild(h('div',{class:'empty',text:'No folders in here. Move into this one, or go back up.'}));
+    MV.rows.forEach(function(f){
+      var moving=MV.blocked.indexOf(f.id)>=0;
+      l.appendChild(h('button',{type:'button',class:'mrow','data-id':f.id,'data-name':f.name,disabled:moving,title:moving?'This is one of the folders you are moving':'Open '+f.name,onclick:function(){mvGo(f.id);}},[icon('folder'),h('span',{text:f.name}),moving?h('i',{text:'moving'}):null]));
+    });
+    if(MV.next)l.appendChild(h('button',{type:'button',class:'btn sm',text:'More folders',onclick:function(){
+      var gen=MV.gen;D.list("'"+q(realId(MV.at))+"' in parents and trashed=false and mimeType='"+FOLDER+"'",'name_natural',MV.next,'id,name,parents,mimeType').then(function(r){if(gen!==MV.gen)return;MV.rows=MV.rows.concat(r.files||[]);MV.next=r.nextPageToken||null;renderMove();},fail('list folders'));
+    }}));
+    var dest=realId(MV.at),already=MV.items.every(function(f){return (f.parents||[]).indexOf(dest)>=0;});
+    var hb=$('#moveHere');hb.disabled=already;hb.textContent=already?'Already here':'Move here';
+  }
+  function doMove(list,dest,destName){
+    return Promise.all(list.map(function(f){
+      var from=(f.parents||[]).join(',');
+      return D.patch(f.id,{},{addParents:dest,removeParents:from}).then(function(nf){return {nf:nf,from:from};},function(e){return {err:e};});
+    })).then(function(res){
+      var ok=res.filter(function(x){return x.nf;}),bad=res.filter(function(x){return x.err;});
+      ok.forEach(function(x){remember(x.nf);});
+      if(S.route.view==='drive'&&realId(S.route.id)!==dest)dropItems(ok.map(function(x){return x.nf.id;}));
+      else ok.forEach(function(x){replaceItem(x.nf);});
+      if(S.selecting)endSelect();render();
+      if(!ok.length){toast(errText(bad[0]&&bad[0].err,'move that'));return;}
+      toast('Moved '+(ok.length===1?'“'+ok[0].nf.name+'”':ok.length+' items')+' to '+destName+(bad.length?' ('+bad.length+' failed)':''),{undo:function(){
+        Promise.all(ok.map(function(x){return D.patch(x.nf.id,{},{addParents:x.from,removeParents:dest});})).then(function(){load(S.route,true);toast('Moved back');},fail('move that back'));
+      }});
+    });
+  }
+
+  /* ---------- download ---------- */
+  function saveBlob(blob,name){
+    var u=URL.createObjectURL(blob),a=h('a',{href:u,download:name});
+    document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u);},60000);
+  }
+  function pdfName(n){return /\.pdf$/i.test(n)?n:n+'.pdf';}
+  function downloadOne(f){
+    var k=kindOf(f),m=effMime(f);
+    if(k==='folder')return Promise.resolve('folder');
+    if(k==='gdoc'&&!EXPORTS[m])return Promise.reject({code:'http',message:'this kind of Google file can only be opened in Drive'});
+    return (k==='gdoc'?D.pdf(effId(f)):D.media(effId(f))).then(function(b){saveBlob(b,k==='gdoc'?pdfName(f.name):f.name);});
+  }
+  function downloadMany(list){
+    var files=list.filter(function(f){return !isFolder(f);}),skipped=list.length-files.length;
+    if(!files.length){toast('Folders can\'t be downloaded yet: open the folder and select its files.');return;}
+    toast(files.length===1?'Downloading “'+files[0].name+'”…':'Downloading '+files.length+' files…',{sticky:true});
+    var done=0,errs=[];
+    files.reduce(function(p,f){return p.then(function(){return downloadOne(f).then(function(){done++;},function(e){errs.push(e);});}).then(function(){return wait(250);});},Promise.resolve()).then(function(){
+      if(S.selecting){endSelect();render();}
+      if(errs.length)toast(errText(errs[0],'download'+(files.length>1?' '+errs.length+' of them':' it')));
+      else toast((done===1?'Downloaded':'Downloaded '+done+' files')+(skipped?' (folders skipped)':''));
+    });
+  }
+
+  /* ---------- upload ---------- */
+  var UP={list:[],active:0,resumable:true,raf:0};
+  function canUpload(){return signedIn()&&S.route.view==='drive';}
+  function enqueue(files){
+    if(!canUpload()){toast('Open a folder in My Drive to upload into it.');return;}
+    var parent=realId(S.route.id),pname=(S.crumbs&&S.crumbs.length?S.crumbs[S.crumbs.length-1].name:'My Drive');
+    files.forEach(function(file){UP.list.push({file:file,name:file.name,parent:parent,pname:pname,state:'waiting',loaded:0,total:file.size,xhr:null,msg:''});});
+    renderTray();pumpUploads();
+  }
+  function pumpUploads(){
+    while(UP.active<2){
+      var u=null;for(var i=0;i<UP.list.length;i++)if(UP.list[i].state==='waiting'){u=UP.list[i];break;}
+      if(!u)break;
+      UP.active++;u.state='uploading';u.started=Date.now();
+      (function(u2){upload(u2).then(function(f){
+        u2.state='done';u2.loaded=u2.total;remember(f);
+        if(S.route.view==='drive'&&realId(S.route.id)===u2.parent&&!itemById(f.id)){S.items.push(f);sortItems();renderMain();}
+      },function(e){u2.state=e&&e.code==='aborted'?'cancelled':'failed';u2.msg=errText(e,'upload it');}).then(function(){UP.active--;u2.xhr=null;renderTray();pumpUploads();});})(u);
+    }
+    renderTray();
+  }
+  function xhr(u,method,url,headers,body){
+    return new Promise(function(res,rej){
+      var x=new XMLHttpRequest();u.xhr=x;x.open(method,url);
+      Object.keys(headers).forEach(function(k){x.setRequestHeader(k,headers[k]);});
+      if(x.upload)x.upload.onprogress=function(e){if(e.lengthComputable){u.loaded=e.loaded;u.total=e.total;trayLater();}};
+      x.onload=function(){res(x);};x.onerror=function(){rej({code:'blocked'});};x.onabort=function(){rej({code:'aborted'});};
+      x.send(body);
+    });
+  }
+  function answer(x){
+    if(x.status===401){expire();throw {code:'signed_out'};}
+    if(x.status<200||x.status>=300)throw errOf(x.status,x.responseText);
+    var f=null;try{f=JSON.parse(x.responseText);}catch(e){}
+    /* an answer without the new file's id is not proof of anything: treat it like a blocked one */
+    if(!f||!f.id)throw {code:'blocked'};
+    return f;
+  }
+  function metaOf(u){var m={name:u.file.name,parents:[u.parent]};if(u.file.type)m.mimeType=u.file.type;return m;}
+  function multipart(u){
+    if(!signedIn())return Promise.reject({code:'signed_out'});
+    var b='shoebox'+Math.random().toString(36).slice(2)+Date.now().toString(36);
+    var body=new Blob(['--'+b+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+JSON.stringify(metaOf(u))+'\r\n--'+b+'\r\nContent-Type: '+(u.file.type||'application/octet-stream')+'\r\n\r\n',u.file,'\r\n--'+b+'--']);
+    return xhr(u,'POST',UPLOAD+'/files?'+enc({uploadType:'multipart',fields:FIELDS}),{Authorization:'Bearer '+auth.token,'Content-Type':'multipart/related; boundary='+b},body).then(answer);
+  }
+  function resumable(u){
+    if(!signedIn())return Promise.reject({code:'signed_out'});
+    return xhr(u,'POST',UPLOAD+'/files?'+enc({uploadType:'resumable',fields:FIELDS}),{Authorization:'Bearer '+auth.token,'Content-Type':'application/json; charset=UTF-8','X-Upload-Content-Type':u.file.type||'application/octet-stream','X-Upload-Content-Length':String(u.file.size)},JSON.stringify(metaOf(u))).then(function(x){
+      if(x.status===401){expire();throw {code:'signed_out'};}
+      if(x.status<200||x.status>=300)throw errOf(x.status,x.responseText);
+      var loc=x.getResponseHeader('Location');if(!loc)throw {code:'blocked'};
+      return xhr(u,'PUT',loc,{'Content-Type':u.file.type||'application/octet-stream'},u.file);
+    }).then(answer);
+  }
+  /* A blocked answer does not prove the bytes did not arrive: look for the file before sending it again */
+  function findJustUploaded(u){
+    function look(){
+      return D.list("name='"+q(u.file.name)+"' and '"+q(u.parent)+"' in parents and trashed=false",'modifiedTime desc').then(function(r){
+        var since=u.started-600000; /* ten minutes of slack for a device clock that is a little off */
+        return (r.files||[]).filter(function(f){return +f.size===u.file.size&&Date.parse(f.modifiedTime)>=since;})[0]||null;
+      });
+    }
+    return look().then(function(f){return f||wait(1500).then(look);});
+  }
+  function upload(u){
+    if(u.file.size<=SMALL||!UP.resumable)return multipart(u);
+    return resumable(u).catch(function(e){
+      if(!e||e.code!=='blocked')throw e;
+      UP.resumable=false;u.loaded=0;trayLater();
+      return findJustUploaded(u).then(function(f){return f||multipart(u);});
+    });
+  }
+  function trayLater(){if(UP.raf)return;UP.raf=requestAnimationFrame(function(){UP.raf=0;renderTray();});}
+  function renderTray(){
+    var t=$('#tray');if(!UP.list.length){t.hidden=true;return;}
+    t.hidden=false;clear(t);
+    var going=UP.list.filter(function(u){return u.state==='uploading'||u.state==='waiting';}).length;
+    var failed=UP.list.filter(function(u){return u.state==='failed';}).length;
+    t.appendChild(h('div',{class:'trh'},[h('b',{text:going?'Uploading '+plural(going,'file'):failed?plural(failed,'upload')+' failed':'Uploads finished'}),
+      going?null:h('button',{class:'btn sm quiet',type:'button',text:'Close',onclick:function(){UP.list=UP.list.filter(function(u){return u.state==='uploading'||u.state==='waiting';});renderTray();}})]));
+    UP.list.forEach(function(u){
+      var pct=u.total?Math.min(100,Math.round(100*u.loaded/u.total)):0;
+      var st=u.state==='waiting'?'waiting':u.state==='uploading'?pct+'%':u.state==='done'?'Done, in '+u.pname:u.state==='cancelled'?'Cancelled':u.msg||'Failed';
+      t.appendChild(h('div',{class:'up','data-name':u.name,'data-state':u.state},[
+        h('div',{class:'upn'},[h('span',{class:'nm',text:u.name,title:u.name}),h('span',{class:'ups',text:u.state==='failed'?'':st}),
+          u.state==='uploading'||u.state==='waiting'?h('button',{class:'btn sm quiet',type:'button',text:'Cancel',onclick:function(){if(u.xhr)u.xhr.abort();else{u.state='cancelled';renderTray();}}}):null,
+          u.state==='failed'||u.state==='cancelled'?h('button',{class:'btn sm',type:'button',text:'Retry',onclick:function(){u.state='waiting';u.loaded=0;u.msg='';pumpUploads();}}):null]),
+        u.state==='uploading'||u.state==='waiting'?h('div',{class:'pbar'},[h('i',{style:'width:'+pct+'%'})]):null,
+        u.state==='failed'?h('div',{class:'ups',text:st}):null
+      ]));
+    });
+  }
+  var dragN=0;
+  function hasFiles(e){var t=e.dataTransfer&&e.dataTransfer.types;return !!t&&Array.prototype.indexOf.call(t,'Files')>=0;}
+  document.addEventListener('dragenter',function(e){
+    if(!hasFiles(e)||!signedIn())return;e.preventDefault();dragN++;
+    var d=$('#drop');setKids(d,[canUpload()?'Drop to upload into “'+(S.crumbs&&S.crumbs.length?S.crumbs[S.crumbs.length-1].name:'My Drive')+'”':'Open a folder in My Drive to upload into it']);d.hidden=false;
+  });
+  document.addEventListener('dragover',function(e){if(!hasFiles(e))return;e.preventDefault();e.dataTransfer.dropEffect=canUpload()?'copy':'none';});
+  document.addEventListener('dragleave',function(e){if(!hasFiles(e))return;dragN=Math.max(0,dragN-1);if(!dragN)$('#drop').hidden=true;});
+  document.addEventListener('drop',function(e){
+    if(!hasFiles(e))return;e.preventDefault();dragN=0;$('#drop').hidden=true;
+    if(!canUpload()){toast('Open a folder in My Drive to upload into it.');return;}
+    var items=e.dataTransfer.items,files=[],dirs=0;
+    for(var i=0;i<e.dataTransfer.files.length;i++){
+      var en=items&&items[i]&&items[i].webkitGetAsEntry?items[i].webkitGetAsEntry():null;
+      if(en&&en.isDirectory)dirs++;else files.push(e.dataTransfer.files[i]);
+    }
+    if(dirs)toast('Folders can\'t be uploaded yet; drop the files inside them instead.');
+    if(files.length)enqueue(files);
+  });
+
+  /* ---------- viewer ---------- */
+  var V={list:[],i:0,gen:0,url:null,popped:false};
+  function openViewer(id){
+    V.list=S.items.filter(previewable);V.i=-1;
+    for(var i=0;i<V.list.length;i++)if(V.list[i].id===id)V.i=i;
+    if(V.i<0)return;
+    /* an entry in the history, so a phone's Back button closes the viewer instead of leaving the folder */
+    try{history.pushState({shoebox:'viewer'},'');}catch(e){}
+    $('#viewer').showModal();showV();
+  }
+  function freeV(){if(V.url){URL.revokeObjectURL(V.url);V.url=null;}}
+  function cantShow(b,f,msg){
+    setKids(b,[h('div',{class:'vmsg'},[h('span',{text:msg}),h('div',{class:'row',style:'display:flex;gap:8px;flex-wrap:wrap;justify-content:center'},[
+      h('button',{class:'btn sm',type:'button',text:'Download',onclick:function(){downloadMany([f]);}}),
+      f.webViewLink?h('a',{class:'btn sm',href:f.webViewLink,target:'_blank',rel:'noopener',text:'Open in Drive'}):null])])]);
+  }
+  function showV(){
+    var f=V.list[V.i],gen=++V.gen,b=$('#vBody'),k=kindOf(f);
+    $('#vName').textContent=f.name;$('#vName').title=f.name;
+    $('#vPos').textContent=V.list.length>1?(V.i+1)+' / '+V.list.length:'';
+    $('#vPrev').hidden=$('#vNext').hidden=V.list.length<2;
+    var dr=$('#vDrive');if(f.webViewLink){dr.href=f.webViewLink;dr.hidden=false;}else dr.hidden=true;
+    freeV();setKids(b,[h('div',{class:'vmsg',text:'Loading…'})]);
+    D.media(effId(f)).then(function(blob){
+      if(gen!==V.gen)return;
+      if(k==='image'){
+        var url=URL.createObjectURL(blob),img=h('img',{alt:f.name});V.url=url;
+        img.onload=function(){if(gen===V.gen)setKids(b,[img]);};
+        img.onerror=function(){if(gen===V.gen)cantShow(b,f,'This photo\'s format can\'t be shown in this browser.');};
+        img.src=url;return;
+      }
+      var pb=blob.type==='application/pdf'?blob:new Blob([blob],{type:'application/pdf'});
+      /* desktop browsers have their own PDF viewer; Android Chrome does not, so PDF.js draws the pages there */
+      if(navigator.pdfViewerEnabled){var u2=URL.createObjectURL(pb);V.url=u2;setKids(b,[h('iframe',{src:u2,title:f.name})]);return;}
+      return pdfjsInto(pb,b,gen);
+    }).catch(function(e){if(gen===V.gen)cantShow(b,f,e&&e.code?errText(e,'open it'):'Couldn\'t show this PDF here.');});
+  }
+  var pdfjsP=null;
+  function loadPdfjs(){
+    if(!pdfjsP){pdfjsP=import(PDFJS+'pdf.min.mjs').then(function(m){m.GlobalWorkerOptions.workerSrc=PDFJS+'pdf.worker.min.mjs';return m;});pdfjsP.catch(function(){pdfjsP=null;});}
+    return pdfjsP;
+  }
+  function pdfjsInto(blob,b,gen){
+    return Promise.all([loadPdfjs(),blob.arrayBuffer()]).then(function(r){
+      return r[0].getDocument({data:new Uint8Array(r[1])}).promise.then(function(doc){
+        if(gen!==V.gen)return;
+        var wrap=h('div',{class:'pdfpages'});setKids(b,[wrap]);
+        var width=Math.max(200,Math.min(b.clientWidth-20,1100)),dpr=Math.min(2,window.devicePixelRatio||1),chain=Promise.resolve();
+        for(var n=1;n<=Math.min(doc.numPages,300);n++)(function(n2){chain=chain.then(function(){
+          if(gen!==V.gen)return;
+          return doc.getPage(n2).then(function(pg){
+            var base=pg.getViewport({scale:1}),vp=pg.getViewport({scale:width/base.width*dpr}),c=document.createElement('canvas');
+            c.width=Math.floor(vp.width);c.height=Math.floor(vp.height);c.style.width=Math.floor(vp.width/dpr)+'px';wrap.appendChild(c);
+            return pg.render({canvas:c,viewport:vp}).promise;
+          });
+        });})(n);
+        return chain;
+      });
+    });
+  }
+  function stepV(d){if(V.list.length<2)return;V.i=(V.i+d+V.list.length)%V.list.length;showV();}
+  function closeViewer(){if($('#viewer').open)$('#viewer').close();}
+  $('#viewer').addEventListener('close',function(){
+    V.gen++;freeV();clear($('#vBody'));
+    if(V.popped){V.popped=false;return;}
+    if(history.state&&history.state.shoebox==='viewer')history.back();
+  });
+  window.addEventListener('popstate',function(){if($('#viewer').open){V.popped=true;$('#viewer').close();}});
+  (function swipe(){
+    var x0=null,y0=0,b=$('#vBody');
+    b.addEventListener('pointerdown',function(e){if(e.pointerType==='mouse')return;x0=e.clientX;y0=e.clientY;});
+    b.addEventListener('pointerup',function(e){if(x0==null)return;var dx=e.clientX-x0,dy=e.clientY-y0;x0=null;
+      if(Math.abs(dx)>60&&Math.abs(dy)<80&&kindOf(V.list[V.i])==='image')stepV(dx<0?1:-1);});
+    b.addEventListener('pointercancel',function(){x0=null;});
+  })();
+
+  /* ---------- theme (this page, this device) ---------- */
+  var darkQ=window.matchMedia?window.matchMedia('(prefers-color-scheme: dark)'):null;
+  function chosenTheme(){var t=lsGet('shoebox.theme','auto');return t==='light'||t==='dark'?t:'auto';}
+  function deviceTheme(){return darkQ&&darkQ.matches?'dark':'light';}
+  function shownTheme(){var t=chosenTheme();return t==='auto'?deviceTheme():t;}
+  function paintTheme(){
+    var t=chosenTheme(),dark=shownTheme()==='dark',b=$('#themeBtn'),label=dark?'Switch to light':'Switch to dark';
+    if(t==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',t);
+    setKids(b,[icon(dark?'sun':'moon')]);b.setAttribute('aria-label',label);b.title=label;
+  }
+
+  /* ---------- wiring ---------- */
+  function wire(){
+    $$('#nav button').forEach(function(b){b.addEventListener('click',function(){var v=b.getAttribute('data-view');endSelect();go(v==='drive'?{view:'drive',id:'root'}:{view:v});});});
+    $('#searchForm').insertBefore(icon('search'),$('#q'));
+    $('#searchForm').addEventListener('submit',function(e){e.preventDefault();var t=$('#q').value.trim();$('#q').blur();endSelect();if(t)go({view:'search',text:t});else go({view:'drive',id:'root'});});
+    $('#upBtn').addEventListener('click',function(){$('#upInput').click();});
+    $('#upInput').addEventListener('change',function(e){var files=Array.prototype.slice.call(e.target.files||[]);e.target.value='';if(files.length)enqueue(files);});
+    $('#newFolderBtn').addEventListener('click',newFolder);
+    $$('#filter button').forEach(function(b){b.addEventListener('click',function(){S.filter=b.getAttribute('data-f');lsSet('shoebox.filter',S.filter);endSelect();load(S.route);});});
+    $('#sortSel').addEventListener('change',function(e){S.sort=oneOf(e.target.value,['name','modified','size'],'name');lsSet('shoebox.sort',S.sort);load(S.route);});
+    $('#viewBtn').addEventListener('click',function(){S.view=S.view==='grid'?'rows':'grid';lsSet('shoebox.view',S.view);render();});
+    $('#selBtn').addEventListener('click',function(){if(S.selecting)endSelect();else S.selecting=true;render();});
+    $('#themeBtn').addEventListener('click',function(){var next=shownTheme()==='dark'?'light':'dark';lsSet('shoebox.theme',next===deviceTheme()?'auto':next);paintTheme();});
+    if(darkQ){if(darkQ.addEventListener)darkQ.addEventListener('change',paintTheme);else if(darkQ.addListener)darkQ.addListener(paintTheme);}
+    $$('dialog [data-close]').forEach(function(b){b.addEventListener('click',function(){b.closest('dialog').close();});});
+    $('#nameForm').addEventListener('submit',function(e){
+      e.preventDefault();var v=$('#nameInp').value.trim(),err=$('#nameErr'),ok=$('#nameOk');
+      if(!v){err.textContent='Type a name first.';err.hidden=false;return;}
+      if(!NAME_CB)return;ok.disabled=true;err.hidden=true;
+      NAME_CB(v).then(function(){NAME_CB=null;$('#nameDlg').close();},function(ex){err.textContent=errText(ex,'save that');err.hidden=false;}).then(function(){ok.disabled=false;});
+    });
+    $('#nameDlg').addEventListener('close',function(){NAME_CB=null;});
+    $('#confirmYes').addEventListener('click',function(){var cb=CONFIRM_CB;CONFIRM_CB=null;$('#confirmDlg').close();if(cb)cb(true);});
+    $('#confirmDlg').addEventListener('close',function(){var cb=CONFIRM_CB;CONFIRM_CB=null;if(cb)cb(false);});
+    $('#moveHere').addEventListener('click',function(){
+      var dest=realId(MV.at),name=MV.path.length?MV.path[MV.path.length-1].name:'My Drive',hb=$('#moveHere');
+      hb.disabled=true;doMove(MV.items,dest,name).then(function(){$('#moveDlg').close();},function(e){$('#moveErr').textContent=errText(e,'move that');$('#moveErr').hidden=false;hb.disabled=false;});
+    });
+    $('#moveDlg').addEventListener('close',function(){MV.gen++;});
+    setKids($('#vDl'),[icon('download'),h('span',{class:'lbl',text:'Download'})]);$('#vDl').setAttribute('aria-label','Download');
+    setKids($('#vDrive'),[icon('drivelink'),h('span',{class:'lbl',text:'Open in Drive'})]);$('#vDrive').setAttribute('aria-label','Open in Google Drive');
+    setKids($('#vClose'),[icon('x')]);setKids($('#vPrev'),[icon('left')]);setKids($('#vNext'),[icon('right')]);
+    $('#vDl').addEventListener('click',function(){var f=V.list[V.i];if(f)downloadMany([f]);});
+    $('#vClose').addEventListener('click',closeViewer);
+    $('#vPrev').addEventListener('click',function(){stepV(-1);});
+    $('#vNext').addEventListener('click',function(){stepV(1);});
+    document.addEventListener('keydown',function(e){
+      if($('#viewer').open){if(e.key==='ArrowRight'){e.preventDefault();stepV(1);}else if(e.key==='ArrowLeft'){e.preventDefault();stepV(-1);}return;}
+      if(document.querySelector('dialog[open]'))return;
+      var typing=/^(INPUT|SELECT|TEXTAREA)$/.test((e.target&&e.target.tagName)||'')&&e.target.type!=='checkbox';
+      if(e.key==='Escape'&&S.selecting){endSelect();render();return;}
+      if(typing)return;
+      if(e.key==='/'&&signedIn()){e.preventDefault();$('#q').focus();return;}
+      if((e.key==='Delete'||e.key==='Backspace')&&S.selecting&&selected().length&&S.route.view!=='trash'){e.preventDefault();trashItems(selected());}
+    });
+  }
+
+  wire();paintTheme();
+  S.route=parseHash();
+  render();
+  if(configured()&&signedIn())afterSignIn();
+})();
+</script>
+</body>
+</html>
