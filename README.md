@@ -328,8 +328,10 @@ is a change to your Drive, so the Drive website and app always agree with it.
 | Tidy | Rename, move (a folder picker), star, delete; **Select** to do any of these to many items at once |
 | Download | Files as they are; Google Docs, Sheets, Slides and Drawings as PDF |
 
-**Deleting only ever moves things to Drive's Trash.** Every delete shows *Undo* for a few seconds, a folder asks
-first and says how many items are inside, and the Trash view has *Restore*. Google empties Trash after 30 days;
+**Deleting only ever moves things to Drive's Trash, and it always asks first.** The question names the file (or
+says how many items are going, and for a folder how many are inside it), and **Cancel** has the focus, so Enter or
+a stray tap never deletes by accident; Esc cancels too. That holds for the menu, the selection bar and the Delete
+key alike. After a yes, *Undo* shows for a few seconds, and the Trash view has *Restore*. Google empties Trash after 30 days;
 Shoebox itself never deletes anything permanently, and `tools/build-site.py` refuses to build the page if a
 `DELETE` request or an *Empty Trash* call ever appears in it.
 

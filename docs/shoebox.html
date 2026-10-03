@@ -360,7 +360,7 @@ dialog::backdrop{background:rgba(12,10,8,.5)}
 <dialog id="confirmDlg" aria-labelledby="confirmText"><div class="dlg">
   <div class="dlgh"><span>Move to Trash?</span><button class="btn quiet sm" type="button" data-close aria-label="Close">&#x2715;</button></div>
   <p id="confirmText" style="margin:0"></p>
-  <div class="end"><button class="btn quiet" type="button" data-close>Cancel</button><button class="btn danger pri" id="confirmYes" type="button">Move to Trash</button></div>
+  <div class="end"><button class="btn quiet" id="confirmNo" type="button" data-close autofocus>Cancel</button><button class="btn danger pri" id="confirmYes" type="button">Move to Trash</button></div>
 </div></dialog>
 
 <dialog id="viewer" aria-label="Preview">
@@ -955,7 +955,7 @@ dialog::backdrop{background:rgba(12,10,8,.5)}
     });
   }
 
-  /* ---------- delete: always to Drive's Trash, with Undo ---------- */
+  /* ---------- delete: every delete asks first, then goes to Drive's Trash, with Undo ---------- */
   var CONFIRM_CB=null;
   function confirmBox(text){return new Promise(function(res){$('#confirmText').textContent=text;CONFIRM_CB=res;$('#confirmDlg').showModal();});}
   function countInside(f){
@@ -964,7 +964,9 @@ dialog::backdrop{background:rgba(12,10,8,.5)}
   function trashItems(list){
     var folders=list.filter(function(f){return isFolder(f)&&f.mimeType!==SHORTCUT;});
     var ask;
-    if(!folders.length)ask=Promise.resolve(true);
+    if(!folders.length)ask=confirmBox(list.length===1
+      ?'Move “'+list[0].name+'” to Drive\'s Trash? You can restore it from Trash for 30 days.'
+      :'Move '+plural(list.length,'item')+' to Drive\'s Trash? You can restore them from Trash for 30 days.');
     else if(list.length===1)ask=countInside(folders[0]).then(function(n){
       var inside=n===0?'It is empty.':n===1?'It holds 1 item, which goes with it.':'It holds '+n+' items, which go with it.';
       return confirmBox('Move “'+folders[0].name+'” to Drive\'s Trash? '+inside+' You can restore it from Trash for 30 days.');
