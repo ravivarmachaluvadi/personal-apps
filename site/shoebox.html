@@ -810,11 +810,11 @@ dialog::backdrop{background:rgba(12,10,8,.5)}
   }
 
   /* ---------- thumbnails ----------
-     Google says a private file's thumbnailLink needs a signed-in request, and whether a browser may make
-     one directly is not documented. So three ways are tried in turn: fetch the link with the token, load
-     it as a plain image, or download the photo itself and shrink it here. A way that keeps failing before
-     it ever works is skipped for the rest of the visit. Only thumbnails near the screen are fetched. */
-  var TH={cache:{},ok:[false,false,false],bad:[0,0,0],q:[],busy:0,io:null};
+     Google's thumbnailLink loads as a plain image for the signed-in owner (checked on the real Drive on
+     2026-10-03; fetching it with the token is refused by Google's CORS rules, so that is not tried). If the
+     link fails, the photo itself is downloaded and shrunk here. A way that keeps failing before it ever works
+     is skipped for the rest of the visit. Only thumbnails near the screen are fetched. */
+  var TH={cache:{},ok:[false,false],bad:[0,0],q:[],busy:0,io:null};
   function thumbKey(f){return f.id+'@'+f.modifiedTime;}
   function setImg(img,url){img.onload=function(){img.classList.add('ok');};img.src=url;}
   function wantThumb(f,img){
@@ -831,7 +831,6 @@ dialog::backdrop{background:rgba(12,10,8,.5)}
       (function(im){thumbFor(im._f).then(function(url){setImg(im,url);},function(){}).then(function(){TH.busy--;pumpThumbs();});})(img);
     }
   }
-  function byBearer(f,link){return fetch(link,{headers:{Authorization:'Bearer '+auth.token},referrerPolicy:'no-referrer'}).then(function(r){if(!r.ok)throw 0;return r.blob();}).then(function(b){if(!/^image\//.test(b.type))throw 0;return URL.createObjectURL(b);});}
   function byImg(f,link){return new Promise(function(res,rej){var im=new Image();im.referrerPolicy='no-referrer';im.onload=function(){res(link);};im.onerror=function(){rej();};im.src=link;});}
   function canShrink(f){return /^image\/(jpeg|png|gif|webp|bmp|avif)$/.test(effMime(f))&&(+f.size||0)<=30*1024*1024;}
   function byMedia(f){
@@ -845,10 +844,10 @@ dialog::backdrop{background:rgba(12,10,8,.5)}
   function thumbFor(f){
     var key=thumbKey(f);if(TH.cache[key])return Promise.resolve(TH.cache[key]);
     var link=f.thumbnailLink?String(f.thumbnailLink).replace(/=s\d+$/,'=s480'):'';
-    var ways=[link?byBearer:null,link?byImg:null,canShrink(f)?byMedia:null],i=0;
+    var ways=[link?byImg:null,canShrink(f)?byMedia:null],i=0;
     function next(){
-      while(i<3&&(!ways[i]||(!TH.ok[i]&&TH.bad[i]>=3)))i++;
-      if(i>=3)return Promise.reject();
+      while(i<2&&(!ways[i]||(!TH.ok[i]&&TH.bad[i]>=3)))i++;
+      if(i>=2)return Promise.reject();
       var w=i++;
       return ways[w](f,link).then(function(url){TH.ok[w]=true;TH.cache[key]=url;return url;},function(){TH.bad[w]++;return next();});
     }
@@ -1178,14 +1177,14 @@ dialog::backdrop{background:rgba(12,10,8,.5)}
   });
 
   /* ---------- viewer ---------- */
-  var V={list:[],i:0,gen:0,url:null,popped:false};
+  var V={list:[],i:0,gen:0,url:null,popped:false,gone:true};
   function openViewer(id){
     V.list=S.items.filter(previewable);V.i=-1;
     for(var i=0;i<V.list.length;i++)if(V.list[i].id===id)V.i=i;
     if(V.i<0)return;
     /* an entry in the history, so a phone's Back button closes the viewer instead of leaving the folder */
     try{history.pushState({shoebox:'viewer'},'');}catch(e){}
-    $('#viewer').showModal();showV();
+    V.gone=false;$('#viewer').showModal();showV();
   }
   function freeV(){if(V.url){URL.revokeObjectURL(V.url);V.url=null;}}
   function cantShow(b,f,msg){
@@ -1238,13 +1237,18 @@ dialog::backdrop{background:rgba(12,10,8,.5)}
     });
   }
   function stepV(d){if(V.list.length<2)return;V.i=(V.i+d+V.list.length)%V.list.length;showV();}
-  function closeViewer(){if($('#viewer').open)$('#viewer').close();}
-  $('#viewer').addEventListener('close',function(){
+  /* runs once per opening, whether Close, Esc or Back shut the viewer. The button does not wait for the
+     dialog's close event: Chrome holds that event back while the tab is hidden, and two late ones each
+     stepped the history back (seen on 2026-10-04) */
+  function viewerGone(){
+    if(V.gone)return;V.gone=true;
     V.gen++;freeV();clear($('#vBody'));
     if(V.popped){V.popped=false;return;}
     if(history.state&&history.state.shoebox==='viewer')history.back();
-  });
-  window.addEventListener('popstate',function(){if($('#viewer').open){V.popped=true;$('#viewer').close();}});
+  }
+  function closeViewer(){if($('#viewer').open)$('#viewer').close();viewerGone();}
+  $('#viewer').addEventListener('close',viewerGone);
+  window.addEventListener('popstate',function(){if($('#viewer').open){V.popped=true;$('#viewer').close();viewerGone();}});
   (function swipe(){
     var x0=null,y0=0,b=$('#vBody');
     b.addEventListener('pointerdown',function(e){if(e.pointerType==='mouse')return;x0=e.clientX;y0=e.clientY;});

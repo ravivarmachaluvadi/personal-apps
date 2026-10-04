@@ -111,7 +111,8 @@ class FakeDrive:
     def __init__(self):
         self.files, self.n, self.calls, self.uploads, self.deletes, self.dead, self.seen = {}, 0, [], [], [], set(), set()
         self.sessions, self.exports, self.media = {}, [], []
-        self.flags = {'thumb_bearer': True, 'thumb_img': True, 'resumable': 'ok'}
+        self.flags = {'thumb_img': True, 'resumable': 'ok'}
+        self.bearer_thumbs = 0
         self.root = self.add('My Drive', FOLDER, None, fid='root-id')
         fam = self.add('Family', FOLDER, self.root)
         docs = self.add('Documents', FOLDER, self.root)
@@ -269,15 +270,13 @@ class FakeDrive:
 
     def thumb(self, route, req):
         if req.method == 'OPTIONS':
-            return self.reply(route, 204, cors=self.flags['thumb_bearer'])
+            return self.reply(route, 204)
         fid = req.url.split('/fake-thumb/')[1].split('=')[0]
         f = self.files.get(fid)
         body = f['content'] if f and f['mimeType'].startswith('image/') else png(40, 52, (200, 200, 210))
-        bearer = bool(req.headers.get('authorization'))
-        if bearer:
-            if not self.flags['thumb_bearer']:   # what a CORS refusal looks like to the page: a failed request
-                return route.abort('failed')
-            return self.reply(route, 200, body, 'image/png')
+        if req.headers.get('authorization'):   # the real Google refuses this (CORS), so the page must not try it
+            self.bearer_thumbs += 1
+            return route.abort('failed')
         if not self.flags['thumb_img']:
             return self.reply(route, 403, b'forbidden', 'text/plain', cors=False)
         return self.reply(route, 200, body, 'image/png', cors=False)
@@ -553,7 +552,7 @@ def main_flow(s):
         check(s.names()[0] == 'Old photos', 'sub-folder first in Family')
         p.wait_for_function("""[...document.querySelectorAll('#list .it[data-kind="image"] img')].length>=3 &&
             [...document.querySelectorAll('#list .it[data-kind="image"] img')].every(i=>i.complete&&i.naturalWidth>0)""", timeout=8000)
-        check(True, 'photo thumbnails load')
+        check(f.bearer_thumbs == 0, 'thumbnails load as plain images, never fetched with the token (%d tries)' % f.bearer_thumbs)
         p.locator('#crumbs [data-id]').first.click()
         s.wait_names(['sunset.png'], ['beach day.png'])
         check(s.crumbs() == ['My Drive'], 'clicking My Drive in the path goes back up')
@@ -829,7 +828,7 @@ def main_flow(s):
 
 def fallback_flow(s):
     f, p = s.fake, s.page
-    f.flags.update(thumb_bearer=False, thumb_img=False)
+    f.flags.update(thumb_img=False)
 
     def thumbs():
         p.goto(s.base + 'shoebox.html')
