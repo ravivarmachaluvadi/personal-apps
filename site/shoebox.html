@@ -15,7 +15,10 @@
   --accent:#A63F17; --accent-ink:#FFFFFF; --accent-soft:#F8E6DC;
   --good:#2E7D4F; --warn:#8A5A0F; --warn-soft:#FBEBCB;
   --danger:#B42318; --danger-soft:#FBE0DC;
-  --k-folder:#B4730E; --k-image:#6D44B8; --k-pdf:#C2341E; --k-gdoc:#1F6FC5; --k-file:#6A6157;
+  --k-folder:#B4730E;
+  /* one colour per kind of file, so a Sheet never looks like a Doc; each is text-safe (4.5:1) on its label */
+  --t-doc:#1F63B8; --t-sheet:#18703E; --t-slides:#9A5600; --t-pdf:#C2341E; --t-image:#6D44B8; --t-form:#8132A8;
+  --t-video:#0B6E87; --t-audio:#B0245E; --t-archive:#7A5630; --t-code:#3F5873; --t-file:#6A6157;
   --shadow:0 10px 26px rgba(34,28,22,.08);
   color-scheme:light;
 }
@@ -25,7 +28,9 @@
   --accent:#F2945F; --accent-ink:#2A1206; --accent-soft:#3D2619;
   --good:#6BCF8B; --warn:#E2A33B; --warn-soft:#3A2E14;
   --danger:#F27A6B; --danger-soft:#3C1F1B;
-  --k-folder:#E8B04B; --k-image:#B79BF0; --k-pdf:#F2826E; --k-gdoc:#7FB5F0; --k-file:#A0958A;
+  --k-folder:#E8B04B;
+  --t-doc:#7FB5F0; --t-sheet:#6DCB92; --t-slides:#F0B44C; --t-pdf:#F2826E; --t-image:#B79BF0; --t-form:#D69BEE;
+  --t-video:#5CC8DC; --t-audio:#F483B1; --t-archive:#D6AC7C; --t-code:#A3B9D2; --t-file:#A0958A;
   --shadow:0 10px 26px rgba(0,0,0,.35);
   color-scheme:dark;
 }}
@@ -35,7 +40,9 @@
   --accent:#F2945F; --accent-ink:#2A1206; --accent-soft:#3D2619;
   --good:#6BCF8B; --warn:#E2A33B; --warn-soft:#3A2E14;
   --danger:#F27A6B; --danger-soft:#3C1F1B;
-  --k-folder:#E8B04B; --k-image:#B79BF0; --k-pdf:#F2826E; --k-gdoc:#7FB5F0; --k-file:#A0958A;
+  --k-folder:#E8B04B;
+  --t-doc:#7FB5F0; --t-sheet:#6DCB92; --t-slides:#F0B44C; --t-pdf:#F2826E; --t-image:#B79BF0; --t-form:#D69BEE;
+  --t-video:#5CC8DC; --t-audio:#F483B1; --t-archive:#D6AC7C; --t-code:#A3B9D2; --t-file:#A0958A;
   --shadow:0 10px 26px rgba(0,0,0,.35);
   color-scheme:dark;
 }
@@ -121,10 +128,17 @@ body[data-auth="out"] .layout,body[data-auth="none"] .layout{grid-template-colum
 .it[aria-selected="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
 .it .open{display:flex;flex-direction:column;width:100%;border:0;background:none;padding:0;text-align:left;color:inherit;cursor:pointer;font:inherit;border-radius:14px;min-width:0}
 .it .th{display:grid;place-items:center;aspect-ratio:4/3;background:var(--surface-2);border-radius:13px 13px 0 0;overflow:hidden;position:relative;flex:none}
-.it .th svg{width:36px;height:36px}
+.it .th svg{width:40px;height:40px}
 .it .th img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .2s}
 .it .th img.ok{opacity:1}
-.k-folder{color:var(--k-folder)} .k-image{color:var(--k-image)} .k-pdf{color:var(--k-pdf)} .k-gdoc{color:var(--k-gdoc)} .k-file,.k-video{color:var(--k-file)}
+.k-folder{color:var(--k-folder)}
+.t-doc{color:var(--t-doc)} .t-sheet{color:var(--t-sheet)} .t-slides{color:var(--t-slides)} .t-pdf{color:var(--t-pdf)} .t-image{color:var(--t-image)} .t-form{color:var(--t-form)}
+.t-video{color:var(--t-video)} .t-audio{color:var(--t-audio)} .t-archive{color:var(--t-archive)} .t-code{color:var(--t-code)} .t-file{color:var(--t-file)}
+/* a file's tile is tinted with its type's colour and labelled (Excel, Google Sheet, PDF...) in the corner */
+.it:not(.fold) .th{background:color-mix(in srgb,currentColor 8%,var(--surface-2))}
+.it .th.has-ty>svg{margin-bottom:16px}
+.it .ty{position:absolute;left:8px;bottom:8px;z-index:1;max-width:calc(100% - 16px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:2px 8px;border-radius:999px;background:color-mix(in srgb,currentColor 10%,var(--surface));border:1px solid color-mix(in srgb,currentColor 30%,transparent);font:700 11px/1.45 "Plus Jakarta Sans",system-ui,sans-serif;letter-spacing:.01em}
+.it .tyl{display:none}
 .it .txt{padding:8px 11px 10px;display:grid;gap:1px;min-width:0}
 .it .nm{font-weight:600;font-size:13.5px;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
 .it .mt{font:12px "Red Hat Mono",ui-monospace,monospace;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -152,6 +166,11 @@ body.selecting .it.fold .open{padding-left:42px}
 #list.rows .it .th{width:42px;height:42px;aspect-ratio:auto;border-radius:8px;display:grid}
 #list.rows .it.fold .th{background:var(--surface-2)}
 #list.rows .it .th svg{width:22px;height:22px}
+#list.rows .it .th>svg{margin:0}
+#list.rows .it .ty{display:none}
+#list.rows .it .mt{flex:none;width:14em} /* a fixed width, so the type and date columns line up row to row */
+#list.rows .it .tyl{display:block;flex:none;width:9.5em;font:600 12.5px "Plus Jakarta Sans",system-ui,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#list.rows .it.droptarget{box-shadow:inset 0 0 0 2px var(--accent)}
 #list.rows .it .txt{padding:0;display:flex;gap:14px;align-items:baseline;flex:1;min-width:0}
 #list.rows .it .nm{flex:1;-webkit-line-clamp:1}
 #list.rows .it .ck{top:50%;margin-top:-10px;left:13px;opacity:1}
@@ -177,7 +196,22 @@ body.selecting #tray{bottom:92px}
 .up[data-state="failed"] .ups{color:var(--danger);white-space:normal}
 .pbar{height:5px;border-radius:99px;background:var(--line);overflow:hidden}
 .pbar i{display:block;height:100%;background:var(--accent);transition:width .15s}
-#drop{position:fixed;inset:10px;z-index:80;border:3px dashed var(--accent);border-radius:20px;background:color-mix(in srgb,var(--bg) 82%,transparent);display:grid;place-items:center;pointer-events:none;font:700 20px "Plus Jakarta Sans",system-ui,sans-serif;color:var(--accent);text-align:center;padding:20px}
+/* drag-and-drop: a hint above the files (mouse devices only), and while dragging a frame that keeps the
+   files visible, so the folder under the pointer can light up as the place the files will go */
+.drophint{display:flex;align-items:center;gap:10px;width:100%;margin:0 0 14px;padding:9px 14px;border:1.5px dashed var(--line);border-radius:12px;background:none;color:var(--muted);font:500 13.5px/1.4 "Plus Jakarta Sans",system-ui,sans-serif;text-align:left;cursor:pointer;min-height:44px}
+.drophint svg{width:18px;height:18px;flex:none;color:var(--accent)}
+.drophint b{color:var(--text);font-weight:600}
+.drophint:hover,body.dragging .drophint{border-color:var(--accent);color:var(--text)}
+.drophint:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+@media (hover:none) and (pointer:coarse){.drophint{display:none}}
+#drop{position:fixed;inset:8px;z-index:80;border:3px dashed var(--accent);border-radius:20px;background:color-mix(in srgb,var(--accent) 7%,transparent);pointer-events:none;display:flex;justify-content:center;align-items:flex-start;padding:16px}
+#drop.no{border-color:var(--faint)}
+.dpill{display:flex;align-items:center;gap:12px;max-width:min(560px,100%);background:var(--accent);color:var(--accent-ink);border-radius:16px;padding:11px 18px;box-shadow:0 14px 34px rgba(0,0,0,.28);font:700 15.5px/1.3 "Plus Jakarta Sans",system-ui,sans-serif}
+#drop.no .dpill{background:var(--text);color:var(--bg)}
+.dpill svg{width:22px;height:22px;flex:none}
+.dpill span{min-width:0;overflow-wrap:anywhere}
+.dpill small{display:block;font-weight:500;font-size:12.5px;margin-top:2px}
+.it.droptarget{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent);background:var(--accent-soft)}
 
 /* signed out */
 .hero{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px 26px 22px;box-shadow:var(--shadow);max-width:640px}
@@ -270,6 +304,10 @@ dialog::backdrop{background:rgba(12,10,8,.5)}
   .it .txt{padding:6px 8px 8px}
   .it .nm{font-size:12.5px}
   .it .mt{font-size:11px}
+  .it .th svg{width:32px;height:32px}
+  .it .th.has-ty>svg{margin-bottom:14px}
+  .it .ty{left:6px;bottom:6px;max-width:calc(100% - 12px);padding:1px 6px;font-size:10.5px}
+  #list.rows .it .tyl{width:auto;max-width:38%;font-size:11.5px}
   .it .more{width:30px;height:30px;top:4px;right:4px}
   .it .ck{top:7px;left:7px}
   .it.fold .open{flex-direction:column;align-items:flex-start;gap:6px;padding:10px 8px 10px 10px;min-height:0}
@@ -429,6 +467,18 @@ dialog::backdrop{background:rgba(12,10,8,.5)}
     file:'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5',
     pdf:'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h4',
     gdoc:'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 12h6M9 15h6M9 18h4',
+    /* Google's own files are pages with a picture of what is inside; Office files are squares with W, X or P */
+    sheet:'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M8.5 11.5h7V18h-7zM8.5 14.75h7M12 11.5V18',
+    slides:'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M8.5 12h7v5h-7z',
+    form:'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 12.5h.01M11.5 12.5H15M9 16.5h.01M11.5 16.5H15',
+    drawing:'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M12 18.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
+    word:'M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM7 8l2 8 3-6 3 6 2-8',
+    excel:'M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM8 8l8 8M16 8l-8 8',
+    powerpoint:'M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM9.5 17V7H13a3 3 0 0 1 0 6H9.5',
+    text:'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 12h6M9 15h4M9 18h5',
+    code:'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M10 12.5l-2 2.25 2 2.25M14 12.5l2 2.25-2 2.25',
+    archive:'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M10 4.5h.01M11.5 6.5h.01M10 8.5h.01M11.5 10.5h.01M10 13h2v4h-2z',
+    audio:'M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM21 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z',
     video:'M4 5h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zM22 8l-4 3 4 3z',
     star:'M12 3.2l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17.2l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z',
     recent:'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2',
@@ -589,6 +639,40 @@ dialog::backdrop{background:rgba(12,10,8,.5)}
     if(/^video\//.test(m))return 'video';
     if(m.indexOf(GAPPS)===0)return 'gdoc';
     return 'file';
+  }
+  /* what a file is, for people: a name, an icon and a colour, so an Excel file never passes for a Word one.
+     Drive's own type decides; the name's extension only counts when that type says nothing useful (Drive
+     keeps some uploads as application/octet-stream). An empty label shows the extension instead (ZIP, TXT).
+     kindOf above stays the page's working split (what opens, previews, downloads); this is only for showing. */
+  var TYPES=[ /* key, label, long name, icon, colour, by Drive type, by extension */
+    ['gdoc','Google Doc','Google Doc','gdoc','doc',/^application\/vnd\.google-apps\.document$/],
+    ['gsheet','Google Sheet','Google Sheet','sheet','sheet',/^application\/vnd\.google-apps\.spreadsheet$/],
+    ['gslides','Google Slides','Google Slides','slides','slides',/^application\/vnd\.google-apps\.presentation$/],
+    ['gform','Google Form','Google Form','form','form',/^application\/vnd\.google-apps\.form$/],
+    ['gdrawing','Google Drawing','Google Drawing','drawing','image',/^application\/vnd\.google-apps\.drawing$/],
+    ['gfile','Google file','Google file','gdoc','doc',/^application\/vnd\.google-apps\./],
+    ['pdf','PDF','PDF','pdf','pdf',/^application\/pdf$/,/^pdf$/],
+    ['word','Word','Word document','word','doc',/^application\/(msword|vnd\.openxmlformats-officedocument\.wordprocessingml\.|vnd\.ms-word\.)/,/^(docx?|docm|dotx?|dotm)$/],
+    ['excel','Excel','Excel spreadsheet','excel','sheet',/^application\/(vnd\.ms-excel|vnd\.openxmlformats-officedocument\.spreadsheetml\.)/,/^(xlsx?|xlsm|xlsb|xltx?|xltm)$/],
+    ['powerpoint','PowerPoint','PowerPoint presentation','powerpoint','slides',/^application\/(vnd\.ms-powerpoint|vnd\.openxmlformats-officedocument\.presentationml\.)/,/^(pptx?|pptm|ppsx?|potx?)$/],
+    ['odt','','OpenDocument text','gdoc','doc',/^application\/vnd\.oasis\.opendocument\.text/,/^odt$/],
+    ['ods','','OpenDocument spreadsheet','sheet','sheet',/^application\/vnd\.oasis\.opendocument\.spreadsheet/,/^ods$/],
+    ['odp','','OpenDocument presentation','slides','slides',/^application\/vnd\.oasis\.opendocument\.presentation/,/^odp$/],
+    ['csv','CSV','CSV table','sheet','sheet',/^text\/(csv|tab-separated-values)$/,/^(csv|tsv)$/],
+    ['image','','Photo','image','image',/^image\//,/^(jpe?g|png|gif|webp|heic|heif|bmp|tiff?|avif|svg)$/],
+    ['video','Video','Video','video','video',/^video\//,/^(mp4|mov|m4v|webm|avi|mkv|3gp)$/],
+    ['audio','Audio','Audio','audio','audio',/^audio\//,/^(mp3|m4a|wav|aac|ogg|oga|flac|opus)$/],
+    ['archive','','Archive','archive','archive',/^application\/(zip|x-zip-compressed|x-7z-compressed|x-rar-compressed|vnd\.rar|x-tar|gzip|x-gzip|x-bzip2)$/,/^(zip|7z|rar|tar|gz|tgz|bz2)$/],
+    ['code','','Code','code','code',/^(application\/(json|javascript|xml|x-sh|x-python)|text\/(html|css|javascript|xml|x-))/,/^(json|js|mjs|ts|java|kt|py|go|rb|rs|sh|html?|css|xml|ya?ml|sql|c|cpp|h)$/],
+    ['text','','Text file','text','file',/^text\//,/^(txt|md|log|rtf)$/]
+  ];
+  function extOf(name){var m=/\.([a-z0-9]{1,5})$/i.exec(String(name||''));return m?m[1].toLowerCase():'';}
+  function typeOf(f){
+    var m=effMime(f)||'',ext=extOf(f.name),row=null,i;
+    for(i=0;i<TYPES.length&&!row;i++)if(TYPES[i][5].test(m))row=TYPES[i];
+    for(i=0;i<TYPES.length&&!row&&ext;i++)if(TYPES[i][6]&&TYPES[i][6].test(ext))row=TYPES[i];
+    row=row||['file','','File','file','file'];
+    return {key:row[0],label:row[1]||(ext?ext.toUpperCase():row[2]),long:row[2],icon:row[3],tone:row[4]};
   }
   function previewable(f){var k=kindOf(f);return k==='image'||k==='pdf';}
   function itemById(id){for(var i=0;i<S.items.length;i++)if(S.items[i].id===id)return S.items[i];return null;}
@@ -753,7 +837,14 @@ dialog::backdrop{background:rgba(12,10,8,.5)}
     if(r.view==='starred')return h('div',{class:'empty'},[h('b',{text:f?'No starred '+f:'Nothing starred yet'}),'Star a folder from its ⋮ menu to keep it one tap away. Stars show in Google Drive too.']);
     if(r.view==='recent')return h('div',{class:'empty'},[h('b',{text:'No '+(f||'files')+' yet'})]);
     if(r.view==='trash')return h('div',{class:'empty'},[h('b',{text:'Trash is empty'})]);
-    return h('div',{class:'empty'},[h('b',{text:f?'No '+f+' in this folder':'This folder is empty'}),'Drop files here, or use Upload.']);
+    return h('div',{class:'empty'},[h('b',{text:f?'No '+f+' in this folder':'This folder is empty'}),'Drag files here to upload them.',
+      h('div',{style:'margin-top:12px'},[h('button',{class:'btn pri sm',type:'button',onclick:function(){$('#upInput').click();}},[icon('upload'),h('span',{text:'Choose files'})])])]);
+  }
+  function hereName(){return S.crumbs&&S.crumbs.length?S.crumbs[S.crumbs.length-1].name:'My Drive';}
+  /* drag-and-drop works anywhere on the page; this line is there so you know it does (hidden on touch screens) */
+  function dropHint(){
+    return h('button',{type:'button',id:'dropHint',class:'drophint',onclick:function(){$('#upInput').click();}},[icon('upload'),
+      h('span',null,[h('b',{text:'Drag files here'}),' to upload them to “'+hereName()+'”, or drop them on a folder to put them inside it. Or click to choose files.'])]);
   }
   var moreIO=null;
   function renderMain(){
@@ -769,6 +860,7 @@ dialog::backdrop{background:rgba(12,10,8,.5)}
     }
     if(S.loading&&!S.items.length){m.appendChild(h('div',{class:'loading',text:'Loading…'}));return;}
     if(!S.items.length){m.appendChild(emptyState());return;}
+    if(r.view==='drive')m.appendChild(dropHint());
     var list=h('div',{id:'list',class:S.view==='rows'?'rows':'grid',role:'list'});
     var folders=S.items.filter(isFolder),files=S.items.filter(function(f){return !isFolder(f);});
     var both=folders.length&&files.length;
@@ -793,15 +885,16 @@ dialog::backdrop{background:rgba(12,10,8,.5)}
     return [s,fmtDate(f.modifiedTime)].filter(Boolean).join(' · ');
   }
   function itemEl(f){
-    var k=kindOf(f),sel=!!S.sel[f.id];
-    var th=h('span',{class:'th k-'+k},[icon(k==='video'?'video':k)]);
+    var k=kindOf(f),sel=!!S.sel[f.id],ty=k==='folder'?null:typeOf(f),chip=ty&&k!=='image'; /* a photo's thumbnail speaks for itself */
+    var th=h('span',{class:'th '+(ty?'t-'+ty.tone:'k-folder')+(chip?' has-ty':'')},[icon(ty?ty.icon:'folder')]);
     if((k==='image'||k==='pdf')&&f.mimeType!==SHORTCUT&&(f.thumbnailLink||k==='image')){
       var img=h('img',{alt:'',decoding:'async',referrerpolicy:'no-referrer'});
       th.appendChild(img);wantThumb(f,img);
     }
-    var el=h('div',{class:'it'+(k==='folder'?' fold':''),role:'listitem','data-id':f.id,'data-name':f.name,'data-kind':k,'data-starred':f.starred?'1':'0','aria-selected':sel?'true':'false'},[
+    if(chip)th.appendChild(h('span',{class:'ty',text:ty.label}));
+    var el=h('div',{class:'it'+(k==='folder'?' fold':''),role:'listitem','data-id':f.id,'data-name':f.name,'data-kind':k,'data-type':ty?ty.key:'folder','data-starred':f.starred?'1':'0','aria-selected':sel?'true':'false'},[
       h('input',{type:'checkbox',class:'ck','aria-label':'Select '+f.name,checked:sel,onchange:function(ev){toggleSel(f.id,ev.target.checked);}}),
-      h('button',{class:'open',type:'button',title:f.name,onclick:function(){onOpen(f.id);}},[th,h('span',{class:'txt'},[h('span',{class:'nm',text:f.name}),h('span',{class:'mt',text:metaText(f)})])]),
+      h('button',{class:'open',type:'button',title:f.name,onclick:function(){onOpen(f.id);}},[th,h('span',{class:'txt'},[h('span',{class:'nm',text:f.name}),ty?h('span',{class:'tyl t-'+ty.tone,text:ty.label}):null,h('span',{class:'mt',text:metaText(f)})])]),
       f.starred?h('span',{class:'star',title:'Starred'},[icon('star')]):null,
       h('button',{class:'more',type:'button','aria-label':'More for '+f.name,title:'More',onclick:function(ev){ev.stopPropagation();openMenu(f.id);}},[icon('more')])
     ]);
@@ -902,7 +995,7 @@ dialog::backdrop{background:rgba(12,10,8,.5)}
     var f=itemById(id);if(!f)return;MENU_ID=id;
     var k=kindOf(f),trash=S.route.view==='trash',acts=$('#menuActs');
     $('#menuName').textContent=f.name;
-    setKids($('#menuFacts'),[h('span',{text:({folder:'Folder',image:'Photo',pdf:'PDF',gdoc:'Google file',video:'Video',file:'File'})[k]+(f.size!=null?' · '+fmtSize(f.size):'')}),h('span',{text:'Changed '+fmtDate(f.modifiedTime)})]);
+    setKids($('#menuFacts'),[h('span',{text:(k==='folder'?'Folder':typeOf(f).long)+(f.size!=null?' · '+fmtSize(f.size):'')}),h('span',{text:'Changed '+fmtDate(f.modifiedTime)})]);
     clear(acts);
     function a(act,ic,label,fn,cls){acts.appendChild(h('button',{type:'button','data-act':act,class:cls||null,onclick:function(){$('#menuDlg').close();var cur=itemById(id);if(cur)fn(cur);}},[icon(ic),h('span',{text:label})]));}
     if(trash){a('restore','restore','Restore',function(x){restore([x]);});}
@@ -1067,10 +1160,11 @@ dialog::backdrop{background:rgba(12,10,8,.5)}
   /* ---------- upload ---------- */
   var UP={list:[],active:0,resumable:true,raf:0};
   function canUpload(){return signedIn()&&S.route.view==='drive';}
-  function enqueue(files){
-    if(!canUpload()){toast('Open a folder in My Drive to upload into it.');return;}
-    var parent=realId(S.route.id),pname=(S.crumbs&&S.crumbs.length?S.crumbs[S.crumbs.length-1].name:'My Drive');
-    files.forEach(function(file){UP.list.push({file:file,name:file.name,parent:parent,pname:pname,state:'waiting',loaded:0,total:file.size,xhr:null,msg:''});});
+  /* to: {id, name} of the folder to upload into; without it, the folder on screen */
+  function enqueue(files,to){
+    to=to||(canUpload()?{id:realId(S.route.id),name:hereName()}:null);
+    if(!to){toast('Open a folder in My Drive to upload into it.');return;}
+    files.forEach(function(file){UP.list.push({file:file,name:file.name,parent:to.id,pname:to.name,state:'waiting',loaded:0,total:file.size,xhr:null,msg:''});});
     renderTray();pumpUploads();
   }
   function pumpUploads(){
@@ -1156,24 +1250,52 @@ dialog::backdrop{background:rgba(12,10,8,.5)}
       ]));
     });
   }
-  var dragN=0;
+  /* drag-and-drop: files dropped anywhere go into the folder on screen; dropped on a folder's tile, into that
+     folder (in any view but Trash). The tile under the pointer lights up and the banner names the destination. */
+  var DRAG={n:0,el:null,key:null};
   function hasFiles(e){var t=e.dataTransfer&&e.dataTransfer.types;return !!t&&Array.prototype.indexOf.call(t,'Files')>=0;}
+  function dropTarget(node){
+    var el=node&&node.closest?node.closest('#list .it.fold'):null,f=el&&S.route.view!=='trash'?itemById(el.getAttribute('data-id')):null;
+    /* a shortcut's own capabilities say nothing about the folder it points to, so only real folders are checked */
+    if(f&&isFolder(f)&&!(f.mimeType!==SHORTCUT&&f.capabilities&&f.capabilities.canAddChildren===false))return {el:el,id:effId(f),name:f.name};
+    return canUpload()?{el:null,id:realId(S.route.id),name:hereName()}:null;
+  }
+  function showDrop(to){
+    if(DRAG.el&&(!to||DRAG.el!==to.el))DRAG.el.classList.remove('droptarget');
+    DRAG.el=to&&to.el;if(DRAG.el)DRAG.el.classList.add('droptarget');
+    var d=$('#drop'),key=to?to.id:'';
+    if(!d.hidden&&DRAG.key===key)return;
+    DRAG.key=key;
+    var orFolder=!(to&&to.el)&&S.route.view!=='trash'&&S.items.some(isFolder);
+    setKids(d,[h('div',{class:'dpill'},[icon('upload'),h('span',null,[
+      h('b',{text:to?'Drop to upload into “'+to.name+'”':'Open a folder in My Drive to upload into it'}),
+      orFolder?h('small',{text:'Or drop on a folder to put the files inside it'}):null])])]);
+    d.classList.toggle('no',!to);d.hidden=false;document.body.classList.add('dragging');
+  }
+  function hideDrop(){
+    DRAG.n=0;DRAG.key=null;if(DRAG.el)DRAG.el.classList.remove('droptarget');DRAG.el=null;
+    $('#drop').hidden=true;document.body.classList.remove('dragging');
+  }
   document.addEventListener('dragenter',function(e){
-    if(!hasFiles(e)||!signedIn())return;e.preventDefault();dragN++;
-    var d=$('#drop');setKids(d,[canUpload()?'Drop to upload into “'+(S.crumbs&&S.crumbs.length?S.crumbs[S.crumbs.length-1].name:'My Drive')+'”':'Open a folder in My Drive to upload into it']);d.hidden=false;
+    if(!hasFiles(e)||!signedIn())return;e.preventDefault();DRAG.n++;showDrop(dropTarget(e.target));
   });
-  document.addEventListener('dragover',function(e){if(!hasFiles(e))return;e.preventDefault();e.dataTransfer.dropEffect=canUpload()?'copy':'none';});
-  document.addEventListener('dragleave',function(e){if(!hasFiles(e))return;dragN=Math.max(0,dragN-1);if(!dragN)$('#drop').hidden=true;});
+  document.addEventListener('dragover',function(e){
+    if(!hasFiles(e))return;e.preventDefault();
+    var to=signedIn()?dropTarget(e.target):null;e.dataTransfer.dropEffect=to?'copy':'none';
+    if(signedIn())showDrop(to);
+  });
+  document.addEventListener('dragleave',function(e){if(!hasFiles(e))return;DRAG.n=Math.max(0,DRAG.n-1);if(!DRAG.n)hideDrop();});
   document.addEventListener('drop',function(e){
-    if(!hasFiles(e))return;e.preventDefault();dragN=0;$('#drop').hidden=true;
-    if(!canUpload()){toast('Open a folder in My Drive to upload into it.');return;}
+    if(!hasFiles(e))return;e.preventDefault();
+    var to=signedIn()?dropTarget(e.target):null;hideDrop();
+    if(!to){toast('Open a folder in My Drive to upload into it.');return;}
     var items=e.dataTransfer.items,files=[],dirs=0;
     for(var i=0;i<e.dataTransfer.files.length;i++){
       var en=items&&items[i]&&items[i].webkitGetAsEntry?items[i].webkitGetAsEntry():null;
       if(en&&en.isDirectory)dirs++;else files.push(e.dataTransfer.files[i]);
     }
     if(dirs)toast('Folders can\'t be uploaded yet; drop the files inside them instead.');
-    if(files.length)enqueue(files);
+    if(files.length)enqueue(files,to);
   });
 
   /* ---------- viewer ---------- */

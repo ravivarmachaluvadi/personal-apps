@@ -17,6 +17,22 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HEADED = '--headed' in sys.argv
 FOLDER = 'application/vnd.google-apps.folder'
 GDOC = 'application/vnd.google-apps.document'
+OOXML = 'application/vnd.openxmlformats-officedocument.'
+# Papers/ holds one file of each kind the page must tell apart: name -> (mimeType, data-type, tile label, menu wording)
+PAPERS = {
+    'Minutes': (GDOC, 'gdoc', 'Google Doc', 'Google Doc'),
+    'Budget': ('application/vnd.google-apps.spreadsheet', 'gsheet', 'Google Sheet', 'Google Sheet'),
+    'Pitch': ('application/vnd.google-apps.presentation', 'gslides', 'Google Slides', 'Google Slides'),
+    'Survey': ('application/vnd.google-apps.form', 'gform', 'Google Form', 'Google Form'),
+    'Letter.docx': (OOXML + 'wordprocessingml.document', 'word', 'Word', 'Word document'),
+    'Accounts.xlsx': (OOXML + 'spreadsheetml.sheet', 'excel', 'Excel', 'Excel spreadsheet'),
+    'Old.xls': ('application/octet-stream', 'excel', 'Excel', 'Excel spreadsheet'),   # Drive said nothing: the name decides
+    'Talk.pptx': (OOXML + 'presentationml.presentation', 'powerpoint', 'PowerPoint', 'PowerPoint presentation'),
+    'contacts.csv': ('text/csv', 'csv', 'CSV', 'CSV table'),
+    'photos.zip': ('application/zip', 'archive', 'ZIP', 'Archive'),
+    'readme.txt': ('text/plain', 'text', 'TXT', 'Text file'),
+    'Report.pdf': ('application/pdf', 'pdf', 'PDF', 'PDF'),
+}
 FAILS, PASSES = [], [0]
 SECTION = ['']
 
@@ -131,6 +147,9 @@ class FakeDrive:
         self.add('tax 2025.pdf', 'application/pdf', docs, pdf('Tax'))
         for i in range(1, 131):
             self.add('file %03d.txt' % i, 'text/plain', bulk, b'x' * i)
+        papers = self.add('Papers', FOLDER, self.root)
+        for name, (mime, _, _, _) in PAPERS.items():
+            self.add(name, mime, papers, b'' if mime.startswith('application/vnd.google-apps') else pdf(name) if mime == 'application/pdf' else b'p' * 40)
         r = self.add('old receipt.pdf', 'application/pdf', self.root, pdf('Receipt'))
         self.files[r]['trashed'] = self.files[r]['explicitlyTrashed'] = True
         self.ids = {f['name']: f['id'] for f in self.files.values()}
@@ -809,6 +828,90 @@ def main_flow(s):
         check(p.evaluate("getComputedStyle(document.body).backgroundColor") == after, 'theme survives a reload (and so does the sign-in and folder)')
         p.locator('#themeBtn').click()
 
+    def file_types():
+        s.go_root()
+        s.wait_names(['Family', 'sunset.png'])
+        check(not s.item('Family').locator('.ty').count(), 'a folder carries no type label')
+        check(not s.item('sunset.png').locator('.ty').count(), 'a photo\'s thumbnail is not covered by a type label')
+        s.open('Papers')
+        s.wait_names(list(PAPERS))
+        got = p.evaluate("""()=>[...document.querySelectorAll('#list .it')].map(e=>{var c=e.querySelector('.th .ty');
+            return [e.dataset.name,e.dataset.type||'',c?c.textContent.trim():'',!!c&&c.getBoundingClientRect().width>0];})""")
+        rows = {g[0]: g[1:] for g in got}
+        for name, (_, key, label, _) in PAPERS.items():
+            r = rows.get(name, ['', '', False])
+            check(r[0] == key, '%s is typed %r (got %r)' % (name, key, r[0]))
+            check(r[1] == label and r[2], '%s shows a visible %r label on its tile (got %r, visible=%s)' % (name, label, r[1], r[2]))
+        look = p.evaluate("""(ns)=>ns.map(n=>{var t=document.querySelector('#list .it[data-name="'+n+'"] .th');
+            return [getComputedStyle(t).color,t.querySelector('svg path').getAttribute('d')];})""", ['Budget', 'Minutes', 'Letter.docx', 'Accounts.xlsx'])
+        check(look[0][0] != look[1][0], 'a Google Sheet and a Google Doc have different colours (%s vs %s)' % (look[0][0], look[1][0]))
+        check(look[0][1] != look[1][1], 'a Google Sheet and a Google Doc have different icons')
+        check(look[2][1] != look[1][1], 'a Word file and a Google Doc have different icons')
+        check(look[3][1] != look[0][1], 'an Excel file and a Google Sheet have different icons')
+        for name in ('Accounts.xlsx', 'Budget'):
+            s.item(name).locator('.more').click()
+            facts = p.text_content('#menuFacts') or ''
+            check(PAPERS[name][3] in facts, 'the menu calls %s a %s: %r' % (name, PAPERS[name][3], facts))
+            p.keyboard.press('Escape')
+            p.locator('#menuDlg').wait_for(state='hidden')
+        p.locator('#viewBtn').click()
+        lab = p.evaluate("""()=>{var e=document.querySelector('#list .it[data-name="Accounts.xlsx"] .tyl');
+            return e&&e.getBoundingClientRect().width>0?e.textContent.trim():'';}""")
+        check(lab == 'Excel', 'the list view names the type too (%r)' % lab)
+        p.locator('#viewBtn').click()
+
+    def drag_drop():
+        s.go_root()
+        s.wait_names(['Empty', 'sunset.png'])
+        hint = p.locator('#dropHint')
+        check(hint.is_visible() and 'My Drive' in (hint.text_content() or ''), 'a visible hint says files can be dragged in, to My Drive: %r' % (hint.text_content() if hint.count() else None))
+        if hint.count():
+            with p.expect_file_chooser() as fc:
+                hint.click()
+            fc.value.set_files(files=[{'name': 'picked.txt', 'mimeType': 'text/plain', 'buffer': b'picked'}])
+            s.wait_done('picked.txt')
+            s.wait_names(['picked.txt'])
+            check(f.one('picked.txt')['parents'] == [f.root], 'clicking the hint opens the file picker and uploads into My Drive')
+
+        def drag(target, name):
+            dt = p.evaluate_handle("(n)=>{var d=new DataTransfer();d.items.add(new File(['dropped '+n],n,{type:'text/plain'}));return d;}", name)
+            target.dispatch_event('dragenter', {'dataTransfer': dt})
+            target.dispatch_event('dragover', {'dataTransfer': dt})
+            return dt
+
+        def gone():
+            return not p.locator('#drop').is_visible() and not p.locator('#list .droptarget').count()
+
+        tile = s.item('Empty')
+        dt = drag(tile.locator('.open'), 'into-empty.txt')
+        check(p.locator('#drop').is_visible(), 'dragging files in shows the drop overlay')
+        check('Empty' in (p.text_content('#drop') or ''), 'over a folder, the overlay names that folder: %r' % p.text_content('#drop'))
+        check('droptarget' in (tile.get_attribute('class') or ''), 'the folder under the pointer is highlighted')
+        tile.locator('.open').dispatch_event('drop', {'dataTransfer': dt})
+        s.wait_done('into-empty.txt')
+        check(f.one('into-empty.txt')['parents'] == [f.ids['Empty']], 'dropping on a folder uploads into that folder')
+        check('into-empty.txt' not in s.names(), 'and not into the folder on screen')
+        check(gone(), 'the overlay and the highlight go away after the drop')
+
+        other = s.item('sunset.png').locator('.open')
+        dt = drag(other, 'here.txt')
+        check('My Drive' in (p.text_content('#drop') or ''), 'over a file, the overlay names the folder you are in: %r' % p.text_content('#drop'))
+        check(not p.locator('#list .droptarget').count(), 'no folder is highlighted over a file')
+        other.dispatch_event('drop', {'dataTransfer': dt})
+        s.wait_done('here.txt')
+        s.wait_names(['here.txt'])
+        check(f.one('here.txt')['parents'] == [f.root], 'dropping anywhere else uploads into the folder you are in')
+
+        docs = s.item('Documents').locator('.open')
+        dt = drag(docs, 'never.txt')
+        docs.dispatch_event('dragleave', {'dataTransfer': dt})
+        check(gone(), 'dragging away clears the overlay and the highlight')
+        check(not f.by_name('never.txt'), 'and uploads nothing')
+
+        s.nav('recent')
+        p.wait_for_function("document.querySelectorAll('#list .it').length>0")
+        check(not p.locator('#dropHint').is_visible(), 'no drop hint where nothing can be uploaded (Recent)')
+
     def sign_out():
         p.locator('#signOut').click()
         p.locator('#signin').wait_for()
@@ -820,7 +923,7 @@ def main_flow(s):
                      ('folder trash + restore', folder_trash), ('star', star), ('search', search), ('filters', filters),
                      ('select several', multiselect), ('download', download), ('viewer', viewer), ('load more', paging),
                      ('sort + view', sorting), ('recent', recent), ('expired sign-in', expiry), ('theme', theme),
-                     ('sign out', sign_out)]:
+                     ('file types', file_types), ('drag and drop', drag_drop), ('sign out', sign_out)]:
         run_section(name, fn)
     SECTION[0] = 'whole run'
     check(not f.deletes, 'no DELETE request ever reached Drive: %s' % f.deletes[:3])
@@ -927,6 +1030,22 @@ def layout_flow(browser, base):
                             check(r >= 4.5, '%s on %s is %.2f:1 in %s (needs 4.5)' % (fg, bg, r, scheme))
                     r = ratio(v['--accent-ink'], v['--accent'])
                     check(r >= 4.5, 'button text on accent is %.2f:1 in %s' % (r, scheme))
+                    s.go_root()
+                    s.open('Papers')
+                    s.wait_names(list(PAPERS))
+                    p.wait_for_timeout(200)
+                    check(p.evaluate('document.documentElement.scrollWidth') <= w, 'typed files fit %d px' % w)
+                    # every colour resolved through a canvas, so color-mix() and rgb() come back as plain hex
+                    chips = p.evaluate("""()=>{var cv=document.createElement('canvas');cv.width=cv.height=1;var x=cv.getContext('2d',{willReadFrequently:true});
+                        function hex(c){x.clearRect(0,0,1,1);x.fillStyle='#000';x.fillStyle=c;x.fillRect(0,0,1,1);var d=x.getImageData(0,0,1,1).data;
+                          return '#'+[d[0],d[1],d[2]].map(v=>v.toString(16).padStart(2,'0')).join('');}
+                        return [...document.querySelectorAll('#list .th .ty')].map(e=>{var t=e.closest('.th').getBoundingClientRect(),r=e.getBoundingClientRect(),cs=getComputedStyle(e);
+                          return [e.closest('.it').dataset.name,hex(cs.color),hex(cs.backgroundColor),r.left>=t.left-0.5&&r.right<=t.right+0.5&&r.width>0];});}""")
+                    check(len(chips) == len(PAPERS), 'every file in Papers has a type label (%d of %d)' % (len(chips), len(PAPERS)))
+                    for name, fg, bg, inside in chips:
+                        r = ratio(fg, bg)
+                        check(r >= 4.5, 'the %s label is %.2f:1 in %s (needs 4.5)' % (name, r, scheme))
+                        check(inside, 'the %s label stays inside its tile at %d px' % (name, w))
                 run_section('layout %s %dpx' % (scheme, w), one)
                 for e in s.errors:
                     check(False, 'browser error: ' + e)

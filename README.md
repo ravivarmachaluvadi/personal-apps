@@ -363,9 +363,10 @@ is a change to your Drive, so the Drive website and app always agree with it.
 | Area | What it does |
 |---|---|
 | Browse | My Drive with folders first, a clickable folder path, grid or list, sort by name / newest / largest, *Load more* for big folders. Back and reload keep your place (it is in the address bar) |
+| File types | Every file says what it is — *Excel*, *Word*, *PowerPoint*, *PDF*, *Google Sheet*, *Google Doc*, *Google Slides*, *CSV*, *ZIP* and so on — with its own icon and colour (Office files are a square with W, X or P; Google's own files are a page). Drive's type decides; the file's extension only counts when Drive's type says nothing |
 | Places | **My Drive**, **Starred** (Drive's own stars), **Recent** (newest files first) and **Trash** |
 | Find | Search by name across the whole Drive; *All / Photos / PDFs* filters every view |
-| Upload | The Upload button or drag-and-drop onto the page, several files at once, a progress bar each, Cancel and Retry |
+| Upload | The Upload button, or drag files anywhere onto the page (a dashed line above the files says so on a computer); drop them on a folder's tile to upload straight into that folder. Several files at once, a progress bar each, Cancel and Retry |
 | Look | Tap a photo for full screen (arrow keys or swipe for the next); PDFs open inside the page |
 | Tidy | Rename, move (a folder picker), star, delete; **Select** to do any of these to many items at once |
 | Download | Files as they are; Google Docs, Sheets, Slides and Drawings as PDF |
@@ -413,8 +414,9 @@ zip, video playback, offline copies, emptying Trash.
 stub of Google's sign-in script and an in-memory Drive that answers every request the page makes. Any other
 request to a Google host is aborted and reported, so the checker cannot touch your real Drive. It needs Python
 Playwright and Chrome, and internet for one check (PDF.js from cdnjs). It covers browsing, every action above,
-Undo and Restore, both upload routes and their fallbacks, the thumbnail fallbacks, an expired sign-in, the phone
-(390 px) and laptop (1280 px) layouts in both themes, and text contrast.
+Undo and Restore, both upload routes and their fallbacks, dropping files on the page and on a folder, the
+thumbnail fallbacks, the type label of each kind of file, an expired sign-in, the phone (390 px) and laptop
+(1280 px) layouts in both themes, and text contrast (type labels included).
 
 ## Sign-in details worth knowing
 
