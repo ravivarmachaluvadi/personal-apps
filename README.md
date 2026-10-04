@@ -1,7 +1,7 @@
 # Personal Apps
 
-Eight single-file web apps that keep everything in **your own Google Drive**, not in any app's database. Seven
-of them store their data as one JSON file each; the eighth, **Shoebox**, is a calmer way to look after the photos
+Nine single-file web apps that keep everything in **your own Google Drive**, not in any app's database. Eight
+of them store their data as one JSON file each; the ninth, **Shoebox**, is a calmer way to look after the photos
 and PDFs already in your Drive. Open them from a laptop or a phone, sign in with Google once per device, and every device sees the
 same data. The **Continue with Google** button sits in the header of every page; until you tap it on a device,
 that device keeps its data only in its own browser (the header then says *changes waiting*).
@@ -15,9 +15,10 @@ that device keeps its data only in its own browser (the header then says *change
 | Spine Bell | `docs/spine-bell.html` | `spine-bell.json` — per-device counters and the daily diary |
 | Event Log | `docs/event-log.html` | `event-log.json` — event types, one-off and repeating events, settings |
 | Hack Shelf | `docs/hack-shelf.html` | `hack-shelf.json` — entries (write-up, code, fields, tags), topics, usage, settings |
+| Asana Rounds | `docs/asana-rounds.html` | `asana-rounds.json` — the routine, and each day's morning and evening ticks |
 | Shoebox | `docs/shoebox.html` | none — it works on your Drive's own files and folders ([details](#shoebox-your-photos-and-papers-in-drive)) |
 
-`docs/index.html` is a launcher for all eight. `docs/drive-sync.js` is the shared storage layer; `docs/config.js`
+`docs/index.html` is a launcher for all nine. `docs/drive-sync.js` is the shared storage layer; `docs/config.js`
 holds the one setting you must fill in (the Google OAuth client ID).
 
 ## How the storage works
@@ -63,7 +64,7 @@ Every page starts on **Auto** and follows the device. Where to switch:
 
 | Page | Switch |
 |---|---|
-| Launcher, Keycap Atlas, Dumbbell Dojo, Tally Board, Spine Bell, Shoebox | Sun/moon button in the header |
+| Launcher, Keycap Atlas, Dumbbell Dojo, Tally Board, Spine Bell, Asana Rounds, Shoebox | Sun/moon button in the header |
 | Strongroom | Sun/moon button in the header and on the lock screen, plus Settings → Appearance |
 | Event Log, Hack Shelf | Settings → Appearance (Auto / Light / Dark), saved with the page's data |
 
@@ -313,6 +314,47 @@ does. **Templates** — a command hack, a config snippet, a lesson learned, a fa
 sensitive field — open the editor pre-filled; nothing is saved until you press Save, and a template's topic is
 reused if one with that name exists, otherwise created on save. Reading the Guide writes nothing.
 
+## Asana Rounds: which round, which asana, morning and evening
+
+For a fixed routine done twice a day: the same asanas in order, repeated for a number of rounds. The page answers
+three things at a glance: **which session** (Morning or Evening, and whether each is finished), **which round**
+("Round 3 of 5") and **which asana now and which next**. Tap **Done → next** after each asana.
+
+- **The order is round by round**: all the asanas once, then again from the first, until the rounds are done.
+  "Current" is always the first unticked cell in that order, so a skipped one is never lost.
+- **Undo** takes back the last tick. The grid below is the same routine as a table (asanas down the side, rounds
+  across); tap any cell to tick or untick it by hand.
+- **Morning and Evening** each have their own grid. The page opens on the first one not finished today. When the
+  morning is done it says so, and the big button becomes *Start evening*.
+- **A new day starts empty on its own**, at midnight: progress is stored per date and per session, so nothing has
+  to be reset or deleted. An evening finished after midnight counts as the next day.
+- **Last 14 days** shows two dots per day (top morning, bottom evening): full for all rounds, half for some.
+- **Edit routine** renames, reorders, adds and removes asanas and sets the rounds (1–10). It starts with Left Fold,
+  Right Fold, Left Raise, Right Raise, 45D, SLP BackBend, 2Sd45, Cobra, Sit BackBend and Plank, 5 rounds. Today
+  follows the routine as it is now; past days keep the routine they were done with.
+- **Start this session over** clears only the session on screen, after asking.
+
+### Data shape
+
+| Item | Holds |
+|---|---|
+| `routine` | `poses: [{id, name}]`, `rounds` |
+| `s-<date>-am`, `s-<date>-pm` | `poseIds` and `rounds` the day was done with, `marks` and `off` (cell → time) |
+
+A cell is ticked when its time in `marks` is later than its time in `off`. Because every tick and untick carries
+its own time, the page brings its own merge: two devices' copies of one session combine cell by cell, so a phone
+that had not caught up with Drive cannot wipe ticks made on the laptop (and the other way round). Every other item
+merges like the rest of the apps, newest wins. Sessions older than 30 days are folded down to their totals, so the
+file stays small.
+
+### Testing
+
+`python tools/check-asana-rounds.py` drives the built page and the source page in headless Chrome, signed out,
+with every request off the local server aborted, so it cannot touch your Drive. It covers a full morning, Undo,
+reloads, a pretend next day (`asanarounds.faketoday` in `localStorage`; a banner says when it is set), grid taps,
+the routine editor, Start over, the theme switch, the phone (390 px) and laptop layouts in both themes with text
+contrast, and the two-device merge run on the page's own merge code.
+
 ## Shoebox: your photos and papers in Drive
 
 Shoebox shows your Google Drive as big thumbnails and plain folders. It keeps nothing of its own: every action
@@ -396,7 +438,7 @@ the old `Documents/FromClaude/FromClaude/Personal` folder and are linked from th
 
 ## Repository layout
 
-- `docs/` — the site. `tools/build-site.py` regenerates the eight pages from the sources below; run it after
+- `docs/` — the site. `tools/build-site.py` regenerates the nine pages from the sources below; run it after
   editing any source. It leaves `docs/data/keycap-atlas.json` alone unless the gitignored `seed/export/` folder
   is present. `docs/sw.js` is the notification service worker (not built, edit in place).
 - `keycap-atlas.html`, `strongroom.html` — page sources (artifact-style fragments; the build adds the storage layer
@@ -412,6 +454,9 @@ the old `Documents/FromClaude/FromClaude/Personal` folder and are linked from th
 - `site/hack-shelf.html` — page source, built exactly like Event Log. Because it renders text and code you typed,
   the build refuses every markup-string API (`innerHTML`, `outerHTML`, `insertAdjacentHTML`, `document.write`),
   where Event Log's build refuses only `innerHTML`.
+- `site/asana-rounds.html` — page source, built like Hack Shelf (same ban on markup-string APIs and duplicate
+  functions). The build also asserts the store is opened with the page's own cell-by-cell merge.
+- `tools/check-asana-rounds.py` — Asana Rounds' checker (see *Testing* in the Asana Rounds section).
 - `site/shoebox.html` — page source for Shoebox. It does not use `drive-sync.js`: it has its own full-Drive
   sign-in and calls the Drive API itself, so the build injects only `config.js`. The build also refuses every
   markup-string API, any `DELETE` request or *Empty Trash* call, and a duplicate function declaration.

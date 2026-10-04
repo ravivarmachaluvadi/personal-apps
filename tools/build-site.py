@@ -8,6 +8,8 @@
       (already Drive-native; only the config.js/drive-sync.js tags are injected)
   site/hack-shelf.html                ->  docs/hack-shelf.html
       (Drive-native too; same injection, plus a ban on every markup-string API)
+  site/asana-rounds.html              ->  docs/asana-rounds.html
+      (Drive-native too; same injection and the same ban on markup-string APIs)
   site/shoebox.html                   ->  docs/shoebox.html
       (its own full-Drive sign-in; only config.js is injected, and any DELETE request is refused)
   seed/export/keycap/shortcuts/*.json ->  docs/data/keycap-atlas.json (starter set)
@@ -322,6 +324,22 @@ _dupes = sorted({n for n in _decls if _decls.count(n) > 1})
 assert not _dupes, 'duplicate function declarations in hack shelf (the later one silently wins): ' + ', '.join(_dupes)
 wr('docs/hack-shelf.html', hs)
 
+# ---------------------------------------------------------------- Asana Rounds
+# Drive-native and built like Hack Shelf, in its own block. It brings its own merge (ticks and
+# unticks combine cell by cell), so the store must be opened with it.
+ar = rd('site/asana-rounds.html')
+ar = rep(ar, '<title>Asana Rounds</title>',
+         '<title>Asana Rounds</title>\n<script src="config.js"></script>\n<script src="drive-sync.js"></script>')
+assert "file:'asana-rounds.json'" in ar, 'anchor not found: asana-rounds Drive store'
+assert "cacheKey:'asanarounds.doc'" in ar, 'anchor not found: asana-rounds cache key'
+assert 'merge:mergeDocs' in ar, 'asana rounds must open its store with its own cell-by-cell merge'
+for _api in ('innerHTML', 'outerHTML', 'insertAdjacentHTML', 'document.write'):
+    assert _api not in ar, 'asana rounds must build DOM with h(), never ' + _api
+_decls = re.findall(r'^  function ([A-Za-z_$][\w$]*)\s*\(', ar, re.M)
+_dupes = sorted({n for n in _decls if _decls.count(n) > 1})
+assert not _dupes, 'duplicate function declarations in asana rounds (the later one silently wins): ' + ', '.join(_dupes)
+wr('docs/asana-rounds.html', ar)
+
 # ---------------------------------------------------------------- Shoebox
 # A file manager over the whole of Google Drive. It has its own sign-in (the full-Drive scope, with the
 # token under its own key) and calls the Drive API itself, so only config.js is injected: drive-sync.js
@@ -352,6 +370,6 @@ docs.sort(key=lambda d: d.get('order', 0))
 if docs:
     with open(os.path.join(DOCS, 'data', 'keycap-atlas.json'), 'w', encoding='utf-8') as f:
         json.dump({'format': 'keycap-atlas', 'v': 1, 'shortcuts': docs}, f, ensure_ascii=False)
-    print('built docs/: keycap-atlas, strongroom, dumbbell-dojo, tally-board, spine-bell, event-log, hack-shelf, shoebox, data/keycap-atlas.json (%d shortcuts)' % len(docs))
+    print('built docs/: keycap-atlas, strongroom, dumbbell-dojo, tally-board, spine-bell, event-log, hack-shelf, asana-rounds, shoebox, data/keycap-atlas.json (%d shortcuts)' % len(docs))
 else:
-    print('built docs/: keycap-atlas, strongroom, dumbbell-dojo, tally-board, spine-bell, event-log, hack-shelf, shoebox (seed/export absent, data/keycap-atlas.json kept as is)')
+    print('built docs/: keycap-atlas, strongroom, dumbbell-dojo, tally-board, spine-bell, event-log, hack-shelf, asana-rounds, shoebox (seed/export absent, data/keycap-atlas.json kept as is)')

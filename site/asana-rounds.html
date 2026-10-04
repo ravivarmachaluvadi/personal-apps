@@ -1,0 +1,596 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Asana Rounds</title>
+<script>/* the light/dark choice for this page on this device, applied before first paint */try{var pageTheme=JSON.parse(localStorage.getItem('asanarounds.theme'));if(pageTheme==='light'||pageTheme==='dark')document.documentElement.setAttribute('data-theme',pageTheme);}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#ECF0EB; --surface:#FFFFFF; --surface-2:#F3F6F2; --line:#D3DBD5;
+  --text:#1A2320; --muted:#4F5E57; --faint:#56645D;
+  --accent:#246B4E; --accent-ink:#FFFFFF; --accent-soft:#DCEDE3;
+  --good:#22704A; --warn:#8A5A0F; --danger:#B42318;
+  --shadow:0 10px 26px rgba(26,35,32,.07);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111614; --surface:#19201C; --surface-2:#212924; --line:#34403A;
+  --text:#E4ECE7; --muted:#A6B3AC; --faint:#93A099;
+  --accent:#7FD3A6; --accent-ink:#0B2016; --accent-soft:#1E3A2C;
+  --good:#74D49A; --warn:#E2A33B; --danger:#F4826F;
+  --shadow:0 10px 26px rgba(0,0,0,.35);
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#111614; --surface:#19201C; --surface-2:#212924; --line:#34403A;
+  --text:#E4ECE7; --muted:#A6B3AC; --faint:#93A099;
+  --accent:#7FD3A6; --accent-ink:#0B2016; --accent-soft:#1E3A2C;
+  --good:#74D49A; --warn:#E2A33B; --danger:#F4826F;
+  --shadow:0 10px 26px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+/* no scroll anchoring: whole sections are redrawn on every tap (see the other pages) */
+body *{overflow-anchor:none}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 Lexend,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+#app{max-width:760px;margin:0 auto;padding:18px 16px 64px}
+header.top{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
+h1{font-weight:700;font-size:clamp(24px,5vw,32px);letter-spacing:-.02em;margin:0;line-height:1.2}
+.datel{color:var(--muted);font-size:14px}
+.headright{margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.btn{font:500 14px Lexend,system-ui,sans-serif;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:10px;padding:7px 12px;cursor:pointer;min-height:38px}
+.btn:hover{border-color:var(--accent)}
+.btn.sm{padding:4px 10px;font-size:13px;min-height:32px}
+.btn.quiet{background:transparent;border-color:transparent;color:var(--muted)}
+.btn.danger{color:var(--danger)}
+.btn[disabled]{opacity:.5;cursor:default}
+.btn:focus-visible,.part:focus-visible,.cell:focus-visible,.big:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.icon{width:38px;height:38px;display:inline-grid;place-items:center;padding:0}
+.icon svg{width:17px;height:17px;display:block}
+.banner{margin:12px 0 0;padding:8px 12px;border-radius:10px;background:var(--surface-2);border:1px dashed var(--line);color:var(--muted);font-size:13.5px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;margin-top:12px;box-shadow:var(--shadow)}
+.sect{margin:0 0 10px;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+
+/* morning | evening */
+.parts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.part{display:grid;gap:4px;text-align:left;font:inherit;color:var(--text);background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:10px 12px;cursor:pointer}
+.part[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.part .pl{font-weight:600;font-size:15.5px;display:flex;align-items:center;gap:6px}
+.part .prog{font-size:13px;color:var(--muted)}
+.part .bar{height:6px;border-radius:99px;background:var(--surface-2);overflow:hidden;border:1px solid var(--line)}
+.part .bar i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.part .ok{color:var(--good);font-size:14px}
+
+/* the now card */
+.now{padding:18px 16px 14px}
+.nowtop{display:flex;justify-content:space-between;align-items:baseline;gap:10px;color:var(--muted);font-size:14.5px}
+#nowRound{font-weight:600;color:var(--text)}
+.pose{font-weight:700;font-size:clamp(30px,8vw,40px);line-height:1.15;letter-spacing:-.02em;margin:6px 0 8px;overflow-wrap:anywhere}
+.ladder{display:flex;gap:4px;margin:0 0 8px}
+.ladder i{flex:1;height:6px;border-radius:99px;background:var(--surface-2);border:1px solid var(--line)}
+.ladder i.on{background:var(--accent);border-color:var(--accent)}
+.ladder i.cur{border-color:var(--accent);border-width:2px}
+.next{color:var(--muted);font-size:15px;min-height:1.5em}
+.next b{color:var(--text);font-weight:600}
+.acts{display:flex;gap:10px;margin-top:14px;align-items:stretch}
+.big{flex:1;font:600 19px Lexend,system-ui,sans-serif;background:var(--accent);color:var(--accent-ink);border:0;border-radius:14px;min-height:62px;padding:10px 14px;cursor:pointer;touch-action:manipulation}
+.big:active{transform:translateY(1px)}
+.big[disabled]{opacity:.6;cursor:default}
+.acts .btn{min-width:78px}
+.note{margin:10px 0 0;min-height:1.4em;color:var(--good);font-size:14px;font-weight:500}
+.now[data-state="complete"] .pose{color:var(--good)}
+
+/* the round grid: your table, asanas down the side and rounds across */
+.gridwrap{max-width:100%}
+#grid{width:100%;border-collapse:separate;border-spacing:3px;table-layout:fixed}
+#grid th,#grid td{padding:0}
+#grid thead th{font-size:12px;font-weight:600;color:var(--faint);text-align:center;padding-bottom:2px}
+#grid thead th.corner{text-align:left;width:38%}
+#grid thead th.on{color:var(--accent)}
+#grid .gname{text-align:left;font-weight:500;font-size:14px;padding-right:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#grid tr.curow .gname{color:var(--accent);font-weight:600}
+.cell{width:100%;height:34px;display:grid;place-items:center;border:1px solid var(--line);background:var(--surface-2);border-radius:8px;cursor:pointer;color:var(--accent-ink);font:600 15px Lexend,system-ui,sans-serif;padding:0;touch-action:manipulation}
+.cell[aria-pressed="true"]{background:var(--accent);border-color:var(--accent)}
+.cell.cur{border:2px solid var(--accent);background:var(--accent-soft)}
+.over{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.confirm{display:inline-flex;gap:8px;align-items:center;font-size:13.5px;color:var(--danger);flex-wrap:wrap}
+
+/* last 14 days */
+#history{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:3px;text-align:center}
+#history li{display:grid;gap:3px;justify-items:center;padding:4px 0;border-radius:8px}
+#history li.today{background:var(--surface-2);outline:1px solid var(--line)}
+#history .wd{font-size:11px;color:var(--faint);line-height:1}
+#history .dn{font-size:12.5px;font-weight:600;line-height:1.1}
+.dot{width:13px;height:13px;border-radius:50%;border:2px solid var(--accent);display:inline-block;background:transparent}
+.dot[data-state="full"]{background:var(--accent)}
+.dot[data-state="part"]{background:linear-gradient(to top,var(--accent) 50%,transparent 50%)}
+.dot[data-state="none"]{border-color:var(--line)}
+.legend{margin:10px 0 0;color:var(--muted);font-size:13px;display:flex;gap:6px 14px;flex-wrap:wrap;align-items:center}
+.legend span{display:inline-flex;gap:5px;align-items:center}
+
+/* edit routine */
+details.card>summary{cursor:pointer;font-weight:600;list-style:none;display:flex;align-items:center;gap:8px}
+details.card>summary::-webkit-details-marker{display:none}
+details.card>summary::before{content:'\25B8';color:var(--muted);font-size:14px;transition:transform .15s}
+details.card[open]>summary::before{transform:rotate(90deg)}
+.fld{display:flex;gap:10px;align-items:center;margin:14px 0 10px;flex-wrap:wrap}
+.fld label{font-size:14px;color:var(--muted)}
+input[type=text],select{font:15px Lexend,system-ui,sans-serif;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:7px 10px;min-height:38px;min-width:0}
+#editList{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.prow{display:grid;grid-template-columns:22px minmax(0,1fr) 38px 38px auto;gap:6px;align-items:center}
+.prow .num{color:var(--faint);font-size:13px;text-align:right}
+.prow input{width:100%}
+.prow .btn{padding:0;min-width:38px}
+.prow .rm{padding:0 10px;color:var(--danger)}
+.addrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:10px}
+.hint{color:var(--muted);font-size:13px;margin:10px 0 0}
+.foot{color:var(--muted);font-size:13px;margin:16px 2px 0}
+.foot code{font-size:12.5px;background:var(--surface-2);padding:1px 5px;border-radius:5px}
+@media (max-width:480px){
+  .nowtop{font-size:14px}
+  .acts .btn{min-width:68px}
+  #history .wd{font-size:10px}
+  .dot{width:11px;height:11px}
+}
+</style>
+</head>
+<body>
+<main id="app">
+  <header class="top">
+    <h1>Asana Rounds</h1>
+    <div class="datel" id="dateLine"></div>
+    <div class="headright">
+      <div id="sync"></div>
+      <button class="btn icon" id="themeBtn" type="button" aria-label="Switch theme"></button>
+    </div>
+  </header>
+  <div id="fakeBanner" class="banner" hidden></div>
+
+  <div class="parts" role="group" aria-label="Session">
+    <button class="part" id="partAm" type="button" data-part="am" aria-pressed="true"></button>
+    <button class="part" id="partPm" type="button" data-part="pm" aria-pressed="false"></button>
+  </div>
+
+  <section class="card now" id="nowCard" data-state="go" aria-label="Where you are">
+    <div class="nowtop"><span id="nowRound"></span><span id="nowPos"></span></div>
+    <div class="pose" id="nowPose"></div>
+    <div class="ladder" id="ladder" aria-hidden="true"></div>
+    <div class="next" id="nowNext"></div>
+    <div class="acts">
+      <button class="big" id="doneBtn" type="button">Done &rarr; next</button>
+      <button class="btn" id="undoBtn" type="button">Undo</button>
+    </div>
+    <p class="note" id="doneNote" aria-live="polite"></p>
+  </section>
+
+  <section class="card" aria-labelledby="gridHead">
+    <h2 class="sect" id="gridHead">This session</h2>
+    <div class="gridwrap"><table id="grid"></table></div>
+    <div class="over">
+      <button class="btn quiet danger" id="overBtn" type="button">Start this session over</button>
+      <div class="confirm" id="overAsk" hidden>
+        <span id="overQ"></span>
+        <button class="btn sm danger" id="overYes" type="button">Clear them</button>
+        <button class="btn sm" id="overNo" type="button">Keep them</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="histHead">
+    <h2 class="sect" id="histHead">Last 14 days</h2>
+    <ol id="history"></ol>
+    <p class="legend"><span>Top dot morning, bottom dot evening:</span>
+      <span><i class="dot" data-state="full"></i>all rounds</span>
+      <span><i class="dot" data-state="part"></i>some</span>
+      <span><i class="dot" data-state="none"></i>none</span></p>
+  </section>
+
+  <details class="card" id="editRoutine">
+    <summary>Edit routine</summary>
+    <div class="fld"><label for="roundsSel">Rounds per session</label><select id="roundsSel"></select></div>
+    <ol id="editList"></ol>
+    <div class="addrow">
+      <input type="text" id="addName" maxlength="40" placeholder="Add an asana" aria-label="Name of the asana to add">
+      <button class="btn" id="addBtn" type="button">Add</button>
+    </div>
+    <p class="hint">Changes apply to today and every day after. Past days keep the routine they were done with.</p>
+  </details>
+
+  <p class="foot" id="foot"></p>
+</main>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ---------- small helpers ---------- */
+  function $(s){return document.querySelector(s);}
+  function pad(n){return n<10?'0'+n:''+n;}
+  function keyOf(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+  function dateOf(k){var p=k.split('-');return new Date(+p[0],+p[1]-1,+p[2]);}
+  function addDays(k,n){var d=dateOf(k);d.setDate(d.getDate()+n);return keyOf(d);}
+  function isObj(x){return !!x&&typeof x==='object'&&!Array.isArray(x);}
+  function lsGet(k,d){try{var v=localStorage.getItem(k);return v==null?d:v;}catch(e){return d;}}
+  function lsSet(k,v){try{if(v==null)localStorage.removeItem(k);else localStorage.setItem(k,v);}catch(e){}}
+  var WD=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var MON=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  function fmtLong(k){var d=dateOf(k);return WD[d.getDay()]+' '+d.getDate()+' '+MON[d.getMonth()];}
+  function fmtShort(k){var d=dateOf(k);return WD[d.getDay()].slice(0,3)+' '+d.getDate()+' '+MON[d.getMonth()].slice(0,3);}
+
+  /* "today" can be pretended, for testing a new day without waiting for midnight. Only this
+     browser sees it (asanarounds.faketoday in localStorage), and a banner says so */
+  var DATE_RE=/^\d{4}-\d{2}-\d{2}$/;
+  var FAKE=lsGet('asanarounds.faketoday','');
+  if(!DATE_RE.test(FAKE))FAKE='';
+  function today(){return FAKE||keyOf(new Date());}
+  var DAY=today();
+
+  /* ---------- the routine you started with ---------- */
+  var DEFAULT_POSES=[['leftfold','Left Fold'],['rightfold','Right Fold'],['leftraise','Left Raise'],['rightraise','Right Raise'],['d45','45D'],
+    ['slpbackbend','SLP BackBend'],['s2d45','2Sd45'],['cobra','Cobra'],['sitbackbend','Sit BackBend'],['plank','Plank']];
+  var DEFAULT_ROUNDS=5,MAX_ROUNDS=10,MAX_POSES=30;
+  var PARTS={am:'Morning',pm:'Evening'};
+
+  /* ---------- store ----------
+     One document {v, app, items}. Items:
+       routine                 {kind:'routine', poses:[{id,name}], rounds}
+       s-<day>-am / s-<day>-pm {kind:'session', day, part, poseIds, rounds, marks:{'<round>:<poseId>':t}, off:{…:t}}
+     A cell is ticked when its time in marks is later than its time in off. Ticks and unticks
+     carry their own times so two devices' copies of one session combine cell by cell: a device
+     that had not caught up with Drive yet cannot wipe the ticks the other one made. */
+  var BOOTED=false;
+  function mergeMaps(a,b){var o={};[a,b].forEach(function(m){if(isObj(m))Object.keys(m).forEach(function(k){var t=+m[k]||0;if(!(k in o)||t>o[k])o[k]=t;});});return o;}
+  function aheadOf(a,b){a=isObj(a)?a:{};b=isObj(b)?b:{};return Object.keys(a).some(function(k){return (+a[k]||0)>(+b[k]||0);});}
+  function mergeSession(x,y){
+    if(x.compact||y.compact){var c=(x.compact&&(!y.compact||(+x.updatedAt||0)>(+y.updatedAt||0)))?x:y;return {s:c,localNewer:c===x&&!y.compact};}
+    var base=(+x.updatedAt||0)>(+y.updatedAt||0)?x:y,s={};
+    Object.keys(base).forEach(function(k){s[k]=base[k];});
+    s.marks=mergeMaps(x.marks,y.marks);s.off=mergeMaps(x.off,y.off);
+    s.updatedAt=Math.max(+x.updatedAt||0,+y.updatedAt||0);
+    return {s:s,localNewer:base===x&&(+x.updatedAt||0)>(+y.updatedAt||0)||aheadOf(x.marks,y.marks)||aheadOf(x.off,y.off)};
+  }
+  function mergeDocs(local,remote){
+    var a=(isObj(local)&&isObj(local.items))?local.items:{},b=(isObj(remote)&&isObj(remote.items))?remote.items:{},out={},newer=false,ids={};
+    Object.keys(a).concat(Object.keys(b)).forEach(function(id){ids[id]=1;});
+    Object.keys(ids).forEach(function(id){var x=a[id],y=b[id];
+      if(!x){out[id]=y;return;}
+      if(!y){out[id]=x;newer=true;return;}
+      if(x.kind==='session'&&y.kind==='session'&&!x.deleted&&!y.deleted){var m=mergeSession(x,y);out[id]=m.s;if(m.localNewer)newer=true;return;}
+      if((+x.updatedAt||0)>(+y.updatedAt||0)){out[id]=x;newer=true;}else out[id]=y;});
+    return {doc:{v:1,app:'asana-rounds',items:out},localNewer:newer};
+  }
+  function localFallback(){
+    var K='asanarounds.local',d=null;
+    try{d=JSON.parse(localStorage.getItem(K));}catch(e){}
+    if(!isObj(d)||!isObj(d.items))d={v:1,app:'asana-rounds',items:{}};
+    return {doc:d,synced:true,dirty:false,
+      mutate:function(fn){fn(d);lsSet(K,JSON.stringify(d));}};
+  }
+  var STORE=(window.DriveStore
+    ? DriveStore.open({file:'asana-rounds.json',cacheKey:'asanarounds.doc',merge:mergeDocs,
+        empty:function(){return {v:1,app:'asana-rounds',items:{}};},
+        onChange:function(doc,src){if(src==='remote'&&BOOTED)renderAll();}})
+    : localFallback());
+  function items(){return STORE.doc.items;}
+  function putAll(list){var n=Date.now();STORE.mutate(function(d){list.forEach(function(it){it.updatedAt=n;d.items[it.id]=it;});});}
+  function mountSync(el){if(window.DriveStore)DriveStore.mountStatus(el,STORE);else el.textContent='Saved in this browser only';}
+
+  /* ---------- the routine ---------- */
+  var ID_RE=/^[\w-]{1,40}$/;
+  function cleanName(s){return String(s==null?'':s).replace(/\s+/g,' ').trim().slice(0,40);}
+  function routine(){
+    var r=items().routine,poses=[],seen={};
+    if(r&&!r.deleted&&Array.isArray(r.poses))r.poses.forEach(function(p){
+      if(p&&ID_RE.test(String(p.id))&&!seen[p.id]&&cleanName(p.name)&&poses.length<MAX_POSES){seen[p.id]=1;poses.push({id:String(p.id),name:cleanName(p.name)});}});
+    if(!poses.length)poses=DEFAULT_POSES.map(function(p){return {id:p[0],name:p[1]};});
+    var n=Math.floor(+(r&&!r.deleted?r.rounds:0));
+    return {poses:poses,rounds:n>=1&&n<=MAX_ROUNDS?n:DEFAULT_ROUNDS};
+  }
+  function poseName(id){var ps=routine().poses;for(var i=0;i<ps.length;i++)if(ps[i].id===id)return ps[i].name;return id;}
+  /* saving the routine also re-stamps today's sessions, so a day keeps the routine it ended with */
+  function saveRoutine(r){
+    var list=[{id:'routine',kind:'routine',poses:r.poses,rounds:r.rounds}];
+    ['am','pm'].forEach(function(p){var s=session(DAY,p);if(s&&!s.compact){var c=copySession(s);c.poseIds=r.poses.map(function(x){return x.id;});c.rounds=r.rounds;list.push(c);}});
+    putAll(list);renderAll();
+  }
+
+  /* ---------- sessions ---------- */
+  function sid(day,part){return 's-'+day+'-'+part;}
+  function session(day,part){var s=items()[sid(day,part)];return (s&&!s.deleted&&s.kind==='session')?s:null;}
+  function copySession(s){return {id:s.id,kind:'session',day:s.day,part:s.part,poseIds:(s.poseIds||[]).slice(),rounds:s.rounds,
+    marks:Object.assign({},isObj(s.marks)?s.marks:{}),off:Object.assign({},isObj(s.off)?s.off:{})};}
+  function newSession(day,part){return {id:sid(day,part),kind:'session',day:day,part:part,poseIds:[],rounds:0,marks:{},off:{}};}
+  function isOn(s,key){return !!s&&(+((s.marks||{})[key])||0)>(+((s.off||{})[key])||0);}
+  /* today follows the routine as it is now; a past day follows what it was done with */
+  function planOf(s,day){
+    if(day===DAY||!s||!Array.isArray(s.poseIds)||!s.poseIds.length||!(s.rounds>=1)){var r=routine();return {ids:r.poses.map(function(p){return p.id;}),rounds:r.rounds};}
+    return {ids:s.poseIds,rounds:s.rounds};
+  }
+  function stats(day,part){
+    var s=session(day,part),pl=planOf(s,day),R=pl.rounds,N=pl.ids.length;
+    if(s&&s.compact)return {plan:pl,s:s,count:+s.count||0,total:+s.total||R*N,full:+s.full||0,cur:null,complete:(+s.full||0)>=(+s.rounds||R)};
+    var count=0,full=0,cur=null;
+    for(var r=1;r<=R;r++){var all=true;
+      for(var i=0;i<N;i++){if(isOn(s,r+':'+pl.ids[i]))count++;else{all=false;if(!cur)cur={r:r,i:i};}}
+      if(all)full++;}
+    return {plan:pl,s:s,count:count,total:R*N,full:full,cur:cur,complete:!cur};
+  }
+  /* a time later than any already in this session, so the newest action always wins on this device */
+  function stamp(s){var t=Date.now();[s.marks,s.off].forEach(function(m){Object.keys(m).forEach(function(k){if(+m[k]>=t)t=+m[k]+1;});});return t;}
+  function writeSession(part,fn){
+    var r=routine(),cur=session(DAY,part),s=cur&&!cur.compact?copySession(cur):newSession(DAY,part);
+    s.poseIds=r.poses.map(function(p){return p.id;});s.rounds=r.rounds;
+    fn(s);putAll([s]);
+  }
+  function setCell(part,key,on){writeSession(part,function(s){var t=stamp(s);if(on)s.marks[key]=t;else s.off[key]=t;});}
+
+  /* sessions older than a month keep only their totals, so the Drive file stays small */
+  function compactOld(){
+    var cut=addDays(DAY,-30),list=[];
+    Object.keys(items()).forEach(function(id){var s=items()[id];
+      if(!s||s.deleted||s.kind!=='session'||s.compact||!(s.day<cut))return;
+      var st=stats(s.day,s.part);
+      list.push({id:s.id,kind:'session',day:s.day,part:s.part,compact:true,rounds:st.plan.rounds,count:st.count,total:st.total,full:st.full});});
+    if(list.length)putAll(list);
+  }
+
+  /* ---------- which session is on screen ---------- */
+  /* null: the first unfinished session today. Pinned to a session once you switch to it or tick in it,
+     so finishing the morning shows "Morning done" instead of jumping straight to the evening */
+  var VIEW=null;
+  function autoPart(){return stats(DAY,'am').complete?'pm':'am';}
+  function viewPart(){return VIEW||autoPart();}
+  function other(p){return p==='am'?'pm':'am';}
+
+  /* ---------- DOM ---------- */
+  function h(tag,attrs,kids){
+    var e=document.createElement(tag);
+    if(attrs)Object.keys(attrs).forEach(function(k){
+      var v=attrs[k];if(v==null)return;
+      if(k==='class')e.className=v;
+      else if(k==='text')e.textContent=v;
+      else if(k==='value')e.value=v;
+      else if(k==='disabled')e.disabled=!!v;
+      else if(k.slice(0,2)==='on')e.addEventListener(k.slice(2),v);
+      else if(k==='style')e.style.cssText=v;
+      else e.setAttribute(k,v);
+    });
+    (kids||[]).forEach(function(c){if(c==null)return;e.appendChild(typeof c==='string'?document.createTextNode(c):c);});
+    return e;
+  }
+  function clear(el){while(el.firstChild)el.removeChild(el.firstChild);}
+
+  var noteTimer=null;
+  function note(t){var el=$('#doneNote');el.textContent=t||'';clearTimeout(noteTimer);if(t)noteTimer=setTimeout(function(){el.textContent='';},6000);}
+
+  function renderParts(){
+    var vp=viewPart();
+    ['am','pm'].forEach(function(p){
+      var b=$(p==='am'?'#partAm':'#partPm'),st=stats(DAY,p),pct=st.total?Math.round(st.count*100/st.total):0;
+      clear(b);b.setAttribute('aria-pressed',vp===p?'true':'false');
+      b.appendChild(h('span',{class:'pl'},[PARTS[p],st.complete?h('span',{class:'ok',text:'✓','aria-label':'done'}):null]));
+      b.appendChild(h('span',{class:'prog',text:st.full+'/'+st.plan.rounds+' rounds'}));
+      b.appendChild(h('span',{class:'bar','aria-hidden':'true'},[h('i',{style:'width:'+pct+'%'})]));
+    });
+  }
+
+  function renderNow(){
+    var p=viewPart(),st=stats(DAY,p),ids=st.plan.ids,R=st.plan.rounds,card=$('#nowCard'),done=$('#doneBtn'),lad=$('#ladder');
+    clear(lad);clear($('#nowNext'));
+    $('#undoBtn').disabled=!st.count;
+    if(st.complete){
+      var o=other(p),os=stats(DAY,o);
+      card.setAttribute('data-state','complete');
+      $('#nowRound').textContent=PARTS[p]+' ✓';
+      $('#nowPos').textContent=R+' of '+R+' rounds';
+      $('#nowPose').textContent=PARTS[p]+' done';
+      ids.forEach(function(){lad.appendChild(h('i',{class:'on'}));});
+      if(os.complete){$('#nowNext').textContent='Both sessions done today. It starts again tomorrow.';done.textContent='All done today ✓';done.disabled=true;}
+      else{$('#nowNext').textContent=PARTS[o]+(o==='pm'?' next':' is still open');done.textContent=(o==='pm'?'Start evening':'Go to morning')+' →';done.disabled=false;}
+      done.setAttribute('aria-label',done.textContent);
+      return;
+    }
+    var c=st.cur,nm=poseName(ids[c.i]);
+    card.setAttribute('data-state','go');
+    $('#nowRound').textContent='Round '+c.r+' of '+R;
+    $('#nowPos').textContent=(c.i+1)+' of '+ids.length;
+    $('#nowPose').textContent=nm;
+    ids.forEach(function(id,i){lad.appendChild(h('i',{class:isOn(st.s,c.r+':'+id)?'on':(i===c.i?'cur':'')}));});
+    var nx=nextAfter(st);
+    if(nx)$('#nowNext').appendChild(h('span',null,['Next: ',h('b',{text:poseName(ids[nx.i])}),nx.r!==c.r?' · round '+nx.r:'']));
+    else $('#nowNext').textContent='Last one in this session';
+    done.disabled=false;done.textContent='Done → next';
+    done.setAttribute('aria-label','Done: '+nm+', round '+c.r);
+  }
+  /* the cell after the current one that is still unticked */
+  function nextAfter(st){
+    var ids=st.plan.ids,R=st.plan.rounds,c=st.cur,started=false;
+    for(var r=1;r<=R;r++)for(var i=0;i<ids.length;i++){
+      if(r===c.r&&i===c.i){started=true;continue;}
+      if(started&&!isOn(st.s,r+':'+ids[i]))return {r:r,i:i};}
+    return null;
+  }
+
+  function renderGrid(){
+    var p=viewPart(),st=stats(DAY,p),ids=st.plan.ids,R=st.plan.rounds,c=st.cur,t=$('#grid');
+    clear(t);
+    var hr=h('tr',null,[h('th',{class:'corner',scope:'col',text:'Asana'})]);
+    for(var r=1;r<=R;r++)hr.appendChild(h('th',{class:'gh'+(c&&c.r===r?' on':''),scope:'col','data-round':String(r),text:R>6?String(r):'R'+r}));
+    t.appendChild(h('thead',null,[hr]));
+    var tb=h('tbody');
+    ids.forEach(function(id,i){
+      var nm=poseName(id),tr=h('tr',{class:'gr'+(c&&c.i===i?' curow':''),'data-pose':id},[h('th',{class:'gname',scope:'row',title:nm,text:nm})]);
+      for(var r=1;r<=R;r++)(function(r){
+        var key=r+':'+id,on=isOn(st.s,key),cur=!!c&&c.r===r&&c.i===i;
+        tr.appendChild(h('td',null,[h('button',{type:'button',class:'cell'+(cur?' cur':''),'data-round':String(r),'data-pose':id,'aria-pressed':on?'true':'false',
+          'aria-label':nm+', round '+r,text:on?'✓':'',onclick:function(){tapCell(p,id,r);}})]));
+      })(r);
+      tb.appendChild(tr);
+    });
+    t.appendChild(tb);
+    $('#overBtn').disabled=!st.count;
+    if(!st.count)$('#overAsk').hidden=true;
+  }
+
+  function renderHistory(){
+    var ol=$('#history');clear(ol);
+    for(var n=13;n>=0;n--){
+      var day=addDays(DAY,-n),d=dateOf(day),a=stats(day,'am'),b=stats(day,'pm');
+      var st=function(x){return x.complete&&x.count?'full':(x.count?'part':'none');};
+      var say=function(name,x){return name+' '+(x.count?x.full+'/'+x.plan.rounds+' rounds':'not done');};
+      ol.appendChild(h('li',{'data-day':day,class:n===0?'today':null,title:fmtShort(day)+': '+say('morning',a)+', '+say('evening',b),'aria-label':fmtShort(day)+': '+say('morning',a)+', '+say('evening',b)},[
+        h('span',{class:'wd','aria-hidden':'true',text:WD[d.getDay()].slice(0,1)}),
+        h('span',{class:'dn','aria-hidden':'true',text:String(d.getDate())}),
+        h('span',{class:'dot','data-part':'am','data-state':st(a)}),
+        h('span',{class:'dot','data-part':'pm','data-state':st(b)})]));
+    }
+  }
+
+  /* the editor is left alone while you are typing in it, so a sync from another device cannot eat a half-typed name */
+  var editDirty=false;
+  function editorBusy(){var a=document.activeElement;return !!a&&a.tagName==='INPUT'&&!!a.closest&&!!a.closest('#editList');}
+  function renderEditor(){
+    if(editorBusy()){editDirty=true;return;}
+    editDirty=false;
+    var r=routine(),sel=$('#roundsSel'),ol=$('#editList');
+    if(!sel.options.length)for(var n=1;n<=MAX_ROUNDS;n++)sel.appendChild(h('option',{value:String(n),text:String(n)}));
+    sel.value=String(r.rounds);
+    clear(ol);
+    r.poses.forEach(function(p,i){
+      var inp=h('input',{type:'text',class:'pname',maxlength:'40',value:p.name,'aria-label':'Name of asana '+(i+1)});
+      inp.addEventListener('change',function(){renamePose(p.id,inp);});
+      inp.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();inp.blur();}});
+      inp.addEventListener('blur',function(){if(editDirty)setTimeout(renderEditor,0);});
+      var rm=h('button',{type:'button',class:'btn rm',text:'Remove','aria-label':'Remove '+p.name,disabled:r.poses.length<2});
+      rm.addEventListener('click',function(){armRemove(rm,p.id);});
+      ol.appendChild(h('li',{class:'prow','data-pose':p.id},[
+        h('span',{class:'num',text:String(i+1)}),inp,
+        h('button',{type:'button',class:'btn up',text:'↑','aria-label':'Move '+p.name+' earlier',disabled:i===0,onclick:function(){movePose(p.id,-1);}}),
+        h('button',{type:'button',class:'btn down',text:'↓','aria-label':'Move '+p.name+' later',disabled:i===r.poses.length-1,onclick:function(){movePose(p.id,1);}}),
+        rm]));
+    });
+    $('#addBtn').disabled=r.poses.length>=MAX_POSES;
+  }
+
+  function renderHeader(){
+    $('#dateLine').textContent=fmtLong(DAY);
+    var b=$('#fakeBanner');clear(b);b.hidden=!FAKE;
+    if(FAKE){b.appendChild(h('span',{text:'Pretending today is '+fmtShort(FAKE)+'. Only this browser sees this.'}));
+      b.appendChild(h('button',{type:'button',class:'btn sm',text:'Back to the real date',onclick:function(){FAKE='';lsSet('asanarounds.faketoday',null);dayCheck(true);}}));}
+  }
+
+  function renderAll(){renderHeader();renderParts();renderNow();renderGrid();renderHistory();renderEditor();}
+
+  /* ---------- actions ---------- */
+  function onDone(){
+    var p=viewPart(),st=stats(DAY,p);
+    if(st.complete){var o=other(p);if(!stats(DAY,o).complete){VIEW=o;note('');renderAll();}return;}
+    var c=st.cur,R=st.plan.rounds;
+    VIEW=p;
+    setCell(p,c.r+':'+st.plan.ids[c.i],true);
+    var after=stats(DAY,p);
+    if(after.complete)note(PARTS[p]+' done. Well done.');
+    else if(after.full>st.full)note('Round '+c.r+' done · '+(R-after.full)+' to go');
+    else note('');
+    renderAll();
+  }
+  function onUndo(){
+    var p=viewPart(),s=session(DAY,p);if(!s||s.compact)return;
+    var best=null,bt=-1;
+    Object.keys(s.marks||{}).forEach(function(k){if(isOn(s,k)&&+s.marks[k]>bt){bt=+s.marks[k];best=k;}});
+    if(!best)return;
+    VIEW=p;setCell(p,best,false);
+    var bits=best.split(':');note('Undid '+poseName(bits[1])+', round '+bits[0]);
+    renderAll();
+  }
+  function tapCell(p,id,r){var key=r+':'+id;VIEW=p;setCell(p,key,!isOn(session(DAY,p),key));note('');renderAll();}
+  function startOver(){
+    var p=viewPart();
+    writeSession(p,function(s){var t=stamp(s);Object.keys(s.marks).forEach(function(k){if(isOn(s,k))s.off[k]=t;});});
+    $('#overAsk').hidden=true;note(PARTS[p]+' cleared');renderAll();
+  }
+  function renamePose(id,inp){
+    var r=routine(),nm=cleanName(inp.value);
+    if(!nm){inp.value=poseName(id);return;}
+    r.poses.forEach(function(p){if(p.id===id)p.name=nm;});saveRoutine(r);
+  }
+  function movePose(id,dir){
+    var r=routine(),i=-1;r.poses.forEach(function(p,j){if(p.id===id)i=j;});
+    var j=i+dir;if(i<0||j<0||j>=r.poses.length)return;
+    var t=r.poses[i];r.poses[i]=r.poses[j];r.poses[j]=t;saveRoutine(r);
+  }
+  /* removing asks first: the first tap turns the button into "Remove?", a second tap within 5 s removes */
+  function armRemove(btn,id){
+    if(btn.getAttribute('data-armed')==='1'){
+      var r=routine();if(r.poses.length<2)return;
+      r.poses=r.poses.filter(function(p){return p.id!==id;});saveRoutine(r);return;}
+    btn.setAttribute('data-armed','1');btn.textContent='Remove?';
+    setTimeout(function(){if(btn.isConnected){btn.removeAttribute('data-armed');btn.textContent='Remove';}},5000);
+  }
+  function addPose(){
+    var inp=$('#addName'),nm=cleanName(inp.value),r=routine();
+    if(!nm||r.poses.length>=MAX_POSES)return;
+    var id='p'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+    r.poses.push({id:id,name:nm});inp.value='';saveRoutine(r);
+  }
+
+  /* ---------- a new day starts on its own: checked on return to the page and once a minute ---------- */
+  function dayCheck(force){
+    var d=today();
+    if(d===DAY&&!force)return;
+    DAY=d;VIEW=null;note('');compactOld();renderAll();
+  }
+
+  /* ---------- theme: per page, per device (the head script applies it before first paint) ---------- */
+  var THEME_KEY='asanarounds.theme',darkQ=window.matchMedia?window.matchMedia('(prefers-color-scheme: dark)'):null;
+  var THEME_ICON={sun:'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41',moon:'M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z'};
+  function chosenTheme(){try{var t=JSON.parse(localStorage.getItem(THEME_KEY));return t==='light'||t==='dark'?t:'auto';}catch(e){return 'auto';}}
+  function deviceTheme(){return darkQ&&darkQ.matches?'dark':'light';}
+  function shownTheme(){var t=chosenTheme();return t==='auto'?deviceTheme():t;}
+  function paintTheme(){
+    var t=chosenTheme(),dark=shownTheme()==='dark',b=$('#themeBtn'),NS='http://www.w3.org/2000/svg',svg=document.createElementNS(NS,'svg'),path=document.createElementNS(NS,'path'),label=dark?'Switch to light':'Switch to dark';
+    if(t==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',t);
+    [['viewBox','0 0 24 24'],['fill','none'],['stroke','currentColor'],['stroke-width','2'],['stroke-linecap','round'],['stroke-linejoin','round'],['aria-hidden','true']].forEach(function(a){svg.setAttribute(a[0],a[1]);});
+    path.setAttribute('d',dark?THEME_ICON.sun:THEME_ICON.moon);svg.appendChild(path);clear(b);b.appendChild(svg);b.setAttribute('aria-label',label);b.title=label;
+  }
+
+  /* ---------- boot ---------- */
+  $('#doneBtn').addEventListener('click',onDone);
+  $('#undoBtn').addEventListener('click',onUndo);
+  ['#partAm','#partPm'].forEach(function(s){$(s).addEventListener('click',function(e){VIEW=e.currentTarget.getAttribute('data-part');$('#overAsk').hidden=true;note('');renderAll();});});
+  $('#overBtn').addEventListener('click',function(){
+    var p=viewPart(),st=stats(DAY,p);if(!st.count)return;
+    $('#overQ').textContent='Clear all '+st.count+' tick'+(st.count===1?'':'s')+' in this '+PARTS[p].toLowerCase()+'?';
+    $('#overAsk').hidden=false;});
+  $('#overYes').addEventListener('click',startOver);
+  $('#overNo').addEventListener('click',function(){$('#overAsk').hidden=true;});
+  $('#roundsSel').addEventListener('change',function(){var r=routine(),n=Math.floor(+this.value);if(n>=1&&n<=MAX_ROUNDS&&n!==r.rounds){r.rounds=n;saveRoutine(r);}});
+  $('#addBtn').addEventListener('click',addPose);
+  $('#addName').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();addPose();}});
+  $('#themeBtn').addEventListener('click',function(){var next=shownTheme()==='dark'?'light':'dark';lsSet(THEME_KEY,JSON.stringify(next===deviceTheme()?'auto':next));paintTheme();});
+  if(darkQ){if(darkQ.addEventListener)darkQ.addEventListener('change',paintTheme);else if(darkQ.addListener)darkQ.addListener(paintTheme);}
+  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')dayCheck();});
+  window.addEventListener('focus',function(){dayCheck();});
+  setInterval(function(){dayCheck();},60000);
+
+  mountSync($('#sync'));
+  $('#foot').appendChild(document.createTextNode(window.DriveStore
+    ? 'Your routine and every tick are saved to '
+    : 'This copy saves only in this browser. The hosted page saves to '));
+  $('#foot').appendChild(h('code',{text:'Personal Apps/asana-rounds.json'}));
+  $('#foot').appendChild(document.createTextNode(window.DriveStore
+    ? ' in your Google Drive once you sign in, so every device you sign in on sees the same progress. Signed out, they stay in this browser until you do.'
+    : ' in your Google Drive.'));
+  paintTheme();
+  compactOld();
+  renderAll();
+  BOOTED=true;
+})();
+</script>
+</body>
+</html>
