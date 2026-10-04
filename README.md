@@ -348,17 +348,18 @@ console project.
 **Search matches the start of words**, because that is how Drive's name search works: *pass* finds
 `passport.pdf`, *port* does not.
 
-**Thumbnails.** Google's thumbnail links need a signed-in request, so the page tries three ways in turn: fetch
-the link with the token, load it as a plain image, or download the photo itself and shrink it in the browser
-(photos up to 30 MB). A way that keeps failing is skipped for the rest of the visit, and only thumbnails near the
-screen are fetched. Formats a browser cannot draw (iPhone HEIC photos in Chrome, for one) show an icon, and the
+**Thumbnails.** Google's thumbnail link loads as a plain image for you as the owner (checked on the real Drive on
+2026-10-04; fetching it with the sign-in token is refused by Google, so the page never tries that). If the link
+fails, the page downloads the photo itself and shrinks it in the browser (photos up to 30 MB). A way that keeps
+failing is skipped for the rest of the visit, and only thumbnails near the screen are fetched, so a hidden tab
+loads none until you look at it. Formats a browser cannot draw (iPhone HEIC photos in Chrome, for one) show an icon, and the
 viewer offers Download and *Open in Drive* instead.
 
 **PDFs** open in the browser's own viewer where it has one (desktop Chrome, Edge, Firefox, Safari). Android
 Chrome has none, so there the pages are drawn by PDF.js 6.3, loaded from cdnjs the first time you open a PDF.
 
-**Uploads.** Files up to 5 MB go up in one request; bigger ones use Drive's resumable upload. If the browser
-blocks the resumable route, the page first checks whether the file arrived anyway (same name, size and folder,
+**Uploads.** Files up to 5 MB go up in one request; bigger ones use Drive's resumable upload, which works
+straight from the browser (a 6 MB file on the real Drive, 2026-10-04). If a browser ever blocks that route, the page first checks whether the file arrived anyway (same name, size and folder,
 changed in the last ten minutes), and only sends it again, in one request, if it did not, so a blocked answer
 never leaves two copies. Two files upload at a time. Whole folders cannot be uploaded yet; drop the files inside
 them instead.
