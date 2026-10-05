@@ -334,11 +334,28 @@ three things at a glance: **which session** (Morning or Evening, and whether eac
   follows the routine as it is now; past days keep the routine they were done with.
 - **Start this session over** clears only the session on screen, after asking.
 
+### Hold timer
+
+The now card has a countdown for the asana on screen. **Each asana keeps its own length**, saved with the routine
+(so it syncs like the rest): tap a chip while that asana is on screen, or set it in Edit routine.
+
+| Part | What it does |
+|---|---|
+| Chips | 0:30, 0:45, 1:00, 1:04 and **Custom** (minutes and seconds, 0:05 to 10:00; anything outside is brought into range). An asana never given a length gets 0:30. Picking one while the timer runs restarts it at the new length |
+| Start / Pause / Resume, Reset | Counts to a clock time, not by counting ticks, so a page the phone stalled still shows the right time when you come back |
+| Sound | Three soft beeps in the last 3 seconds, then a rising chime and a vibration at time up. The chime repeats every 4 s, four times in all, until you tap the timer or Done. The speaker button mutes it on this device only (`asanarounds.sound` in `localStorage`); turning it back on plays one beep |
+| Time up | Ticks nothing by itself: you tap **Done → next**. If the timer was in use (running, paused or just rung), Done starts the next asana's timer at once; after Reset, or if you never started it, Done starts nothing, so a session done without the timer never beeps |
+| Following you | Undo, a grid tap, the other session or a new day stops the timer and shows the new asana's length. It hides when the session is finished |
+| Screen and title | The screen is kept on while a hold runs or rings (where the browser allows it), and the tab title shows the countdown |
+
+A locked phone or a page in the background cannot ring: phone browsers pause the page. The time stays right and
+the chime plays when you come back. (Dumbbell Dojo's notifications and Android Clock hand-off are not used here.)
+
 ### Data shape
 
 | Item | Holds |
 |---|---|
-| `routine` | `poses: [{id, name}]`, `rounds` |
+| `routine` | `poses: [{id, name, sec}]` (`sec`: the hold length in seconds, 5–600, default 30), `rounds` |
 | `s-<date>-am`, `s-<date>-pm` | `poseIds` and `rounds` the day was done with, `marks` and `off` (cell → time) |
 
 A cell is ticked when its time in `marks` is later than its time in `off`. Because every tick and untick carries
@@ -353,7 +370,11 @@ file stays small.
 with every request off the local server aborted, so it cannot touch your Drive. It covers a full morning, Undo,
 reloads, a pretend next day (`asanarounds.faketoday` in `localStorage`; a banner says when it is set), grid taps,
 the routine editor, Start over, the theme switch, the phone (390 px) and laptop layouts in both themes with text
-contrast, and the two-device merge run on the page's own merge code.
+contrast, and the two-device merge run on the page's own merge code. The hold timer runs on Playwright's fake
+clock (time moves only when the checker moves it): lengths per asana, pause, the last-3-seconds beeps, time up
+ticking nothing, the chime stopping, Done starting the next hold, Reset, Undo, Custom's range, the editor's
+dropdowns, muting, and the end of a session. Headless Chrome plays no sound, so the checker counts the tones the
+page schedules and the vibrations it asks for.
 
 ## Shoebox: your photos and papers in Drive
 

@@ -272,6 +272,237 @@ def flow(s):
         run_section(name, fn)
 
 
+# counts the tones the page schedules and the vibrations it asks for: headless Chrome plays no sound,
+# so "the sound happened" is checked as "oscillators were started"
+TIMER_INIT = """(()=>{window.__tones=0;window.__buzz=0;var C=window.AudioContext||window.webkitAudioContext;
+  if(C){var o=C.prototype.createOscillator;C.prototype.createOscillator=function(){window.__tones++;return o.apply(this,arguments);};}
+  Object.defineProperty(navigator,'vibrate',{value:function(){window.__buzz++;return true;},configurable:true});})()"""
+CHIPS = ['0:30', '0:45', '1:00', '1:04', 'Custom']
+
+
+def timer_flow(browser, base, label):
+    """The hold timer, on a fake clock: time stands still until clock.run_for moves it."""
+    s = Session(browser, base)
+    p = s.page
+    p.add_init_script(TIMER_INIT)
+    t0 = datetime.datetime.now()
+    p.clock.install(time=t0)
+    p.clock.pause_at(t0 + datetime.timedelta(seconds=1))
+    real = {}
+
+    def run(ms):
+        p.clock.run_for(ms)
+
+    def left():
+        return s.txt('#tLeft')
+
+    def state():
+        return p.locator('#timer').get_attribute('data-state')
+
+    def tones():
+        return p.evaluate('window.__tones')
+
+    def chip(sec):
+        return p.locator('#tPresets .chip[data-sec="%s"]' % sec)
+
+    def custom(m, sec, enter=False):
+        p.locator('#tCustomBtn').click()
+        check(p.locator('#tCustom').is_visible(), 'Custom opens a minutes and seconds row')
+        p.locator('#tMin').fill(m)
+        p.locator('#tSec').fill(sec)
+        if enter:
+            p.locator('#tSec').press('Enter')
+        else:
+            p.locator('#tSet').click()
+
+    def reopen():
+        p.reload()
+        p.locator('#doneBtn').wait_for()
+
+    def fresh():
+        s.open()
+        check(state() == 'idle', 'the timer starts stopped (%r)' % state())
+        check(left() == '0:30', 'an asana with no length set gets 0:30 (%r)' % left())
+        labels = [x.strip() for x in p.locator('#tPresets .chip').all_inner_texts()]
+        check(labels == CHIPS, 'the length chips are %s (%s)' % (CHIPS, labels))
+        check(chip(30).get_attribute('aria-pressed') == 'true', '0:30 is the highlighted chip')
+        check(chip(64).get_attribute('aria-pressed') == 'false', '1:04 is not highlighted')
+        check(s.txt('#tGo') == 'Start', 'the timer button says Start (%r)' % s.txt('#tGo'))
+        check(p.locator('#tCustom').is_hidden(), 'the custom row is closed at first')
+
+    def per_asana():
+        chip(64).click()
+        check(left() == '1:04', 'tapping 1:04 sets the timer to 1:04 (%r)' % left())
+        check(chip(64).get_attribute('aria-pressed') == 'true' and chip(30).get_attribute('aria-pressed') == 'false',
+              'the 1:04 chip is now the highlighted one')
+        reopen()
+        check(left() == '1:04', 'Left Fold keeps 1:04 after a reload (%r)' % left())
+        p.locator('#doneBtn').click()
+        check(s.txt('#nowPose') == 'Right Fold' and left() == '0:30', 'Right Fold has its own length, 0:30 (%r)' % left())
+        check(state() == 'idle', 'Done without using the timer does not start one (%r)' % state())
+        p.locator('#undoBtn').click()
+        check(s.txt('#nowPose') == 'Left Fold' and left() == '1:04', 'back on Left Fold it reads 1:04 again (%r)' % left())
+
+    def countdown():
+        p.locator('#tGo').click()
+        check(state() == 'run' and s.txt('#tGo') == 'Pause', 'Start runs the timer and becomes Pause')
+        run(10000)
+        check(left() == '0:54', '10 s later it reads 0:54 (%r)' % left())
+        check('0:54' in p.title() and 'Left Fold' in p.title(), 'the tab title shows the countdown (%r)' % p.title())
+        p.locator('#tGo').click()
+        check(state() == 'paused' and s.txt('#tGo') == 'Resume', 'Pause stops it and becomes Resume')
+        run(5000)
+        check(left() == '0:54', 'paused for 5 s it still reads 0:54 (%r)' % left())
+        p.locator('#tGo').click()
+        check(state() == 'run', 'Resume runs it again')
+        run(50000)
+        check(left() == '0:04', '50 s more and it reads 0:04 (%r)' % left())
+        t = tones()
+        run(3500)
+        check(left() == '0:01' and state() == 'run', 'still running at 0:01 (%r)' % left())
+        check(tones() >= t + 3, 'the last 3 seconds beep (%d tones)' % (tones() - t))
+        t, b = tones(), p.evaluate('window.__buzz')
+        run(1000)
+        check(state() == 'up', 'at zero the timer is up (%r)' % state())
+        check(left() == 'Time up', 'it reads Time up (%r)' % left())
+        check(tones() >= t + 8, 'time up plays the chime (%d tones)' % (tones() - t))
+        check(p.evaluate('window.__buzz') > b, 'time up vibrates the phone')
+        check(s.ticked() == 0, 'time up ticks nothing by itself (%d ticked)' % s.ticked())
+        check('Time up' in s.txt('#doneNote'), 'the note says Time up (%r)' % s.txt('#doneNote'))
+        real['up'] = tones()
+
+    def ring_stops():
+        run(20000)
+        a = tones()
+        check(a >= real['up'] + 8, 'the chime repeats while nobody taps (%d more tones)' % (a - real['up']))
+        run(10000)
+        check(tones() == a, 'and stops by itself (%d more after 20 s)' % (tones() - a))
+
+    def done_chains():
+        p.locator('#doneBtn').click()
+        check(s.pressed(1, 'leftfold'), 'Done after time up ticks Left Fold')
+        check(s.txt('#nowPose') == 'Right Fold', 'and moves on to Right Fold')
+        check(state() == 'run' and left() == '0:30', 'Right Fold\'s 0:30 timer is already running (%r, %r)' % (state(), left()))
+        run(5000)
+        check(left() == '0:25', 'and counting (%r)' % left())
+
+    def undo_stops():
+        p.locator('#undoBtn').click()
+        check(s.txt('#nowPose') == 'Left Fold', 'Undo goes back to Left Fold')
+        check(state() == 'idle' and left() == '1:04', 'Undo stops the timer and shows Left Fold\'s 1:04 (%r, %r)' % (state(), left()))
+        check(p.title() == 'Asana Rounds', 'the tab title is plain again (%r)' % p.title())
+
+    def reset_breaks_chain():
+        p.locator('#tGo').click()
+        run(2000)
+        p.locator('#tReset').click()
+        check(state() == 'idle' and left() == '1:04', 'Reset stops it at the full length (%r, %r)' % (state(), left()))
+        p.locator('#doneBtn').click()
+        check(s.txt('#nowPose') == 'Right Fold' and state() == 'idle', 'after Reset, Done does not start the next timer (%r)' % state())
+        p.locator('#undoBtn').click()
+        p.locator('#tGo').click()
+        run(3000)
+        p.locator('#tGo').click()
+        p.locator('#doneBtn').click()
+        check(state() == 'run', 'a paused timer still counts as in use: Done starts the next one (%r)' % state())
+        p.locator('#undoBtn').click()
+
+    def change_while_running():
+        p.locator('#tGo').click()
+        run(3000)
+        chip(45).click()
+        check(state() == 'run' and left() == '0:45', 'picking 0:45 while running restarts at 0:45 (%r, %r)' % (state(), left()))
+        p.locator('#tReset').click()
+
+    def customs():
+        custom('1', '20')
+        check(left() == '1:20', 'Custom 1 min 20 s gives 1:20 (%r)' % left())
+        check(p.locator('#tCustom').is_hidden(), 'Set closes the custom row')
+        c = p.locator('#tCustomBtn')
+        check(c.inner_text().strip() == '1:20' and c.get_attribute('aria-pressed') == 'true',
+              'the Custom chip shows 1:20 and is highlighted (%r)' % c.inner_text())
+        check(chip(45).get_attribute('aria-pressed') == 'false', 'no preset chip is highlighted')
+        custom('99', '0', enter=True)
+        check(left() == '10:00', 'Enter sets it too, and 99 min is brought down to 10:00 (%r)' % left())
+        custom('0', '2')
+        check(left() == '0:05', '0 min 2 s is brought up to 0:05 (%r)' % left())
+        p.locator('#tGo').click()
+        run(5000)
+        check(state() == 'up', 'a 0:05 hold is up after 5 s')
+        t = tones()
+        p.locator('#tLeft').click()
+        run(15000)
+        check(tones() == t, 'tapping the timer silences the chime (%d more tones)' % (tones() - t))
+        reopen()
+        check(left() == '0:05', 'the custom length is kept after a reload (%r)' % left())
+        custom('1', '20')
+
+    def editor():
+        p.locator('#editRoutine > summary').click()
+        lf = p.locator('#editRoutine .prow[data-pose="leftfold"] select.psec')
+        rf = p.locator('#editRoutine .prow[data-pose="rightfold"] select.psec')
+        check(p.locator('#editRoutine select.psec').count() == 10, 'every asana row has a length dropdown')
+        vals = rf.evaluate('s=>[...s.options].map(o=>o.value)')
+        check(vals == ['30', '45', '60', '64'], 'the dropdown offers 0:30, 0:45, 1:00, 1:04 (%s)' % vals)
+        check(rf.input_value() == '30', 'Right Fold\'s dropdown reads 0:30')
+        check(lf.input_value() == '80', 'Left Fold\'s dropdown shows its custom 1:20 (%r)' % lf.input_value())
+        check('1:20' in lf.evaluate('s=>s.options[s.selectedIndex].text'), 'labelled 1:20')
+        rf.select_option('45')
+        lf.select_option('64')
+        check(left() == '1:04', 'setting Left Fold to 1:04 in the editor updates the timer (%r)' % left())
+        p.locator('#doneBtn').click()
+        check(s.txt('#nowPose') == 'Right Fold' and left() == '0:45', 'Right Fold now reads 0:45 (%r)' % left())
+        p.locator('#undoBtn').click()
+        reopen()
+        check(left() == '1:04', 'the editor\'s lengths survive a reload (%r)' % left())
+
+    def sound():
+        snd = p.locator('#tSound')
+        check(snd.get_attribute('aria-pressed') == 'true', 'sound is on at first')
+        snd.click()
+        check(snd.get_attribute('aria-pressed') == 'false', 'the speaker button turns sound off')
+        reopen()
+        check(snd.get_attribute('aria-pressed') == 'false', 'sound stays off after a reload')
+        t = tones()
+        p.locator('#tGo').click()
+        run(70000)
+        check(state() == 'up', 'the hold still ends with sound off')
+        check(tones() == t, 'with sound off nothing plays (%d tones)' % (tones() - t))
+        p.locator('#tReset').click()
+        snd.click()
+        check(snd.get_attribute('aria-pressed') == 'true', 'and back on')
+        check(tones() > t, 'turning sound on plays a short beep to show it works')
+
+    def session_end():
+        if not p.locator('#roundsSel').is_visible():
+            p.locator('#editRoutine > summary').click()
+        p.locator('#roundsSel').select_option('1')
+        s.done(9)
+        check(s.txt('#nowPose') == 'Plank', 'one round: on Plank after 9 Done (%r)' % s.txt('#nowPose'))
+        p.locator('#tGo').click()
+        p.locator('#doneBtn').click()
+        check(p.locator('#nowCard').get_attribute('data-state') == 'complete', 'the morning is complete')
+        check(p.locator('#timer').is_hidden(), 'the timer hides when the session is finished')
+        t = tones()
+        run(70000)
+        check(tones() == t and state() == 'idle', 'and nothing starts or rings (%r, %d tones)' % (state(), tones() - t))
+
+    try:
+        for name, fn in [('timer: fresh', fresh), ('timer: each asana its own length', per_asana),
+                         ('timer: countdown and time up', countdown), ('timer: the ring stops', ring_stops),
+                         ('timer: Done starts the next', done_chains), ('timer: Undo stops it', undo_stops),
+                         ('timer: Reset', reset_breaks_chain), ('timer: change while running', change_while_running),
+                         ('timer: custom', customs), ('timer: editor', editor), ('timer: sound off', sound),
+                         ('timer: session end', session_end)]:
+            run_section(name, fn)
+        SECTION[0] = label + ': timer browser'
+        for e in s.errors:
+            check(False, 'browser error: ' + e)
+        check(not s.blocked, 'no request to an unexpected host: %s' % s.blocked[:3])
+    finally:
+        s.close()
+
+
 MERGE_CASES = r"""(function(){
   var on=function(s,k){return (+((s.marks||{})[k])||0)>(+((s.off||{})[k])||0);};
   var ses=function(marks,off,at,extra){var s={id:'s-2026-10-04-am',kind:'session',day:'2026-10-04',part:'am',poseIds:['a','b'],rounds:2,marks:marks,off:off||{},updatedAt:at};
@@ -358,6 +589,15 @@ def layout_flow(browser, base):
                     check(p.evaluate('document.documentElement.scrollWidth') <= w, 'page fits %d px without sideways scroll (%d)' % (w, p.evaluate('document.documentElement.scrollWidth')))
                     b = p.locator('#doneBtn').bounding_box()
                     check(b and b['y'] + b['height'] <= h, 'the Done button is on screen without scrolling at %dx%d (bottom %s)' % (w, h, b and round(b['y'] + b['height'])))
+                    # the digits, Start, Reset and the speaker share one line, also with the longest texts in them
+                    for digits, go, st in (('0:30', 'Start', 'idle'), ('10:00', 'Resume', 'paused'), ('Time up', 'Again', 'up')):
+                        tops = p.evaluate("""([d,g,st])=>{var t=document.querySelector('#timer');t.setAttribute('data-state',st);
+                            document.querySelector('#tLeft').textContent=d;document.querySelector('#tGo').textContent=g;
+                            return ['#tLeft','#tGo','#tReset','#tSound'].map(s=>{var r=document.querySelector(s).getBoundingClientRect();return Math.round(r.top+r.height/2);});}""",
+                                          [digits, go, st])
+                        check(max(tops) - min(tops) <= 4, 'the timer row stays on one line at %d px with %r and %r (%s)' % (w, digits, go, tops))
+                    p.reload()
+                    p.locator('#doneBtn').wait_for()
                     p.locator('#editRoutine > summary').click()
                     p.locator('#roundsSel').select_option('10')
                     p.locator('#doneBtn').click()
@@ -399,6 +639,8 @@ def run_target(browser, label, directory, with_layout):
             check(not s.blocked, 'no request to an unexpected host: %s' % s.blocked[:3])
         finally:
             s.close()
+        print('==', label, 'timer')
+        timer_flow(browser, base, label)
         if with_layout:
             print('==', label, 'layout')
             layout_flow(browser, base)

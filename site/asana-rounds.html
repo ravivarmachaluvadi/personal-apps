@@ -85,6 +85,25 @@ h1{font-weight:700;font-size:clamp(24px,5vw,32px);letter-spacing:-.02em;margin:0
 .note{margin:10px 0 0;min-height:1.4em;color:var(--good);font-size:14px;font-weight:500}
 .now[data-state="complete"] .pose{color:var(--good)}
 
+/* the hold timer: each asana keeps its own length */
+.timer{margin:12px 0 0;padding:10px 12px 12px;border:1px solid var(--line);border-radius:14px;background:var(--surface-2)}
+.now[data-state="complete"] .timer{display:none}
+.trow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#tLeft{font-weight:700;font-size:34px;line-height:1.1;letter-spacing:-.01em;font-variant-numeric:tabular-nums;margin-right:auto;min-width:3.2em}
+.timer[data-state="run"] #tLeft{color:var(--accent)}
+.timer[data-state="up"] #tLeft{color:var(--good)}
+.timer #tGo{min-width:92px;font-weight:600}
+.timer[data-state="idle"] #tGo,.timer[data-state="paused"] #tGo,.timer[data-state="up"] #tGo{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.tbar{height:6px;border-radius:99px;background:var(--surface);border:1px solid var(--line);overflow:hidden;margin:8px 0 10px}
+.tbar i{display:block;height:100%;width:100%;background:var(--accent);border-radius:99px;transition:width .2s linear}
+.chips{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.chip{font:500 14px Lexend,system-ui,sans-serif;font-variant-numeric:tabular-nums;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:99px;min-height:36px;padding:4px 6px;cursor:pointer;touch-action:manipulation;min-width:0}
+.chip:hover{border-color:var(--accent)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chip:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.tcustom{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;font-size:14px;color:var(--muted)}
+.tcustom input{width:72px}
+
 /* the round grid: your table, asanas down the side and rounds across */
 .gridwrap{max-width:100%}
 #grid{width:100%;border-collapse:separate;border-spacing:3px;table-layout:fixed}
@@ -120,9 +139,10 @@ details.card>summary::before{content:'\25B8';color:var(--muted);font-size:14px;t
 details.card[open]>summary::before{transform:rotate(90deg)}
 .fld{display:flex;gap:10px;align-items:center;margin:14px 0 10px;flex-wrap:wrap}
 .fld label{font-size:14px;color:var(--muted)}
-input[type=text],select{font:15px Lexend,system-ui,sans-serif;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:7px 10px;min-height:38px;min-width:0}
+input[type=text],input[type=number],select{font:15px Lexend,system-ui,sans-serif;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:7px 10px;min-height:38px;min-width:0}
 #editList{list-style:none;margin:0;padding:0;display:grid;gap:6px}
-.prow{display:grid;grid-template-columns:22px minmax(0,1fr) 38px 38px auto;gap:6px;align-items:center}
+.prow{display:grid;grid-template-columns:22px minmax(0,1fr) auto 38px 38px auto;gap:6px;align-items:center}
+.prow .psec{padding:7px 6px;font-variant-numeric:tabular-nums}
 .prow .num{color:var(--faint);font-size:13px;text-align:right}
 .prow input{width:100%}
 .prow .btn{padding:0;min-width:38px}
@@ -134,6 +154,19 @@ input[type=text],select{font:15px Lexend,system-ui,sans-serif;background:var(--s
 @media (max-width:480px){
   .nowtop{font-size:14px}
   .acts .btn{min-width:68px}
+  /* digits, Start, Reset and the speaker keep to one line at 390 px, "Time up" included */
+  .timer{padding:10px 10px 12px}
+  .trow{gap:6px}
+  #tLeft{font-size:30px;min-width:0}
+  .timer[data-state="up"] #tLeft{font-size:22px}
+  .timer #tGo{min-width:74px;padding:7px 10px}
+  .timer #tReset{padding:7px 10px}
+  .chip{font-size:13px;padding:4px 2px}
+  /* an asana row takes two lines on a phone, so the name keeps its width */
+  #editList{gap:10px}
+  .prow{grid-template-columns:22px minmax(0,1fr) 38px 38px;grid-template-areas:"num name up down" ". sec rm rm";row-gap:4px}
+  .prow .num{grid-area:num}.prow .pname{grid-area:name}.prow .psec{grid-area:sec;justify-self:start}
+  .prow .up{grid-area:up}.prow .down{grid-area:down}.prow .rm{grid-area:rm}
   #history .wd{font-size:10px}
   .dot{width:11px;height:11px}
 }
@@ -161,6 +194,27 @@ input[type=text],select{font:15px Lexend,system-ui,sans-serif;background:var(--s
     <div class="pose" id="nowPose"></div>
     <div class="ladder" id="ladder" aria-hidden="true"></div>
     <div class="next" id="nowNext"></div>
+    <div class="timer" id="timer" data-state="idle">
+      <div class="trow">
+        <span id="tLeft" role="timer">0:30</span>
+        <button class="btn" id="tGo" type="button">Start</button>
+        <button class="btn" id="tReset" type="button" disabled>Reset</button>
+        <button class="btn icon" id="tSound" type="button" aria-pressed="true" aria-label="Sound on"></button>
+      </div>
+      <div class="tbar" aria-hidden="true"><i id="tBar"></i></div>
+      <div class="chips" id="tPresets" role="group" aria-label="Hold length">
+        <button class="chip" type="button" data-sec="30" aria-pressed="false">0:30</button>
+        <button class="chip" type="button" data-sec="45" aria-pressed="false">0:45</button>
+        <button class="chip" type="button" data-sec="60" aria-pressed="false">1:00</button>
+        <button class="chip" type="button" data-sec="64" aria-pressed="false">1:04</button>
+        <button class="chip" type="button" data-sec="custom" id="tCustomBtn" aria-pressed="false" aria-expanded="false" aria-controls="tCustom">Custom</button>
+      </div>
+      <div class="tcustom" id="tCustom" hidden>
+        <label for="tMin">Min</label><input type="number" id="tMin" min="0" max="10" step="1" inputmode="numeric">
+        <label for="tSec">Sec</label><input type="number" id="tSec" min="0" max="59" step="1" inputmode="numeric">
+        <button class="btn sm" id="tSet" type="button">Set</button>
+      </div>
+    </div>
     <div class="acts">
       <button class="big" id="doneBtn" type="button">Done &rarr; next</button>
       <button class="btn" id="undoBtn" type="button">Undo</button>
@@ -199,6 +253,7 @@ input[type=text],select{font:15px Lexend,system-ui,sans-serif;background:var(--s
       <button class="btn" id="addBtn" type="button">Add</button>
     </div>
     <p class="hint">Changes apply to today and every day after. Past days keep the routine they were done with.</p>
+    <p class="hint">The time next to each asana is its hold length on the timer. For a length not in the list, use Custom on the timer while that asana is on screen.</p>
   </details>
 
   <p class="foot" id="foot"></p>
@@ -235,6 +290,8 @@ input[type=text],select{font:15px Lexend,system-ui,sans-serif;background:var(--s
     ['slpbackbend','SLP BackBend'],['s2d45','2Sd45'],['cobra','Cobra'],['sitbackbend','Sit BackBend'],['plank','Plank']];
   var DEFAULT_ROUNDS=5,MAX_ROUNDS=10,MAX_POSES=30;
   var PARTS={am:'Morning',pm:'Evening'};
+  /* hold lengths in seconds: the timer's chips, and the length an asana gets until you pick one */
+  var PRESETS=[30,45,60,64],DEFAULT_SEC=30,MIN_SEC=5,MAX_SEC=600;
 
   /* ---------- store ----------
      One document {v, app, items}. Items:
@@ -283,15 +340,20 @@ input[type=text],select{font:15px Lexend,system-ui,sans-serif;background:var(--s
   /* ---------- the routine ---------- */
   var ID_RE=/^[\w-]{1,40}$/;
   function cleanName(s){return String(s==null?'':s).replace(/\s+/g,' ').trim().slice(0,40);}
+  /* a saved length is kept only when it is whole seconds in range; anything else means the default */
+  function cleanSec(x){var n=+x;return n===Math.floor(n)&&n>=MIN_SEC&&n<=MAX_SEC?n:DEFAULT_SEC;}
+  function clampSec(x){return Math.min(MAX_SEC,Math.max(MIN_SEC,Math.round(+x||0)));}
   function routine(){
     var r=items().routine,poses=[],seen={};
     if(r&&!r.deleted&&Array.isArray(r.poses))r.poses.forEach(function(p){
-      if(p&&ID_RE.test(String(p.id))&&!seen[p.id]&&cleanName(p.name)&&poses.length<MAX_POSES){seen[p.id]=1;poses.push({id:String(p.id),name:cleanName(p.name)});}});
-    if(!poses.length)poses=DEFAULT_POSES.map(function(p){return {id:p[0],name:p[1]};});
+      if(p&&ID_RE.test(String(p.id))&&!seen[p.id]&&cleanName(p.name)&&poses.length<MAX_POSES){seen[p.id]=1;poses.push({id:String(p.id),name:cleanName(p.name),sec:cleanSec(p.sec)});}});
+    if(!poses.length)poses=DEFAULT_POSES.map(function(p){return {id:p[0],name:p[1],sec:DEFAULT_SEC};});
     var n=Math.floor(+(r&&!r.deleted?r.rounds:0));
     return {poses:poses,rounds:n>=1&&n<=MAX_ROUNDS?n:DEFAULT_ROUNDS};
   }
   function poseName(id){var ps=routine().poses;for(var i=0;i<ps.length;i++)if(ps[i].id===id)return ps[i].name;return id;}
+  function poseSec(id){var ps=routine().poses;for(var i=0;i<ps.length;i++)if(ps[i].id===id)return ps[i].sec;return DEFAULT_SEC;}
+  function setPoseSec(id,sec){var r=routine();r.poses.forEach(function(p){if(p.id===id)p.sec=clampSec(sec);});saveRoutine(r);}
   /* saving the routine also re-stamps today's sessions, so a day keeps the routine it ended with */
   function saveRoutine(r){
     var list=[{id:'routine',kind:'routine',poses:r.poses,rounds:r.rounds}];
@@ -416,6 +478,129 @@ input[type=text],select{font:15px Lexend,system-ui,sans-serif;background:var(--s
     return null;
   }
 
+  /* ---------- the hold timer ----------
+     It belongs to the cell on screen (day, session, round, asana) and counts to a clock time, not by
+     counting ticks, so a phone that stalls the page still shows the right time on return. Time up rings
+     and ticks nothing; Done then starts the next asana's timer, but only if the timer was in use, so a
+     session done without it never beeps. Per device and never saved: only each asana's length is. */
+  var T={key:'',id:'',name:'',sec:DEFAULT_SEC,state:'idle',endAt:0,leftMs:0,beep:4},tickT=null,ringT=null;
+  var SOUND_KEY='asanarounds.sound';
+  function fmtSec(s){s=Math.max(0,s);return Math.floor(s/60)+':'+pad(s%60);}
+  function curCell(){
+    var p=viewPart(),st=stats(DAY,p);if(st.complete||!st.cur)return null;
+    var id=st.plan.ids[st.cur.i];
+    return {key:DAY+':'+p+':'+st.cur.r+':'+id,id:id,name:poseName(id),sec:poseSec(id)};
+  }
+
+  /* sound: a soft blip for the last three seconds, a rising chime at time up (Dumbbell Dojo's rest bell).
+     Audio is unlocked by the tap that starts a timer or turns sound on */
+  var AC=null;
+  function soundOn(){return lsGet(SOUND_KEY,'')!=='off';}
+  function ensureAudio(){try{if(!AC){var C=window.AudioContext||window.webkitAudioContext;if(C)AC=new C();}if(AC&&AC.state==='suspended')AC.resume();}catch(e){}}
+  function tone(f,t0,dur,g){
+    var o=AC.createOscillator(),o2=AC.createOscillator(),gn=AC.createGain(),g2=AC.createGain();
+    o.type='sine';o.frequency.value=f;o2.type='triangle';o2.frequency.value=f*2;g2.gain.value=.18;
+    gn.gain.setValueAtTime(0,t0);gn.gain.linearRampToValueAtTime(g,t0+.012);gn.gain.exponentialRampToValueAtTime(.0001,t0+dur);
+    o.connect(gn);o2.connect(g2);g2.connect(gn);gn.connect(AC.destination);
+    o.start(t0);o2.start(t0);o.stop(t0+dur+.05);o2.stop(t0+dur+.05);
+  }
+  function blip(){if(!soundOn())return;ensureAudio();if(!AC)return;try{tone(880,AC.currentTime+.02,.18,.3);}catch(e){}}
+  function chime(){if(!soundOn())return;ensureAudio();if(!AC)return;try{var t=AC.currentTime+.02;[523,659,784,1047].forEach(function(f,i){tone(f,t+i*.17,.9,.5);});}catch(e){}}
+  function buzz(p){if(navigator.vibrate){try{navigator.vibrate(p);}catch(e){}}}
+  /* the chime repeats every 4 s, four times in all, until you tap the timer or Done */
+  function ring(){stopRing();var n=0;chime();buzz([300,120,300]);
+    ringT=setInterval(function(){if(++n>=4){stopRing();return;}chime();buzz([300,120,300]);},4000);}
+  function stopRing(){if(ringT){clearInterval(ringT);ringT=null;}}
+
+  /* the screen stays on while a hold runs or rings (where the browser allows it) */
+  var wl=null,wantWake=false;
+  function wake(on){
+    wantWake=on;
+    try{
+      if(on&&!wl&&'wakeLock' in navigator)navigator.wakeLock.request('screen').then(function(l){
+        if(!wantWake){l.release().catch(function(){});return;}
+        wl=l;l.addEventListener('release',function(){if(wl===l)wl=null;});}).catch(function(){});
+      else if(!on&&wl){wl.release().catch(function(){});wl=null;}
+    }catch(e){}
+  }
+
+  function stopTick(){if(tickT){clearInterval(tickT);tickT=null;}}
+  function clearTimer(){stopTick();stopRing();T.state='idle';T.beep=4;wake(false);}
+  function startTimer(){
+    var c=curCell();if(!c)return;
+    ensureAudio();clearTimer();
+    T.key=c.key;T.id=c.id;T.name=c.name;T.sec=c.sec;T.state='run';T.endAt=Date.now()+c.sec*1000;
+    tickT=setInterval(tick,200);wake(true);paintClock();
+  }
+  function pauseTimer(){T.leftMs=Math.max(0,T.endAt-Date.now());stopTick();T.state='paused';wake(false);paintClock();}
+  function resumeTimer(){T.endAt=Date.now()+T.leftMs;T.state='run';stopTick();tickT=setInterval(tick,200);wake(true);paintClock();}
+  function resetTimer(){clearTimer();var c=curCell();if(c)T.sec=c.sec;paintClock();}
+  function tick(){
+    if(T.state!=='run')return;
+    var l=T.endAt-Date.now();
+    if(l<=0){timeUp();return;}
+    var s=Math.ceil(l/1000);
+    if(s<=3&&s<T.beep){T.beep=s;blip();}
+    paintClock();
+  }
+  function timeUp(){stopTick();T.state='up';paintClock();ring();note('Time up · '+T.name+' — tap Done');}
+
+  /* the digits, bar, button and tab title: cheap enough for every tick */
+  function paintClock(){
+    var l=T.state==='run'?Math.max(0,T.endAt-Date.now()):T.state==='paused'?T.leftMs:T.state==='up'?0:T.sec*1000;
+    $('#timer').setAttribute('data-state',T.state);
+    $('#tLeft').textContent=T.state==='up'?'Time up':fmtSec(Math.ceil(l/1000));
+    $('#tBar').style.width=(T.sec?Math.min(100,l*100/(T.sec*1000)):0)+'%';
+    $('#tGo').textContent={idle:'Start',run:'Pause',paused:'Resume',up:'Again'}[T.state];
+    $('#tReset').disabled=T.state==='idle';
+    document.title=T.state==='run'?fmtSec(Math.ceil(l/1000))+' · '+T.name:T.state==='paused'?'Paused · '+T.name:T.state==='up'?'Time up · '+T.name:'Asana Rounds';
+  }
+  /* follows the cell on screen: Undo, a grid tap, the other session or a new day stops the timer and shows the new asana's length */
+  function renderTimer(){
+    var c=curCell();
+    if(!c){if(T.key||T.state!=='idle'){clearTimer();T.key='';}}
+    else if(c.key!==T.key){clearTimer();T.key=c.key;T.id=c.id;T.name=c.name;T.sec=c.sec;}
+    else{T.name=c.name;if(T.state==='idle')T.sec=c.sec;}
+    var sec=c?c.sec:T.sec,custom=PRESETS.indexOf(sec)<0,cb=$('#tCustomBtn');
+    Array.prototype.forEach.call(document.querySelectorAll('#tPresets .chip[data-sec]'),function(b){
+      var v=b.getAttribute('data-sec');if(v!=='custom')b.setAttribute('aria-pressed',+v===sec?'true':'false');});
+    cb.textContent=custom?fmtSec(sec):'Custom';
+    cb.setAttribute('aria-pressed',custom?'true':'false');
+    cb.setAttribute('aria-label',custom?'Custom length, now '+fmtSec(sec):'Custom length');
+    $('#tPresets').setAttribute('aria-label','Hold length'+(c?' for '+c.name:''));
+    paintClock();
+  }
+  /* a chip or Custom sets the length of the asana on screen; a running timer restarts at the new length */
+  function pickSec(sec){
+    var c=curCell();if(!c)return;
+    var was=T.state;stopRing();
+    setPoseSec(c.id,sec);
+    if(was==='run')startTimer();else resetTimer();
+  }
+  function onTimerGo(){ensureAudio();stopRing();if(T.state==='run')pauseTimer();else if(T.state==='paused')resumeTimer();else startTimer();}
+  function openCustom(){
+    var row=$('#tCustom'),open=row.hidden,c=curCell(),sec=c?c.sec:T.sec;
+    row.hidden=!open;$('#tCustomBtn').setAttribute('aria-expanded',open?'true':'false');
+    if(open){$('#tMin').value=String(Math.floor(sec/60));$('#tSec').value=String(sec%60);$('#tMin').focus();}
+  }
+  function setCustom(){
+    var m=$('#tMin').value.trim(),s=$('#tSec').value.trim();
+    if(!m&&!s){$('#tMin').focus();return;}
+    var total=Math.floor(+m||0)*60+Math.floor(+s||0);
+    $('#tCustom').hidden=true;$('#tCustomBtn').setAttribute('aria-expanded','false');
+    pickSec(total);
+  }
+  function svgIcon(d){
+    var NS='http://www.w3.org/2000/svg',svg=document.createElementNS(NS,'svg'),path=document.createElementNS(NS,'path');
+    [['viewBox','0 0 24 24'],['fill','none'],['stroke','currentColor'],['stroke-width','2'],['stroke-linecap','round'],['stroke-linejoin','round'],['aria-hidden','true']].forEach(function(a){svg.setAttribute(a[0],a[1]);});
+    path.setAttribute('d',d);svg.appendChild(path);return svg;
+  }
+  function paintSound(){
+    var on=soundOn(),b=$('#tSound'),label=on?'Sound on':'Sound off';
+    clear(b);b.appendChild(svgIcon(on?'M11 5 6 9H2v6h4l5 4V5zM15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14':'M11 5 6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6'));
+    b.setAttribute('aria-pressed',on?'true':'false');b.setAttribute('aria-label',label);b.title=label+' (this device)';
+  }
+
   function renderGrid(){
     var p=viewPart(),st=stats(DAY,p),ids=st.plan.ids,R=st.plan.rounds,c=st.cur,t=$('#grid');
     clear(t);
@@ -468,8 +653,13 @@ input[type=text],select{font:15px Lexend,system-ui,sans-serif;background:var(--s
       inp.addEventListener('blur',function(){if(editDirty)setTimeout(renderEditor,0);});
       var rm=h('button',{type:'button',class:'btn rm',text:'Remove','aria-label':'Remove '+p.name,disabled:r.poses.length<2});
       rm.addEventListener('click',function(){armRemove(rm,p.id);});
+      /* the presets, plus this asana's own length when it is a custom one */
+      var secs=PRESETS.indexOf(p.sec)<0?PRESETS.concat([p.sec]).sort(function(a,b){return a-b;}):PRESETS;
+      var sel=h('select',{class:'psec','aria-label':'Hold length for '+p.name},secs.map(function(v){return h('option',{value:String(v),text:fmtSec(v)});}));
+      sel.value=String(p.sec);
+      sel.addEventListener('change',function(){setPoseSec(p.id,+sel.value);});
       ol.appendChild(h('li',{class:'prow','data-pose':p.id},[
-        h('span',{class:'num',text:String(i+1)}),inp,
+        h('span',{class:'num',text:String(i+1)}),inp,sel,
         h('button',{type:'button',class:'btn up',text:'↑','aria-label':'Move '+p.name+' earlier',disabled:i===0,onclick:function(){movePose(p.id,-1);}}),
         h('button',{type:'button',class:'btn down',text:'↓','aria-label':'Move '+p.name+' later',disabled:i===r.poses.length-1,onclick:function(){movePose(p.id,1);}}),
         rm]));
@@ -484,13 +674,14 @@ input[type=text],select{font:15px Lexend,system-ui,sans-serif;background:var(--s
       b.appendChild(h('button',{type:'button',class:'btn sm',text:'Back to the real date',onclick:function(){FAKE='';lsSet('asanarounds.faketoday',null);dayCheck(true);}}));}
   }
 
-  function renderAll(){renderHeader();renderParts();renderNow();renderGrid();renderHistory();renderEditor();}
+  function renderAll(){renderHeader();renderParts();renderNow();renderGrid();renderHistory();renderEditor();renderTimer();}
 
   /* ---------- actions ---------- */
   function onDone(){
     var p=viewPart(),st=stats(DAY,p);
+    stopRing();
     if(st.complete){var o=other(p);if(!stats(DAY,o).complete){VIEW=o;note('');renderAll();}return;}
-    var c=st.cur,R=st.plan.rounds;
+    var c=st.cur,R=st.plan.rounds,timing=T.state!=='idle';
     VIEW=p;
     setCell(p,c.r+':'+st.plan.ids[c.i],true);
     var after=stats(DAY,p);
@@ -498,6 +689,7 @@ input[type=text],select{font:15px Lexend,system-ui,sans-serif;background:var(--s
     else if(after.full>st.full)note('Round '+c.r+' done · '+(R-after.full)+' to go');
     else note('');
     renderAll();
+    if(timing&&!after.complete)startTimer();
   }
   function onUndo(){
     var p=viewPart(),s=session(DAY,p);if(!s||s.compact)return;
@@ -574,7 +766,20 @@ input[type=text],select{font:15px Lexend,system-ui,sans-serif;background:var(--s
   $('#addName').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();addPose();}});
   $('#themeBtn').addEventListener('click',function(){var next=shownTheme()==='dark'?'light':'dark';lsSet(THEME_KEY,JSON.stringify(next===deviceTheme()?'auto':next));paintTheme();});
   if(darkQ){if(darkQ.addEventListener)darkQ.addEventListener('change',paintTheme);else if(darkQ.addListener)darkQ.addListener(paintTheme);}
-  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')dayCheck();});
+  $('#tGo').addEventListener('click',onTimerGo);
+  $('#tReset').addEventListener('click',resetTimer);
+  Array.prototype.forEach.call(document.querySelectorAll('#tPresets .chip[data-sec]'),function(b){
+    var v=b.getAttribute('data-sec');
+    b.addEventListener('click',v==='custom'?openCustom:function(){$('#tCustom').hidden=true;$('#tCustomBtn').setAttribute('aria-expanded','false');pickSec(+v);});});
+  $('#tSet').addEventListener('click',setCustom);
+  ['#tMin','#tSec'].forEach(function(s){$(s).addEventListener('keydown',function(e){
+    if(e.key==='Enter'){e.preventDefault();setCustom();}
+    else if(e.key==='Escape'){$('#tCustom').hidden=true;$('#tCustomBtn').setAttribute('aria-expanded','false');$('#tCustomBtn').focus();}});});
+  $('#tSound').addEventListener('click',function(){var on=soundOn();lsSet(SOUND_KEY,on?'off':null);paintSound();if(!on)blip();});
+  /* any tap on the timer (not on its buttons) silences the chime */
+  $('#timer').addEventListener('click',function(e){if(!e.target.closest('button,input'))stopRing();});
+  /* back on the page: a hold that ended while the phone was away rings now, and the screen is kept on again */
+  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'){dayCheck();if(T.state==='run'){wake(true);tick();}else if(T.state==='up')wake(true);}});
   window.addEventListener('focus',function(){dayCheck();});
   setInterval(function(){dayCheck();},60000);
 
@@ -587,6 +792,7 @@ input[type=text],select{font:15px Lexend,system-ui,sans-serif;background:var(--s
     ? ' in your Google Drive once you sign in, so every device you sign in on sees the same progress. Signed out, they stay in this browser until you do.'
     : ' in your Google Drive.'));
   paintTheme();
+  paintSound();
   compactOld();
   renderAll();
   BOOTED=true;
