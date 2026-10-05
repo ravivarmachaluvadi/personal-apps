@@ -249,6 +249,8 @@ input[type=text],input[type=number],select{font:15px Lexend,system-ui,sans-serif
   <details class="card" id="editRoutine">
     <summary>Edit routine</summary>
     <div class="fld"><label for="roundsSel">Rounds per session</label><select id="roundsSel"></select></div>
+    <div class="fld"><label for="pmSel">Evening starts at</label><select id="pmSel"></select></div>
+    <p class="hint">Before this time the page opens on Morning, from it on Evening. You can always tap the other session, and a session you are in stays on screen.</p>
     <ol id="editList"></ol>
     <div class="addrow">
       <input type="text" id="addName" maxlength="40" placeholder="Add an asana" aria-label="Name of the asana to add">
@@ -292,6 +294,9 @@ input[type=text],input[type=number],select{font:15px Lexend,system-ui,sans-serif
     ['slpbackbend','SLP BackBend'],['s2d45','2Sd45'],['cobra','Cobra'],['sitbackbend','Sit BackBend'],['plank','Plank']];
   var DEFAULT_ROUNDS=5,MAX_ROUNDS=10,MAX_POSES=30;
   var PARTS={am:'Morning',pm:'Evening'};
+  /* the hour Evening starts (Edit routine offers 9 am to 8 pm), and how long a morning you were ticking
+     keeps the page after that hour, so a reload mid-session does not strand it */
+  var DEFAULT_PM_FROM=12,PM_FIRST=9,PM_LAST=20,RECENT_MS=30*60000;
   /* hold lengths in seconds: the timer's chips, and the length an asana gets until you pick one */
   var PRESETS=[30,45,60,64],DEFAULT_SEC=30,MIN_SEC=5,MAX_SEC=600;
 
@@ -350,15 +355,17 @@ input[type=text],input[type=number],select{font:15px Lexend,system-ui,sans-serif
     if(r&&!r.deleted&&Array.isArray(r.poses))r.poses.forEach(function(p){
       if(p&&ID_RE.test(String(p.id))&&!seen[p.id]&&cleanName(p.name)&&poses.length<MAX_POSES){seen[p.id]=1;poses.push({id:String(p.id),name:cleanName(p.name),sec:cleanSec(p.sec)});}});
     if(!poses.length)poses=DEFAULT_POSES.map(function(p){return {id:p[0],name:p[1],sec:DEFAULT_SEC};});
-    var n=Math.floor(+(r&&!r.deleted?r.rounds:0));
-    return {poses:poses,rounds:n>=1&&n<=MAX_ROUNDS?n:DEFAULT_ROUNDS};
+    var n=Math.floor(+(r&&!r.deleted?r.rounds:0)),pf=r&&!r.deleted?+r.pmFrom:NaN;
+    return {poses:poses,rounds:n>=1&&n<=MAX_ROUNDS?n:DEFAULT_ROUNDS,
+      pmFrom:pf===Math.floor(pf)&&pf>=PM_FIRST&&pf<=PM_LAST?pf:DEFAULT_PM_FROM};
   }
+  function hourLabel(hr){return hr<12?hr+' am':hr===12?'12 noon':(hr-12)+' pm';}
   function poseName(id){var ps=routine().poses;for(var i=0;i<ps.length;i++)if(ps[i].id===id)return ps[i].name;return id;}
   function poseSec(id){var ps=routine().poses;for(var i=0;i<ps.length;i++)if(ps[i].id===id)return ps[i].sec;return DEFAULT_SEC;}
   function setPoseSec(id,sec){var r=routine();r.poses.forEach(function(p){if(p.id===id)p.sec=clampSec(sec);});saveRoutine(r);}
   /* saving the routine also re-stamps today's sessions, so a day keeps the routine it ended with */
   function saveRoutine(r){
-    var list=[{id:'routine',kind:'routine',poses:r.poses,rounds:r.rounds}];
+    var list=[{id:'routine',kind:'routine',poses:r.poses,rounds:r.rounds,pmFrom:r.pmFrom}];
     ['am','pm'].forEach(function(p){var s=session(DAY,p);if(s&&!s.compact){var c=copySession(s);c.poseIds=r.poses.map(function(x){return x.id;});c.rounds=r.rounds;list.push(c);}});
     putAll(list);renderAll();
   }
@@ -404,10 +411,17 @@ input[type=text],input[type=number],select{font:15px Lexend,system-ui,sans-serif
   }
 
   /* ---------- which session is on screen ---------- */
-  /* null: the first unfinished session today. Pinned to a session once you switch to it or tick in it,
-     so finishing the morning shows "Morning done" instead of jumping straight to the evening */
-  var VIEW=null;
-  function autoPart(){return stats(DAY,'am').complete?'pm':'am';}
+  /* null: picked by the clock, Morning before the hour Evening starts and Evening from it. A morning ticked
+     in the last 30 minutes and not finished keeps the page after that hour (a reload mid-session).
+     Pinned to a session once you switch to it, tick in it or start its timer, so the clock never moves
+     you out of a session you are in, and finishing the morning shows "Morning done" */
+  var VIEW=null,SHOWN='';
+  function lastTick(s){var t=0;if(s&&!s.compact)Object.keys(s.marks||{}).forEach(function(k){if(isOn(s,k)&&+s.marks[k]>t)t=+s.marks[k];});return t;}
+  function autoPart(){
+    if(new Date().getHours()<routine().pmFrom)return 'am';
+    var am=stats(DAY,'am');
+    return !am.complete&&am.count&&Date.now()-lastTick(am.s)<RECENT_MS?'am':'pm';
+  }
   function viewPart(){return VIEW||autoPart();}
   function other(p){return p==='am'?'pm':'am';}
 
@@ -433,7 +447,7 @@ input[type=text],input[type=number],select{font:15px Lexend,system-ui,sans-serif
   function note(t){var el=$('#doneNote');el.textContent=t||'';clearTimeout(noteTimer);if(t)noteTimer=setTimeout(function(){el.textContent='';},6000);}
 
   function renderParts(){
-    var vp=viewPart();
+    var vp=viewPart();SHOWN=vp;
     ['am','pm'].forEach(function(p){
       var b=$(p==='am'?'#partAm':'#partPm'),st=stats(DAY,p),pct=st.total?Math.round(st.count*100/st.total):0;
       clear(b);b.setAttribute('aria-pressed',vp===p?'true':'false');
@@ -579,7 +593,7 @@ input[type=text],input[type=number],select{font:15px Lexend,system-ui,sans-serif
     setPoseSec(c.id,sec);
     if(was==='run')startTimer();else resetTimer();
   }
-  function onTimerGo(){ensureAudio();stopRing();if(T.state==='run')pauseTimer();else if(T.state==='paused')resumeTimer();else startTimer();}
+  function onTimerGo(){VIEW=viewPart();ensureAudio();stopRing();if(T.state==='run')pauseTimer();else if(T.state==='paused')resumeTimer();else startTimer();}
   function openCustom(){
     var row=$('#tCustom'),open=row.hidden,c=curCell(),sec=c?c.sec:T.sec;
     row.hidden=!open;$('#tCustomBtn').setAttribute('aria-expanded',open?'true':'false');
@@ -647,6 +661,9 @@ input[type=text],input[type=number],select{font:15px Lexend,system-ui,sans-serif
     var r=routine(),sel=$('#roundsSel'),ol=$('#editList');
     if(!sel.options.length)for(var n=1;n<=MAX_ROUNDS;n++)sel.appendChild(h('option',{value:String(n),text:String(n)}));
     sel.value=String(r.rounds);
+    var pm=$('#pmSel');
+    if(!pm.options.length)for(var hr=PM_FIRST;hr<=PM_LAST;hr++)pm.appendChild(h('option',{value:String(hr),text:hourLabel(hr)}));
+    pm.value=String(r.pmFrom);
     clear(ol);
     r.poses.forEach(function(p,i){
       var inp=h('input',{type:'text',class:'pname',maxlength:'40',value:p.name,'aria-label':'Name of asana '+(i+1)});
@@ -732,10 +749,11 @@ input[type=text],input[type=number],select{font:15px Lexend,system-ui,sans-serif
     r.poses.push({id:id,name:nm});inp.value='';saveRoutine(r);
   }
 
-  /* ---------- a new day starts on its own: checked on return to the page and once a minute ---------- */
+  /* ---------- a new day starts on its own: checked on return to the page and once a minute ----------
+     the same check moves a page nobody has touched from Morning to Evening when the hour comes */
   function dayCheck(force){
     var d=today();
-    if(d===DAY&&!force)return;
+    if(d===DAY&&!force){if(!VIEW&&autoPart()!==SHOWN){note('');renderAll();}return;}
     DAY=d;VIEW=null;note('');compactOld();renderAll();
   }
 
@@ -763,6 +781,7 @@ input[type=text],input[type=number],select{font:15px Lexend,system-ui,sans-serif
   $('#overYes').addEventListener('click',startOver);
   $('#overNo').addEventListener('click',function(){$('#overAsk').hidden=true;});
   $('#roundsSel').addEventListener('change',function(){var r=routine(),n=Math.floor(+this.value);if(n>=1&&n<=MAX_ROUNDS&&n!==r.rounds){r.rounds=n;saveRoutine(r);}});
+  $('#pmSel').addEventListener('change',function(){var r=routine(),n=Math.floor(+this.value);if(n>=PM_FIRST&&n<=PM_LAST&&n!==r.pmFrom){r.pmFrom=n;saveRoutine(r);}});
   $('#addBtn').addEventListener('click',addPose);
   $('#addName').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();addPose();}});
   $('#themeBtn').addEventListener('click',function(){var next=shownTheme()==='dark'?'light':'dark';lsSet(THEME_KEY,JSON.stringify(next===deviceTheme()?'auto':next));paintTheme();});

@@ -324,12 +324,17 @@ three things at a glance: **which session** (Morning or Evening, and whether eac
   "Current" is always the first unticked cell in that order, so a skipped one is never lost.
 - **Undo** takes back the last tick. The grid below is the same routine as a table (asanas down the side, rounds
   across); tap any cell to tick or untick it by hand.
-- **Morning and Evening** each have their own grid. The page opens on the first one not finished today. When the
+- **Morning and Evening** each have their own grid, and **the clock picks which one opens**: Morning before the
+  hour Evening starts (12 noon unless you change it in Edit routine, 9 am to 8 pm), Evening from it. A page left
+  open moves to Evening at that hour by itself. You can always tap the other session.
+- **The clock never moves you out of a session you are in**: once you tick, tap a session or start the timer, the
+  page stays on that session. After a reload past the switch hour, a morning ticked in the last 30 minutes and
+  not finished still opens as Morning, so a phone that reloads the tab mid-session does not strand it. When the
   morning is done it says so, and the big button becomes *Start evening*.
 - **A new day starts empty on its own**, at midnight: progress is stored per date and per session, so nothing has
   to be reset or deleted. An evening finished after midnight counts as the next day.
 - **Last 14 days** shows two dots per day (top morning, bottom evening): full for all rounds, half for some.
-- **Edit routine** renames, reorders, adds and removes asanas and sets the rounds (1–10). It starts with Left Fold,
+- **Edit routine** renames, reorders, adds and removes asanas, sets the rounds (1–10) and the hour Evening starts. It starts with Left Fold,
   Right Fold, Left Raise, Right Raise, 45D, SLP BackBend, 2Sd45, Cobra, Sit BackBend and Plank, 5 rounds. Today
   follows the routine as it is now; past days keep the routine they were done with.
 - **Start this session over** clears only the session on screen, after asking.
@@ -355,7 +360,7 @@ the chime plays when you come back. (Dumbbell Dojo's notifications and Android C
 
 | Item | Holds |
 |---|---|
-| `routine` | `poses: [{id, name, sec}]` (`sec`: the hold length in seconds, 5–600, default 30), `rounds` |
+| `routine` | `poses: [{id, name, sec}]` (`sec`: the hold length in seconds, 5–600, default 30), `rounds`, `pmFrom` (the hour Evening starts, 9–20, default 12) |
 | `s-<date>-am`, `s-<date>-pm` | `poseIds` and `rounds` the day was done with, `marks` and `off` (cell → time) |
 
 A cell is ticked when its time in `marks` is later than its time in `off`. Because every tick and untick carries
@@ -375,6 +380,9 @@ clock (time moves only when the checker moves it): lengths per asana, pause, the
 ticking nothing, the chime stopping, Done leaving the next hold to wait for Start, Reset, Undo, Custom's range,
 the editor's dropdowns, muting, and the end of a session. Headless Chrome plays no sound, so the checker counts
 the tones the page schedules and the vibrations it asks for.
+Every run happens at a fixed time on a fixed day (8 am, 9 am for the timer), because the hour decides the
+session; a separate fake-clock run covers the 12:00 switch, a page left open across it, a morning in progress
+after a reload, the 30-minute limit, a hold running across 12:00 and the Edit routine setting.
 
 ## Shoebox: your photos and papers in Drive
 

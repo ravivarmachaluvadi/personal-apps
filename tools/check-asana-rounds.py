@@ -21,6 +21,12 @@ POSES = ['leftfold', 'rightfold', 'leftraise', 'rightraise', 'd45', 'slpbackbend
 NAMES = ['Left Fold', 'Right Fold', 'Left Raise', 'Right Raise', '45D', 'SLP BackBend', '2Sd45', 'Cobra', 'Sit BackBend', 'Plank']
 FAILS, PASSES = [], [0]
 SECTION = ['']
+# the page picks Morning or Evening by the hour, so every run happens at a fixed time on a fixed day
+DAY0 = datetime.date(2026, 10, 5)
+
+
+def at(day, hh, mm=0, ss=0):
+    return datetime.datetime.combine(DAY0 + datetime.timedelta(days=day), datetime.time(hh, mm, ss))
 
 
 def check(cond, msg):
@@ -118,6 +124,7 @@ def flow(s):
     real = {}
 
     def fresh():
+        p.clock.set_system_time(at(0, 8))  # 8 am; the clock runs on from there
         s.open()
         names = [x.strip() for x in p.locator('#grid .gr .gname').all_inner_texts()]
         check(names == NAMES, 'the routine starts with your 10 asanas in order (%s)' % names)
@@ -166,7 +173,13 @@ def flow(s):
         p.wait_for_timeout(300)
         p.reload()
         p.locator('#doneBtn').wait_for()
-        check(s.part() == 'pm', 'after a reload the page opens on Evening, the first unfinished session')
+        check(s.part() == 'am', 'at 8 am, with the morning finished, a reload still opens on Morning (%r)' % s.part())
+        check('Morning done' in s.txt('#nowCard') and 'evening' in s.txt('#doneBtn').lower(),
+              'it shows Morning done and the way to the evening (%r)' % s.txt('#doneBtn'))
+        p.clock.set_system_time(at(0, 13))
+        p.reload()
+        p.locator('#doneBtn').wait_for()
+        check(s.part() == 'pm', 'at 1 pm a reload opens on Evening (%r)' % s.part())
         check('5/5' in s.txt('#partAm'), 'Morning still shows 5/5 after reload (%r)' % s.txt('#partAm'))
         s.done(3)
         p.wait_for_timeout(300)
@@ -180,6 +193,7 @@ def flow(s):
     def tomorrow():
         tom = s.today(1)
         p.evaluate("(d)=>localStorage.setItem('asanarounds.faketoday',d)", tom)
+        p.clock.set_system_time(at(1, 8))  # the next morning, so the new day opens on Morning by the clock too
         p.reload()
         p.locator('#doneBtn').wait_for()
         check(not p.locator('#fakeBanner').is_hidden(), 'a banner says the date is pretend')
@@ -285,9 +299,8 @@ def timer_flow(browser, base, label):
     s = Session(browser, base)
     p = s.page
     p.add_init_script(TIMER_INIT)
-    t0 = datetime.datetime.now()
-    p.clock.install(time=t0)
-    p.clock.pause_at(t0 + datetime.timedelta(seconds=1))
+    p.clock.install(time=at(0, 9))  # a morning: everything below happens well before the 12:00 switch
+    p.clock.pause_at(at(0, 9, 0, 1))
     real = {}
 
     def run(ms):
@@ -518,6 +531,84 @@ def timer_flow(browser, base, label):
         s.close()
 
 
+def clock_flow(browser, base, label):
+    """Morning or Evening by the clock (Evening from 12:00 unless Edit routine says otherwise), on a fake clock."""
+    def paused(start):
+        s = Session(browser, base)
+        s.page.clock.install(time=start)
+        s.page.clock.pause_at(start + datetime.timedelta(seconds=1))
+        return s
+
+    s = paused(at(0, 11, 59))
+    p = s.page
+    try:
+        def reopen():
+            p.reload()
+            p.locator('#doneBtn').wait_for()
+
+        def by_the_hour():
+            s.open()
+            check(s.part() == 'am', 'at 11:59 the page opens on Morning (%r)' % s.part())
+            sel = p.locator('#pmSel')
+            check(sel.input_value() == '12', 'Edit routine says Evening starts at 12 (%r)' % sel.input_value())
+            check(sel.evaluate('s=>s.options[s.selectedIndex].text') == '12 noon', 'labelled 12 noon')
+            labels = sel.evaluate('s=>[...s.options].map(o=>o.text)')
+            check(labels[0] == '9 am' and '2 pm' in labels and labels[-1] == '8 pm', 'the choices run from 9 am to 8 pm (%s)' % labels)
+            p.clock.run_for(90000)
+            check(s.part() == 'pm', 'left open past 12:00, the page moves to Evening by itself (%r)' % s.part())
+            check(s.txt('#nowRound') == 'Round 1 of 5', 'on an empty evening, Round 1 of 5 (%r)' % s.txt('#nowRound'))
+
+        def in_progress():
+            p.locator('#partAm').click()
+            s.done(3)
+            p.clock.run_for(120000)
+            check(s.part() == 'am', 'a session you are ticking is never switched by the clock (%r)' % s.part())
+            reopen()
+            check(s.part() == 'am', 'after a reload, a morning ticked minutes ago still opens on Morning (%r)' % s.part())
+            check(s.txt('#nowPose') == 'Right Raise', 'right where it was, on Right Raise (%r)' % s.txt('#nowPose'))
+            p.clock.run_for(31 * 60000)
+            reopen()
+            check(s.part() == 'pm', 'a morning left more than 30 minutes ago no longer holds the page: Evening (%r)' % s.part())
+
+        def setting():
+            p.locator('#editRoutine > summary').click()
+            p.locator('#pmSel').select_option('14')
+            check(s.part() == 'am', 'with Evening from 2 pm, 12:35 is Morning again (%r)' % s.part())
+            reopen()
+            check(p.locator('#pmSel').input_value() == '14' and s.part() == 'am', 'the 2 pm switch is kept after a reload')
+            p.locator('#editRoutine > summary').click()
+            p.locator('#pmSel').select_option('12')
+            reopen()
+            check(s.part() == 'pm', 'back to 12 noon: Evening (%r)' % s.part())
+
+        for name, fn in [('clock: by the hour', by_the_hour), ('clock: a session in progress', in_progress),
+                         ('clock: the switch time', setting)]:
+            run_section(name, fn)
+        SECTION[0] = label + ': clock browser'
+        for e in s.errors:
+            check(False, 'browser error: ' + e)
+    finally:
+        s.close()
+
+    s = paused(at(0, 11, 59))
+    p = s.page
+    try:
+        def hold_over_noon():
+            s.open()
+            p.locator('#tPresets .chip[data-sec="64"]').click()
+            p.locator('#tGo').click()
+            p.clock.run_for(62000)
+            check(s.part() == 'am', 'a hold started at 11:59 keeps the Morning past 12:00 (%r)' % s.part())
+            check(p.locator('#timer').get_attribute('data-state') == 'run' and s.txt('#tLeft') == '0:02',
+                  'and keeps counting (%r)' % s.txt('#tLeft'))
+        run_section('clock: a hold across 12:00', hold_over_noon)
+        SECTION[0] = label + ': clock browser'
+        for e in s.errors:
+            check(False, 'browser error: ' + e)
+    finally:
+        s.close()
+
+
 MERGE_CASES = r"""(function(){
   var on=function(s,k){return (+((s.marks||{})[k])||0)>(+((s.off||{})[k])||0);};
   var ses=function(marks,off,at,extra){var s={id:'s-2026-10-04-am',kind:'session',day:'2026-10-04',part:'am',poseIds:['a','b'],rounds:2,marks:marks,off:off||{},updatedAt:at};
@@ -600,6 +691,7 @@ def layout_flow(browser, base):
             try:
                 def one():
                     p.emulate_media(color_scheme=scheme)
+                    p.clock.set_system_time(at(0, 8))
                     s.open()
                     check(p.evaluate('document.documentElement.scrollWidth') <= w, 'page fits %d px without sideways scroll (%d)' % (w, p.evaluate('document.documentElement.scrollWidth')))
                     b = p.locator('#doneBtn').bounding_box()
@@ -656,6 +748,8 @@ def run_target(browser, label, directory, with_layout):
             s.close()
         print('==', label, 'timer')
         timer_flow(browser, base, label)
+        print('==', label, 'clock')
+        clock_flow(browser, base, label)
         if with_layout:
             print('==', label, 'layout')
             layout_flow(browser, base)
