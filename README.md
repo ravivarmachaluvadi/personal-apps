@@ -344,7 +344,7 @@ The now card has a countdown for the asana on screen. **Each asana keeps its own
 | Chips | 0:30, 0:45, 1:00, 1:04 and **Custom** (minutes and seconds, 0:05 to 10:00; anything outside is brought into range). An asana never given a length gets 0:30. Picking one while the timer runs restarts it at the new length |
 | Start / Pause / Resume, Reset | Counts to a clock time, not by counting ticks, so a page the phone stalled still shows the right time when you come back |
 | Sound | Three soft beeps in the last 3 seconds, then a rising chime and a vibration at time up. The chime repeats every 4 s, four times in all, until you tap the timer or Done. The speaker button mutes it on this device only (`asanarounds.sound` in `localStorage`); turning it back on plays one beep |
-| Time up | Ticks nothing by itself: you tap **Done → next**. If the timer was in use (running, paused or just rung), Done starts the next asana's timer at once; after Reset, or if you never started it, Done starts nothing, so a session done without the timer never beeps |
+| Time up | Ticks nothing by itself: you tap **Done → next**. Done ticks the asana and the timer stops on the next asana's length; it waits for **Start**, so you get into the next pose first. Done in the middle of a hold stops it the same way |
 | Following you | Undo, a grid tap, the other session or a new day stops the timer and shows the new asana's length. It hides when the session is finished |
 | Screen and title | The screen is kept on while a hold runs or rings (where the browser allows it), and the tab title shows the countdown |
 
@@ -372,9 +372,9 @@ reloads, a pretend next day (`asanarounds.faketoday` in `localStorage`; a banner
 the routine editor, Start over, the theme switch, the phone (390 px) and laptop layouts in both themes with text
 contrast, and the two-device merge run on the page's own merge code. The hold timer runs on Playwright's fake
 clock (time moves only when the checker moves it): lengths per asana, pause, the last-3-seconds beeps, time up
-ticking nothing, the chime stopping, Done starting the next hold, Reset, Undo, Custom's range, the editor's
-dropdowns, muting, and the end of a session. Headless Chrome plays no sound, so the checker counts the tones the
-page schedules and the vibrations it asks for.
+ticking nothing, the chime stopping, Done leaving the next hold to wait for Start, Reset, Undo, Custom's range,
+the editor's dropdowns, muting, and the end of a session. Headless Chrome plays no sound, so the checker counts
+the tones the page schedules and the vibrations it asks for.
 
 ## Shoebox: your photos and papers in Drive
 

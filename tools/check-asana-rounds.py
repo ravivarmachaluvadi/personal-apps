@@ -378,13 +378,20 @@ def timer_flow(browser, base, label):
         run(10000)
         check(tones() == a, 'and stops by itself (%d more after 20 s)' % (tones() - a))
 
-    def done_chains():
+    def done_waits():
         p.locator('#doneBtn').click()
         check(s.pressed(1, 'leftfold'), 'Done after time up ticks Left Fold')
         check(s.txt('#nowPose') == 'Right Fold', 'and moves on to Right Fold')
-        check(state() == 'run' and left() == '0:30', 'Right Fold\'s 0:30 timer is already running (%r, %r)' % (state(), left()))
+        check(state() == 'idle' and left() == '0:30', 'Right Fold\'s 0:30 timer waits, stopped (%r, %r)' % (state(), left()))
+        check(s.txt('#tGo') == 'Start', 'its button says Start (%r)' % s.txt('#tGo'))
+        check(p.title() == 'Asana Rounds', 'the tab title is plain again (%r)' % p.title())
+        t = tones()
+        run(10000)
+        check(state() == 'idle' and left() == '0:30', '10 s later it is still waiting at 0:30 (%r, %r)' % (state(), left()))
+        check(tones() == t, 'and nothing has played (%d tones)' % (tones() - t))
+        p.locator('#tGo').click()
         run(5000)
-        check(left() == '0:25', 'and counting (%r)' % left())
+        check(state() == 'run' and left() == '0:25', 'Start runs Right Fold\'s hold (%r, %r)' % (state(), left()))
 
     def undo_stops():
         p.locator('#undoBtn').click()
@@ -392,19 +399,27 @@ def timer_flow(browser, base, label):
         check(state() == 'idle' and left() == '1:04', 'Undo stops the timer and shows Left Fold\'s 1:04 (%r, %r)' % (state(), left()))
         check(p.title() == 'Asana Rounds', 'the tab title is plain again (%r)' % p.title())
 
-    def reset_breaks_chain():
+    def reset_and_done():
         p.locator('#tGo').click()
         run(2000)
         p.locator('#tReset').click()
         check(state() == 'idle' and left() == '1:04', 'Reset stops it at the full length (%r, %r)' % (state(), left()))
         p.locator('#doneBtn').click()
-        check(s.txt('#nowPose') == 'Right Fold' and state() == 'idle', 'after Reset, Done does not start the next timer (%r)' % state())
+        check(s.txt('#nowPose') == 'Right Fold' and state() == 'idle', 'after Reset, Done leaves the next timer stopped (%r)' % state())
         p.locator('#undoBtn').click()
         p.locator('#tGo').click()
         run(3000)
         p.locator('#tGo').click()
         p.locator('#doneBtn').click()
-        check(state() == 'run', 'a paused timer still counts as in use: Done starts the next one (%r)' % state())
+        check(state() == 'idle' and left() == '0:30', 'Done on a paused hold leaves the next timer stopped (%r, %r)' % (state(), left()))
+        p.locator('#undoBtn').click()
+        p.locator('#tGo').click()
+        run(3000)
+        p.locator('#doneBtn').click()
+        check(state() == 'idle' and left() == '0:30', 'Done mid-hold stops the timer and leaves the next one stopped (%r, %r)' % (state(), left()))
+        t = tones()
+        run(70000)
+        check(tones() == t, 'and nothing rings later (%d tones)' % (tones() - t))
         p.locator('#undoBtn').click()
 
     def change_while_running():
@@ -490,8 +505,8 @@ def timer_flow(browser, base, label):
     try:
         for name, fn in [('timer: fresh', fresh), ('timer: each asana its own length', per_asana),
                          ('timer: countdown and time up', countdown), ('timer: the ring stops', ring_stops),
-                         ('timer: Done starts the next', done_chains), ('timer: Undo stops it', undo_stops),
-                         ('timer: Reset', reset_breaks_chain), ('timer: change while running', change_while_running),
+                         ('timer: Done waits for Start', done_waits), ('timer: Undo stops it', undo_stops),
+                         ('timer: Reset and Done', reset_and_done), ('timer: change while running', change_while_running),
                          ('timer: custom', customs), ('timer: editor', editor), ('timer: sound off', sound),
                          ('timer: session end', session_end)]:
             run_section(name, fn)

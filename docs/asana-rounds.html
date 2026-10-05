@@ -483,8 +483,8 @@ input[type=text],input[type=number],select{font:15px Lexend,system-ui,sans-serif
   /* ---------- the hold timer ----------
      It belongs to the cell on screen (day, session, round, asana) and counts to a clock time, not by
      counting ticks, so a phone that stalls the page still shows the right time on return. Time up rings
-     and ticks nothing; Done then starts the next asana's timer, but only if the timer was in use, so a
-     session done without it never beeps. Per device and never saved: only each asana's length is. */
+     and ticks nothing. Done ticks and moves on, and the timer stops on the next asana's length: it waits
+     for Start, so you get into the next pose first. Per device and never saved: only each asana's length is. */
   var T={key:'',id:'',name:'',sec:DEFAULT_SEC,state:'idle',endAt:0,leftMs:0,beep:4},tickT=null,ringT=null;
   var SOUND_KEY='asanarounds.sound';
   function fmtSec(s){s=Math.max(0,s);return Math.floor(s/60)+':'+pad(s%60);}
@@ -683,7 +683,7 @@ input[type=text],input[type=number],select{font:15px Lexend,system-ui,sans-serif
     var p=viewPart(),st=stats(DAY,p);
     stopRing();
     if(st.complete){var o=other(p);if(!stats(DAY,o).complete){VIEW=o;note('');renderAll();}return;}
-    var c=st.cur,R=st.plan.rounds,timing=T.state!=='idle';
+    var c=st.cur,R=st.plan.rounds;
     VIEW=p;
     setCell(p,c.r+':'+st.plan.ids[c.i],true);
     var after=stats(DAY,p);
@@ -691,7 +691,6 @@ input[type=text],input[type=number],select{font:15px Lexend,system-ui,sans-serif
     else if(after.full>st.full)note('Round '+c.r+' done · '+(R-after.full)+' to go');
     else note('');
     renderAll();
-    if(timing&&!after.complete)startTimer();
   }
   function onUndo(){
     var p=viewPart(),s=session(DAY,p);if(!s||s.compact)return;
