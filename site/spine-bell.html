@@ -39,7 +39,7 @@
   --shadow:0 12px 32px rgba(0,0,0,.38);
   color-scheme:dark;
 }
-body[data-mode="work-done"],body[data-mode="break"],body[data-mode="break-done"],body[data-mode="timer-done"]{
+body[data-mode="work-done"],body[data-mode="break-ready"],body[data-mode="break"],body[data-mode="break-done"],body[data-mode="timer-done"]{
   --accent:var(--break); --accent-soft:var(--break-soft); --accent-deep:var(--break-deep); --accent-ink:var(--break-ink);
 }
 *{box-sizing:border-box}
@@ -49,7 +49,7 @@ body[data-mode="work-done"],body[data-mode="break"],body[data-mode="break-done"]
 body *{overflow-anchor:none}
 body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;transition:background .5s ease}
 body[data-mode="work-done"],body[data-mode="break-done"],body[data-mode="timer-done"]{background:color-mix(in srgb,var(--bg) 78%,var(--break))}
-body[data-mode="break"]{background:color-mix(in srgb,var(--bg) 90%,var(--break))}
+body[data-mode="break"],body[data-mode="break-ready"]{background:color-mix(in srgb,var(--bg) 90%,var(--break))}
 button{font:inherit;cursor:pointer;border:0;border-radius:12px;color:inherit}
 button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 #app{max-width:960px;margin:0 auto;padding:20px 18px 40px}
@@ -220,6 +220,8 @@ footer strong{color:var(--danger)}
       <p class="status" id="microLine" hidden></p>
       <div class="actions">
         <button class="primary" id="primaryBtn">Start work</button>
+        <button class="ghost" id="breakBtn" hidden>Break · 3 min</button>
+        <button class="ghost" id="longBreakBtn" hidden>Long break · 10 min</button>
         <button class="ghost" id="pauseBtn" hidden>Pause</button>
         <button class="ghost" id="secondaryBtn" hidden>Snooze 2 min</button>
         <button class="ghost" id="resetBtn">Reset</button>
@@ -279,7 +281,7 @@ footer strong{color:var(--danger)}
         <div class="stat"><b id="sWater">0</b><span>water</span></div>
         <div class="stat"><b id="sEye">0</b><span>eye rests</span></div>
       </div>
-      <div class="rowend"><p class="note">Counts reset at midnight. Stood-up only rises when you tap the bell, not when you snooze it. Reset today clears the counts made on this device.</p><button class="small" id="resetDay" type="button">Reset today</button></div>
+      <div class="rowend"><p class="note">Counts reset at midnight. Stood-up rises when a break starts, not when you snooze or skip it. Reset today clears the counts made on this device.</p><button class="small" id="resetDay" type="button">Reset today</button></div>
       <div class="logline"><span id="logSummary">Not logged yet: pain, sleep, movement.</span><button class="small" id="goDiary" type="button">Log today</button></div>
       <div class="sync" id="sync" data-state="local"><i></i><span id="syncText">Local only on this device</span></div>
     </section>
@@ -368,7 +370,7 @@ footer strong{color:var(--danger)}
   function fmtDay(k){var d=toDate(k);return WD[d.getDay()]+' '+d.getDate()+' '+MO[d.getMonth()];}
 
   var S=load(KEY.settings,DEF);
-  var R=load(KEY.run,{mode:'idle',endAt:0,remaining:0,paused:false,block:1,stretch:0,total:0,snoozed:false});R.stretch=(+R.stretch||0)%STRETCHES.length;
+  var R=load(KEY.run,{mode:'idle',endAt:0,remaining:0,paused:false,block:1,stretch:0,total:0,snoozed:false,solo:false,soloLong:false});R.stretch=(+R.stretch||0)%STRETCHES.length;
   var DEV=(function(){try{var d=localStorage.getItem(KEY.dev);if(!d){d='d'+Math.random().toString(36).slice(2,10);localStorage.setItem(KEY.dev,d);}return d;}catch(e){return 'd0';}})();
   var DAYS=load(KEY.days,{});
   var CIRC=779.1;
@@ -407,7 +409,7 @@ footer strong{color:var(--danger)}
     }).catch(function(){setSync('local','Local only on this device');});
   }
 
-  var el={mode:$('#modeLabel'),digits:$('#digits'),sub:$('#digitsSub'),bar:$('#bar'),hint:$('#hint'),primary:$('#primaryBtn'),pause:$('#pauseBtn'),secondary:$('#secondaryBtn'),reset:$('#resetBtn'),status:$('#status'),stretchCard:$('#stretchCard'),stretchEyebrow:$('#stretchEyebrow'),stretchName:$('#stretchName'),stretchHow:$('#stretchHow'),stretchTime:$('#stretchTime'),chip:$('#todayChip'),microLine:$('#microLine'),toast:$('#toast'),toastTitle:$('#toastTitle'),toastBody:$('#toastBody'),toastCount:$('#toastCount'),toastBtn:$('#toastBtn')};
+  var el={mode:$('#modeLabel'),digits:$('#digits'),sub:$('#digitsSub'),bar:$('#bar'),hint:$('#hint'),primary:$('#primaryBtn'),pause:$('#pauseBtn'),secondary:$('#secondaryBtn'),reset:$('#resetBtn'),breakBtn:$('#breakBtn'),longBreak:$('#longBreakBtn'),status:$('#status'),stretchCard:$('#stretchCard'),stretchEyebrow:$('#stretchEyebrow'),stretchName:$('#stretchName'),stretchHow:$('#stretchHow'),stretchTime:$('#stretchTime'),chip:$('#todayChip'),microLine:$('#microLine'),toast:$('#toast'),toastTitle:$('#toastTitle'),toastBody:$('#toastBody'),toastCount:$('#toastCount'),toastBtn:$('#toastBtn')};
 
   /* ---------- audio ---------- */
   var AC=null,alarmTimer=null,alarmUntil=0;
@@ -445,7 +447,11 @@ footer strong{color:var(--danger)}
     if(IS_ANDROID){var a=document.createElement('a');a.id='handoffLink';a.href=intentUrl((R.endAt-Date.now())/1000,handoffLabel(),false);a.textContent='Hand this countdown to the phone\u2019s Clock app \u2197';a.addEventListener('click',function(){if(isRunning())a.href=intentUrl((R.endAt-Date.now())/1000,handoffLabel(),false);});box.appendChild(a);box.appendChild(document.createElement('br'));box.appendChild(document.createTextNode('It rings even if you leave this page or lock the screen.'));}
     else box.textContent='Keep this page open with the screen on. Phone browsers pause a page in the background, so the bell cannot ring from there.';}
   function isLong(){return R.block%S.every===0;}
-  function breakLen(){return isLong()?S.lng:S.brk;}
+  /* a break started on its own (R.solo) is long or short by the button that started it, and leaves the block number alone */
+  function longNow(){return R.solo?!!R.soloLong:isLong();}
+  function breakLen(){return longNow()?S.lng:S.brk;}
+  function nextBlock(){return R.solo?R.block:R.block+1;}
+  function toNextBlock(){if(!R.solo)R.block++;R.solo=false;}
   function persistRun(){save(KEY.run,R);}
   function pickStretch(){R.stretch=(R.stretch+1)%STRETCHES.length;}
 
@@ -466,30 +472,35 @@ footer strong{color:var(--danger)}
     else if(S.water&&now>=R.waterAt&&!micro.kind){R.waterAt=now+S.waterEvery*60000;persistRun();chime('water');buzz([120,80,120]);showToast('water');}}
 
   /* ---------- state machine ---------- */
-  function startWork(){stopAlarm();hideToast();R.mode='work';R.snoozed=false;R.total=S.work*60000;R.endAt=Date.now()+R.total;R.paused=false;persistRun();scheduleMicro();wake(true);render();sendToClock();}
+  function startWork(){stopAlarm();hideToast();R.mode='work';R.snoozed=false;R.solo=false;R.total=S.work*60000;R.endAt=Date.now()+R.total;R.paused=false;persistRun();scheduleMicro();wake(true);render();sendToClock();}
   function startBreak(){stopAlarm();hideToast();R.mode='break';R.total=breakLen()*60000;R.endAt=Date.now()+R.total;R.paused=false;persistRun();wake(true);render();sendToClock();}
+  function startSoloBreak(long){ensureAudio();bump('stood');R.solo=true;R.soloLong=long;startBreak();}
   function startTimer(ms){stopAlarm();hideToast();R.mode='timer';R.snoozed=false;R.total=ms||timerMs();R.endAt=Date.now()+R.total;R.paused=false;persistRun();
     if(!ms&&S.timerUntil){S.timerUntil='';save(KEY.settings,S);renderSettings();} /* a clock time is a one-off; next start uses the minutes again */
     wake(true);render();sendToClock();}
   function timerDone(){R.mode='timer-done';R.paused=false;persistRun();startAlarm('work-done');notify('Time is up','Your '+fmtDur(R.total)+' timer has finished.');render();}
   function creditWork(){bump('focus',Math.round(R.total/60000));if(!R.snoozed){bump('blocks');pickStretch();}R.snoozed=false;}
   function workDone(){R.mode='work-done';R.paused=false;hideToast();creditWork();persistRun();startAlarm('work-done');notify('Stand up',(isLong()?'Long break: ':'Break: ')+breakLen()+' min. '+(isLong()?LONG.n:STRETCHES[R.stretch].n));render();}
-  function breakDone(){R.mode='break-done';R.paused=false;persistRun();startAlarm('break-done');notify('Back to work','Block '+(R.block+1)+' of '+S.work+' min.');render();if(S.autoWork){setTimeout(function(){if(R.mode==='break-done'){R.block++;startWork();}},6000);}}
+  function breakDone(){R.mode='break-done';R.paused=false;persistRun();startAlarm('break-done');notify('Back to work','Block '+nextBlock()+' of '+S.work+' min.');render();if(S.autoWork){setTimeout(function(){if(R.mode==='break-done'){toNextBlock();startWork();}},6000);}}
   var microShown='';function tick(){if(!isRunning())return;var rem=R.endAt-Date.now();if(rem<=0){if(R.mode==='work'){workDone();}else if(R.mode==='timer'){timerDone();}else{breakDone();}return;}renderTime(rem);microTick(rem);var mt=microText();if(mt!==microShown){microShown=mt;renderMicro();}}
 
   el.primary.addEventListener('click',function(){ensureAudio();
     if(R.mode==='idle'){if(S.preset==='timer')startTimer();else startWork();}
     else if(R.mode==='timer-done'){stopAlarm();R.mode='idle';persistRun();wake(false);render();}
-    else if(R.mode==='work-done'){bump('stood');startBreak();}
-    else if(R.mode==='break-done'){R.block++;startWork();}
-    else if(R.mode==='break'){R.block++;startWork();}
+    else if(R.mode==='work-done'){stopAlarm();R.mode='break-ready';persistRun();wake(false);render();} /* the break waits until you start it */
+    else if(R.mode==='break-ready'){bump('stood');startBreak();}
+    else if(R.mode==='break-done'){toNextBlock();startWork();}
+    else if(R.mode==='break'){toNextBlock();startWork();}
   });
   el.pause.addEventListener('click',function(){if(!(R.mode==='work'||R.mode==='break'||R.mode==='timer'))return;if(R.paused){var gap=Math.max(0,Date.now()-(R.pausedAt||Date.now()));R.endAt=Date.now()+R.remaining;if(R.eyeAt)R.eyeAt+=gap;if(R.waterAt)R.waterAt+=gap;scheduleMicro();R.paused=false;wake(true);}else{R.remaining=R.endAt-Date.now();R.pausedAt=Date.now();R.paused=true;wake(false);}persistRun();render();});
   el.secondary.addEventListener('click',function(){ensureAudio();
     if(R.mode==='work-done'){stopAlarm();bump('snooze');R.mode='work';R.snoozed=true;R.total=2*60000;R.endAt=Date.now()+R.total;R.paused=false;persistRun();wake(true);render();}
     else if(R.mode==='timer-done'){startTimer(R.total);}
+    else if(R.mode==='break-ready'){R.block++;startWork();}
   });
-  el.reset.addEventListener('click',function(){stopAlarm();hideToast();if(R.mode==='idle'){R.block=1;}else if(R.mode==='work-done'||R.mode==='break'||R.mode==='break-done'){R.block++;}R.mode='idle';R.snoozed=false;R.paused=false;R.endAt=0;persistRun();wake(false);render();});
+  el.breakBtn.addEventListener('click',function(){if(R.mode==='idle')startSoloBreak(false);});
+  el.longBreak.addEventListener('click',function(){if(R.mode==='idle')startSoloBreak(true);});
+  el.reset.addEventListener('click',function(){stopAlarm();hideToast();if(R.mode==='idle'){R.block=1;}else if(R.mode==='work-done'||R.mode==='break-ready'){R.block++;}else if(R.mode==='break'||R.mode==='break-done'){toNextBlock();}R.solo=false;R.mode='idle';R.snoozed=false;R.paused=false;R.endAt=0;persistRun();wake(false);render();});
   $('#nextStretch').addEventListener('click',function(){pickStretch();persistRun();renderStretch();});
   $('#resetDay').addEventListener('click',function(){var m=mine(dayKey());var b=blank();Object.keys(b).forEach(function(f){m[f]=b[f];});m.updatedAt=Date.now();R.block=1;persistRun();persistDays();queueSync(dayKey());render();});
   $('#testBtn').addEventListener('click',function(){ensureAudio();chime('work-done');buzz([300,100,300]);el.status.textContent='If you heard a rising chime, sound is working.';setTimeout(function(){el.status.textContent='';},4000);});
@@ -497,11 +508,11 @@ footer strong{color:var(--danger)}
 
   /* ---------- settings ---------- */
   var fields={work:$('#fWork'),brk:$('#fBreak'),lng:$('#fLong'),every:$('#fEvery'),eyeEvery:$('#fEye'),waterEvery:$('#fWater')};
-  function applyPreset(p){S.preset=p;if(PRESETS[p]){Object.assign(S,PRESETS[p]);}save(KEY.settings,S);renderSettings();if(R.mode==='idle'){render();}}
+  function applyPreset(p){S.preset=p;if(PRESETS[p]){Object.assign(S,PRESETS[p]);}save(KEY.settings,S);renderSettings();if(R.mode==='idle'||R.mode==='break-ready'){render();}}
   document.querySelectorAll('.pill[data-preset]').forEach(function(b){b.addEventListener('click',function(){applyPreset(b.dataset.preset);});});
   Object.keys(fields).forEach(function(k){fields[k].addEventListener('change',function(){var v=parseInt(fields[k].value,10);var min=parseInt(fields[k].min,10),max=parseInt(fields[k].max,10);if(isNaN(v))v=S[k];v=Math.min(max,Math.max(min,v));S[k]=v;fields[k].value=v;
     if(k==='work'||k==='brk'||k==='lng'||k==='every'){S.preset='custom';Object.keys(PRESETS).forEach(function(p){var q=PRESETS[p];if(q.work===S.work&&q.brk===S.brk&&q.lng===S.lng&&q.every===S.every)S.preset=p;});}
-    if(k==='eyeEvery'){R.eyeAt=Date.now()+v*60000;persistRun();}if(k==='waterEvery'){R.waterAt=Date.now()+v*60000;persistRun();}save(KEY.settings,S);renderSettings();if(R.mode==='idle'){render();}renderMicro();});});
+    if(k==='eyeEvery'){R.eyeAt=Date.now()+v*60000;persistRun();}if(k==='waterEvery'){R.waterAt=Date.now()+v*60000;persistRun();}save(KEY.settings,S);renderSettings();if(R.mode==='idle'||R.mode==='break-ready'){render();}renderMicro();});});
   document.querySelectorAll('.sw').forEach(function(b){b.addEventListener('click',function(){var k=b.dataset.key;S[k]=!S[k];save(KEY.settings,S);b.setAttribute('aria-checked',String(S[k]));if(k==='wake'){wake(isRunning());}if(k==='repeatAlarm'&&!S.repeatAlarm){stopAlarm();}if((k==='eye'||k==='water')&&!S[k]&&micro.kind===k){hideToast();}if(k==='eye'&&S.eye){R.eyeAt=Date.now()+S.eyeEvery*60000;persistRun();}if(k==='water'&&S.water){R.waterAt=Date.now()+S.waterEvery*60000;persistRun();}renderMicro();});});
   $('#vol').addEventListener('input',function(e){S.volume=parseInt(e.target.value,10);save(KEY.settings,S);});
   var tmin=$('#fTimerMin'),tuntil=$('#fTimerUntil');
@@ -536,7 +547,7 @@ footer strong{color:var(--danger)}
   /* ---------- render: timer + today ---------- */
   var titleFlip=false;
   function renderTime(rem){el.digits.textContent=fmt(rem);var p=R.total>0?Math.max(0,Math.min(1,rem/R.total)):1;el.bar.style.strokeDashoffset=String(CIRC*(1-p));document.title=fmt(rem)+' · '+(R.mode==='work'?'Work':R.mode==='timer'?'Timer':'Break')+(R.paused?' (paused)':'');}
-  function renderStretch(){var st=(R.mode!=='work'&&isLong())?LONG:STRETCHES[R.stretch];el.stretchName.textContent=st.n;el.stretchHow.textContent=st.h;el.stretchTime.textContent=st.t>=120?'about '+Math.round(st.t/60)+' min':'about '+st.t+' s';el.stretchEyebrow.textContent=R.mode==='work-done'?'Do this now, then tap the button':(R.mode==='break'?'This break':'Next break');}
+  function renderStretch(){var st=(R.mode!=='work'&&longNow())?LONG:STRETCHES[R.stretch];el.stretchName.textContent=st.n;el.stretchHow.textContent=st.h;el.stretchTime.textContent=st.t>=120?'about '+Math.round(st.t/60)+' min':'about '+st.t+' s';el.stretchEyebrow.textContent=(R.mode==='work-done'||R.mode==='break-ready')?'For your break':(R.mode==='break'?'This break':'Next break');}
   function renderToday(){var k=dayKey(),t=totals(k),d=diary(k);
     $('#sBlocks').textContent=t.blocks;$('#sStood').textContent=t.stood;$('#sFocus').textContent=t.focus;$('#sSnooze').textContent=t.snooze;$('#sWater').textContent=t.water;$('#sEye').textContent=t.eye;
     el.chip.textContent='Today · '+t.blocks+' block'+(t.blocks===1?'':'s')+' · stood up '+t.stood+'×';
@@ -547,9 +558,11 @@ footer strong{color:var(--danger)}
   function render(){
     document.body.dataset.mode=R.mode;
     var m=R.mode,b=R.block;
-    el.pause.hidden=!(m==='work'||m==='break'||m==='timer');el.secondary.hidden=!(m==='work-done'||m==='timer-done');el.reset.hidden=false;
+    el.pause.hidden=!(m==='work'||m==='break'||m==='timer');el.secondary.hidden=!(m==='work-done'||m==='break-ready'||m==='timer-done');el.reset.hidden=false;
+    var idleCycle=m==='idle'&&S.preset!=='timer';el.breakBtn.hidden=!idleCycle;el.longBreak.hidden=!idleCycle;
+    if(idleCycle){el.breakBtn.textContent='Break · '+S.brk+' min';el.longBreak.textContent='Long break · '+S.lng+' min';}
     el.pause.textContent=R.paused?'Resume':'Pause';
-    el.stretchCard.hidden=!(m==='work-done'||m==='break'||m==='break-done');
+    el.stretchCard.hidden=!(m==='work-done'||m==='break-ready'||m==='break'||m==='break-done');
     if(m!=='work')hideToast();
     renderMicro();
     if(m==='idle'&&S.preset==='timer'){var tms=timerMs();el.mode.innerHTML='<small>Timer</small>Ready';el.digits.textContent=fmt(tms);el.sub.textContent='timer';el.bar.style.strokeDashoffset='0';el.hint.textContent=(S.timerUntil?'Rings at '+S.timerUntil+', in '+fmtDur(tms):fmtDur(tms)+', rings at '+clockAt(tms))+'. One bell, no break cycle.';el.primary.hidden=false;el.primary.textContent='Start timer';el.reset.textContent='Reset';document.title='Spine Bell';}
@@ -557,9 +570,10 @@ footer strong{color:var(--danger)}
     else if(m==='timer-done'){el.mode.innerHTML='<small>Timer · '+fmtDur(R.total)+'</small>Time is up';el.digits.textContent='0:00';el.sub.textContent='now';el.bar.style.strokeDashoffset='0';el.hint.textContent='The bell stops when you tap.';el.primary.hidden=false;el.primary.textContent='Done';el.secondary.textContent='Again · '+fmtDur(R.total);el.reset.textContent='Reset';document.title='▲ TIME IS UP · Spine Bell';}
     else if(m==='idle'){el.mode.innerHTML='<small>Block '+b+'</small>Ready to work';el.digits.textContent=fmt(S.work*60000);el.sub.textContent='work';el.bar.style.strokeDashoffset='0';el.hint.textContent='Sit tall, feet flat. The bell rings at 0:00 and keeps ringing until you tap.';el.primary.hidden=false;el.primary.textContent='Start work';el.reset.textContent='Reset';document.title='Spine Bell';}
     else if(m==='work'){el.mode.innerHTML='<small>Block '+b+(R.snoozed?' · snoozed':'')+'</small>Working';el.sub.textContent='stand up at '+clockAt(R.paused?R.remaining:R.endAt-Date.now());el.hint.textContent=R.paused?'Paused. Resume when you are back.':'Next: '+(isLong()?'long break '+S.lng:'break '+S.brk)+' min. Shoulders down, screen at eye level.';el.primary.hidden=true;el.reset.textContent='Reset block';renderTime(R.paused?R.remaining:R.endAt-Date.now());}
-    else if(m==='work-done'){el.mode.innerHTML='<small>Block '+b+' done</small>Stand up';el.digits.textContent='0:00';el.sub.textContent='now';el.bar.style.strokeDashoffset='0';el.hint.textContent='The bell stops when you tap. Stand first, then tap.';el.primary.hidden=false;el.primary.textContent='I am standing · start break';el.secondary.textContent='Snooze 2 min';el.reset.textContent='Reset';document.title='▲ STAND UP · Spine Bell';renderStretch();}
-    else if(m==='break'){el.mode.innerHTML='<small>'+(isLong()?'Long break':'Break')+' after block '+b+'</small>Off the chair';el.sub.textContent='sit down at '+clockAt(R.paused?R.remaining:R.endAt-Date.now());el.hint.textContent=R.paused?'Break paused.':'Stay standing. Sit down only when this hits 0:00.';el.primary.hidden=false;el.primary.textContent='End break early';el.reset.textContent='Reset';renderTime(R.paused?R.remaining:R.endAt-Date.now());renderStretch();}
-    else if(m==='break-done'){el.mode.innerHTML='<small>Break over</small>Back to work';el.digits.textContent='0:00';el.sub.textContent='next: block '+(b+1);el.bar.style.strokeDashoffset='0';el.hint.textContent=S.autoWork?'Next block starts by itself in a few seconds.':'Tap when you are seated and ready.';el.primary.hidden=false;el.primary.textContent='Back to work · block '+(b+1);el.reset.textContent='Reset';document.title='▲ BACK TO WORK · Spine Bell';renderStretch();}
+    else if(m==='work-done'){el.mode.innerHTML='<small>Block '+b+' done</small>Stand up';el.digits.textContent='0:00';el.sub.textContent='now';el.bar.style.strokeDashoffset='0';el.hint.textContent='The bell stops when you tap. The break starts when you start it.';el.primary.hidden=false;el.primary.textContent='Stop the bell';el.secondary.textContent='Snooze 2 min';el.reset.textContent='Reset';document.title='▲ STAND UP · Spine Bell';renderStretch();}
+    else if(m==='break-ready'){var bl=breakLen();el.mode.innerHTML='<small>Block '+b+' done</small>Break when ready';el.digits.textContent=fmt(bl*60000);el.sub.textContent=longNow()?'long break':'break';el.bar.style.strokeDashoffset='0';el.hint.textContent='The countdown starts when you tap. Stand up then.';el.primary.hidden=false;el.primary.textContent='Start break · '+bl+' min';el.secondary.textContent='Skip break · block '+(b+1);el.reset.textContent='Reset';document.title='Spine Bell';renderStretch();}
+    else if(m==='break'){el.mode.innerHTML='<small>'+(longNow()?'Long break':'Break')+(R.solo?'':' after block '+b)+'</small>Off the chair';el.sub.textContent='sit down at '+clockAt(R.paused?R.remaining:R.endAt-Date.now());el.hint.textContent=R.paused?'Break paused.':'Stay standing. Sit down only when this hits 0:00.';el.primary.hidden=false;el.primary.textContent='End break early';el.reset.textContent='Reset';renderTime(R.paused?R.remaining:R.endAt-Date.now());renderStretch();}
+    else if(m==='break-done'){el.mode.innerHTML='<small>Break over</small>Back to work';el.digits.textContent='0:00';el.sub.textContent='next: block '+nextBlock();el.bar.style.strokeDashoffset='0';el.hint.textContent=S.autoWork?'Next block starts by itself in a few seconds.':'Tap when you are seated and ready.';el.primary.hidden=false;el.primary.textContent='Back to work · block '+nextBlock();el.reset.textContent='Reset';document.title='▲ BACK TO WORK · Spine Bell';renderStretch();}
     renderHandoff();renderToday();
   }
 
@@ -643,7 +657,7 @@ footer strong{color:var(--danger)}
   /* ---------- boot ---------- */
   renderSettings();notifyUI();
   if((R.mode==='work'||R.mode==='break'||R.mode==='timer')&&!R.paused&&R.endAt<=Date.now()){if(R.mode==='work'){creditWork();R.mode='work-done';}else if(R.mode==='timer'){R.mode='timer-done';}else{R.mode='break-done';}persistRun();}
-  if(R.mode==='break-done'&&S.autoWork){setTimeout(function(){if(R.mode==='break-done'){R.block++;startWork();}},6000);}
+  if(R.mode==='break-done'&&S.autoWork){setTimeout(function(){if(R.mode==='break-done'){toNextBlock();startWork();}},6000);}
   if(R.mode==='work-done'||R.mode==='break-done'||R.mode==='timer-done'){el.status.textContent='Timer ended while this page was closed. Tap the button to continue.';}
   if(R.mode==='work'){scheduleMicro();}
   render();renderDiary();

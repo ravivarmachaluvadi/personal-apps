@@ -90,6 +90,11 @@ the browser keeps drawing dark-scheme controls (Dumbbell Dojo's day names were w
   Spine Bell and Tally Board banners (Android refuses page-level notifications). It caches nothing.
 - **Just a timer**: the fourth Rhythm preset in Spine Bell is a plain countdown, either N minutes or "ring at"
   a clock time, one bell and no break cycle. The clock time is one-off; the next start uses the minutes.
+- **Breaks start when you start them**: tapping the work bell only stops it. Spine Bell then waits on
+  *Break when ready* with *Start break* (the countdown begins on that tap) and *Skip break*, which goes straight
+  to the next block. While idle, *Break* and *Long break* run a break with no work block before it; it leaves the
+  block number alone. *Stood up* counts breaks started, so a skipped or snoozed bell does not count.
+  `tools/check-spine-bell.py` drives all of this on a fake clock.
 
 ## Tally Board: the tick and the session log
 
