@@ -6,6 +6,8 @@
  *     .sync()              pull from Drive (merge) and push if anything is waiting
  *     .signIn() / .signOut()
  *   DriveStore.mountStatus(element, store)   renders the sign-in button / sync state into an element
+ *   DriveStore.files                          ordinary files (images, uploads) beside the JSON files; see below
+ *   tombstoneDays (option)                    how long a deletion is remembered; ten years unless a page says less
  *
  * Design: the browser keeps a cache of the document plus a "dirty" flag, so the page renders instantly
  * and works offline. Google Drive (scope drive.file, via a "Continue with Google" token) holds the file
@@ -92,8 +94,8 @@
     return api(DRIVE + '/files?q=' + encodeURIComponent("name='" + q(name) + "' and mimeType='application/vnd.google-apps.folder' and trashed=false") + '&fields=files(id,name)&pageSize=5')
       .then(function (r) { return r.json(); }).then(function (j) { return j.files && j.files[0] ? j.files[0].id : null; });
   }
-  function createFolder(name) {
-    return api(DRIVE + '/files?fields=id', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name, mimeType: 'application/vnd.google-apps.folder' }) })
+  function createFolder(name, parent) {
+    return api(DRIVE + '/files?fields=id', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name, mimeType: 'application/vnd.google-apps.folder', parents: parent ? [parent] : undefined }) })
       .then(function (r) { return r.json(); }).then(function (j) { return j.id; });
   }
   function findFiles(folderId, name) {
@@ -112,6 +114,104 @@
   function updateFile(id, obj) {
     return api(UPLOAD + '/files/' + id + '?uploadType=media&fields=id,modifiedTime', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(obj) }).then(function (r) { return r.json(); });
   }
+
+  /* ---------------- files: ordinary Drive files kept beside the JSON documents ----------------
+   * For pages that hold images or uploads, which do not belong inside a JSON file every device downloads.
+   * They live in a folder inside the apps' folder (Personal Apps/<name>) and use the same sign-in as the
+   * stores: drive.file is enough, because the site can read every file it created, from any device.
+   *   files.folder(name)       id of Personal Apps/<name>, created on first use
+   *   files.folders(name)      every such folder (two devices can create one at the same moment)
+   *   files.upload(file, {folderId, name, onProgress(loaded, total)})   {promise -> file, abort()}
+   *   files.download(id)       the content, as a Blob
+   *   files.trash(id)          moves it to Drive's Trash; nothing here deletes a file for good
+   *   files.list(folderId)     [{id, name, mimeType, size, createdTime}], every page of them
+   * Uploads are Shoebox's (checked on the real Drive, 2026-10-04): one request up to 5 MB, a resumable
+   * session above that, and when the browser hides Google's answer, a look for the file before sending
+   * it again, so a blocked answer never leaves two copies. */
+  var SMALL_UPLOAD = 5 * 1024 * 1024, resumableOk = true, folderCache = {};
+  var FILE_FIELDS = 'id,name,mimeType,size,createdTime,modifiedTime';
+  var FOLDER_MIME = 'application/vnd.google-apps.folder';
+  function appFolder() { var n = CFG.driveFolderName || 'Personal Apps'; return findFolder(n).then(function (id) { return id || createFolder(n); }); }
+  function childFolders(parent, name) {
+    return api(DRIVE + '/files?q=' + encodeURIComponent("name='" + q(name) + "' and mimeType='" + FOLDER_MIME + "' and '" + q(parent) + "' in parents and trashed=false") + '&fields=files(id)&orderBy=createdTime&pageSize=10')
+      .then(function (r) { return r.json(); }).then(function (j) { return (j.files || []).map(function (f) { return f.id; }); });
+  }
+  function subFolder(name) {
+    if (!folderCache[name]) {
+      folderCache[name] = appFolder().then(function (pid) { return childFolders(pid, name).then(function (ids) { return ids[0] || createFolder(name, pid); }); });
+      folderCache[name].catch(function () { delete folderCache[name]; });
+    }
+    return folderCache[name];
+  }
+  function subFolders(name) { return appFolder().then(function (pid) { return childFolders(pid, name); }); }
+  function listFolder(folderId) {
+    var out = [];
+    function page(token) {
+      return api(DRIVE + '/files?q=' + encodeURIComponent("'" + q(folderId) + "' in parents and trashed=false") + '&fields=' + encodeURIComponent('nextPageToken,files(id,name,mimeType,size,createdTime)') + '&pageSize=1000' + (token ? '&pageToken=' + encodeURIComponent(token) : ''))
+        .then(function (r) { return r.json(); }).then(function (j) { out = out.concat(j.files || []); return j.nextPageToken ? page(j.nextPageToken) : out; });
+    }
+    return page('');
+  }
+  function download(id) { return api(DRIVE + '/files/' + encodeURIComponent(id) + '?alt=media').then(function (r) { return r.blob(); }); }
+  function xhrSend(job, method, url, headers, body) {
+    return new Promise(function (res, rej) {
+      if (job.aborted) return rej({ code: 'aborted' });
+      var x = new XMLHttpRequest(); job.xhr = x; x.open(method, url);
+      Object.keys(headers).forEach(function (k) { x.setRequestHeader(k, headers[k]); });
+      if (x.upload) x.upload.onprogress = function (e) { if (e.lengthComputable && job.onProgress) { try { job.onProgress(e.loaded, e.total); } catch (er) {} } };
+      x.onload = function () { res(x); }; x.onerror = function () { rej({ code: 'blocked' }); }; x.onabort = function () { rej({ code: 'aborted' }); };
+      x.send(body);
+    });
+  }
+  function xhrFail(x) {
+    if (x.status === 401) { expire(); return { code: 'signed_out' }; }
+    return { code: x.status === 404 ? 'not_found' : x.status === 403 ? 'forbidden' : 'http', status: x.status, message: String(x.responseText || '').slice(0, 300) };
+  }
+  function xhrFile(x) {
+    if (x.status < 200 || x.status >= 300) throw xhrFail(x);
+    var f = null; try { f = JSON.parse(x.responseText); } catch (e) {}
+    if (!f || !f.id) throw { code: 'blocked' }; // an answer without the new file's id proves nothing
+    return f;
+  }
+  function uploadMultipart(job) {
+    if (!hasToken()) return Promise.reject({ code: 'signed_out' });
+    var b = '----drivesync' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    var body = new Blob(['--' + b + '\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n' + JSON.stringify(job.meta) + '\r\n--' + b + '\r\nContent-Type: ' + job.type + '\r\n\r\n', job.file, '\r\n--' + b + '--']);
+    return xhrSend(job, 'POST', UPLOAD + '/files?uploadType=multipart&fields=' + encodeURIComponent(FILE_FIELDS), { Authorization: 'Bearer ' + auth.token, 'Content-Type': 'multipart/related; boundary=' + b }, body).then(xhrFile);
+  }
+  function uploadResumable(job) {
+    if (!hasToken()) return Promise.reject({ code: 'signed_out' });
+    return xhrSend(job, 'POST', UPLOAD + '/files?uploadType=resumable&fields=' + encodeURIComponent(FILE_FIELDS), { Authorization: 'Bearer ' + auth.token, 'Content-Type': 'application/json; charset=UTF-8', 'X-Upload-Content-Type': job.type, 'X-Upload-Content-Length': String(job.file.size) }, JSON.stringify(job.meta)).then(function (x) {
+      if (x.status < 200 || x.status >= 300) throw xhrFail(x);
+      var loc = x.getResponseHeader('Location'); if (!loc) throw { code: 'blocked' };
+      return xhrSend(job, 'PUT', loc, { 'Content-Type': job.type }, job.file);
+    }).then(xhrFile);
+  }
+  /* the same name and size in the same folder, changed since the upload began (ten minutes of slack for a clock that is off) */
+  function findJustUploaded(job) {
+    function look() {
+      return api(DRIVE + '/files?q=' + encodeURIComponent("name='" + q(job.meta.name) + "' and '" + q(job.meta.parents[0]) + "' in parents and trashed=false") + '&fields=' + encodeURIComponent('files(' + FILE_FIELDS + ')') + '&orderBy=modifiedTime%20desc&pageSize=10')
+        .then(function (r) { return r.json(); }).then(function (j) {
+          var since = job.started - 600000;
+          return (j.files || []).filter(function (f) { return +f.size === job.file.size && Date.parse(f.modifiedTime) >= since; })[0] || null;
+        });
+    }
+    return look().then(function (f) { return f || new Promise(function (r) { setTimeout(r, 1500); }).then(look); });
+  }
+  function uploadFile(file, opts) {
+    opts = opts || {};
+    var job = { file: file, type: file.type || 'application/octet-stream', meta: { name: opts.name || file.name || 'file', parents: [opts.folderId] },
+      onProgress: opts.onProgress, xhr: null, aborted: false, started: Date.now() };
+    if (file.type) job.meta.mimeType = file.type;
+    var p = (file.size <= SMALL_UPLOAD || !resumableOk) ? uploadMultipart(job) : uploadResumable(job).catch(function (e) {
+      if (!e || e.code !== 'blocked' || job.aborted) throw e;
+      resumableOk = false; // this browser blocks the resumable route: the rest of the visit goes in one request
+      return findJustUploaded(job).then(function (f) { return f || uploadMultipart(job); });
+    });
+    return { promise: p, abort: function () { job.aborted = true; if (job.xhr) job.xhr.abort(); } };
+  }
+  var files = { folder: subFolder, folders: subFolders, upload: uploadFile, download: download, list: listFolder,
+    trash: function (id) { return trashFile(id).then(function () {}); } };
 
   /* ---------------- merge ---------------- */
   function isObj(x) { return x && typeof x === 'object' && !Array.isArray(x); }
@@ -140,9 +240,9 @@
     });
     return { doc: out, localNewer: localNewer };
   }
-  function purgeTombstones(doc) {
+  function purgeTombstones(doc, days) {
     if (!doc || !isObj(doc.items)) return;
-    var cut = Date.now() - TOMBSTONE_DAYS * 86400000;
+    var cut = Date.now() - (days > 0 ? days : TOMBSTONE_DAYS) * 86400000;
     Object.keys(doc.items).forEach(function (id) { var it = doc.items[id]; if (it && it.deleted && (+it.updatedAt || 0) < cut) delete doc.items[id]; });
   }
 
@@ -238,7 +338,7 @@
   Store.prototype._push = function () {
     var self = this;
     this.setStatus({ state: 'saving' }); clearTimeout(this.timer); this.timer = null;
-    purgeTombstones(this.doc);
+    purgeTombstones(this.doc, this.o.tombstoneDays);
     this.dirty = false; var snapshot = JSON.parse(JSON.stringify(this.doc));
     var p = this.fileId ? updateFile(this.fileId, snapshot) : createFile(this.folderId, this.file, snapshot);
     return p.then(function (r) { if (r && r.id) self.fileId = r.id; if (r && r.modifiedTime) self.remoteModified = r.modifiedTime; self.synced = true; self.persist(); self.setStatus({ state: self.dirty ? 'pending' : 'saved' }); },
@@ -306,7 +406,7 @@
 
   global.DriveStore = {
     open: function (o) { return new Store(o); },
-    mountStatus: mountStatus, ensureCss: ensureCss,
+    mountStatus: mountStatus, ensureCss: ensureCss, files: files,
     signIn: signIn, signOut: signOut, authState: authState, onAuth: function (fn) { auth.listeners.push(fn); }
   };
 })(window);

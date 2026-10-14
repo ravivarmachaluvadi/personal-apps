@@ -1,0 +1,842 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Drop Tray</title>
+<script>/* the light/dark choice for this page on this device, applied before first paint */try{var pageTheme=JSON.parse(localStorage.getItem('droptray.theme'));if(pageTheme==='light'||pageTheme==='dark')document.documentElement.setAttribute('data-theme',pageTheme);}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#EEF1F6; --surface:#FFFFFF; --surface-2:#F3F5F9; --code-bg:#F6F8FB; --line:#D5DAE3;
+  --text:#18202B; --muted:#4E5A69; --faint:#556170;
+  --accent:#2D55C8; --accent-ink:#FFFFFF; --accent-soft:#E1E8FA;
+  --good:#22704A; --warn:#8A5A0F; --danger:#B42318;
+  --t-pdf:#C8372D; --t-doc:#2F6FDB; --t-sheet:#1E8A4C; --t-slides:#D9701C; --t-image:#8A4FD8; --t-video:#C23C84; --t-audio:#13867F; --t-archive:#8C6A3F; --t-code:#2D55C8; --t-text:#6B7686;
+  --shadow:0 10px 26px rgba(24,32,43,.07);
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#10141B; --surface:#181D26; --surface-2:#20262F; --code-bg:#141922; --line:#333B47;
+  --text:#E6EAF0; --muted:#A3ADBB; --faint:#8F99A7;
+  --accent:#8FB0FF; --accent-ink:#0B1530; --accent-soft:#1F2B47;
+  --good:#74D49A; --warn:#E2A33B; --danger:#F4826F;
+  --t-pdf:#F07B70; --t-doc:#7FA8F5; --t-sheet:#63C98C; --t-slides:#F0A060; --t-image:#B996F5; --t-video:#EE86BC; --t-audio:#5CCFC6; --t-archive:#C9A57A; --t-code:#8FB0FF; --t-text:#9AA4B1;
+  --shadow:0 10px 26px rgba(0,0,0,.35);
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#10141B; --surface:#181D26; --surface-2:#20262F; --code-bg:#141922; --line:#333B47;
+  --text:#E6EAF0; --muted:#A3ADBB; --faint:#8F99A7;
+  --accent:#8FB0FF; --accent-ink:#0B1530; --accent-soft:#1F2B47;
+  --good:#74D49A; --warn:#E2A33B; --danger:#F4826F;
+  --t-pdf:#F07B70; --t-doc:#7FA8F5; --t-sheet:#63C98C; --t-slides:#F0A060; --t-image:#B996F5; --t-video:#EE86BC; --t-audio:#5CCFC6; --t-archive:#C9A57A; --t-code:#8FB0FF; --t-text:#9AA4B1;
+  --shadow:0 10px 26px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+/* no scroll anchoring: the list is redrawn whenever a drop arrives (see the other pages) */
+body *{overflow-anchor:none}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 var(--sans);-webkit-font-smoothing:antialiased}
+#app{max-width:820px;margin:0 auto;padding:18px 16px 80px}
+header.top{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
+h1{font-weight:700;font-size:clamp(24px,5vw,32px);letter-spacing:-.02em;margin:0;line-height:1.2}
+.headright{margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.lead{color:var(--muted);margin:4px 0 0;font-size:15px}
+.btn{font:500 14px var(--sans);border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:10px;padding:7px 12px;cursor:pointer;min-height:38px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.btn.sm{padding:4px 10px;font-size:13px;min-height:32px}
+.btn.quiet{background:transparent;border-color:transparent;color:var(--accent)}
+.btn.quiet:hover{border-color:var(--line)}
+.btn.danger{color:var(--danger)}
+.btn.danger.solid{background:var(--danger);border-color:var(--danger);color:var(--surface)}
+.btn[disabled]{opacity:.55;cursor:default}
+.btn:focus-visible,summary:focus-visible,textarea:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.icon{width:38px;height:38px;padding:0}
+.icon svg{width:17px;height:17px;display:block}
+.banner{margin:12px 0 0;padding:9px 12px;border-radius:10px;background:var(--surface-2);border:1px dashed var(--line);color:var(--muted);font-size:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:12px;box-shadow:var(--shadow)}
+.sect{margin:22px 2px 8px;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+
+/* sending */
+#text{display:block;width:100%;font:14px/1.5 var(--mono);color:var(--text);background:var(--code-bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;resize:vertical;min-height:5.6em;max-height:45vh;field-sizing:content;tab-size:4}
+#text::placeholder{color:var(--faint);font-family:var(--sans)}
+.crow{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;margin-top:10px}
+.crow .btn.primary{min-width:96px}
+.hint{color:var(--muted);font-size:13px}
+#tray{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}
+.up{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);font-size:13.5px}
+.up .uname{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.up .ustate{color:var(--muted);grid-column:1}
+.up[data-state="failed"] .ustate{color:var(--danger)}
+.up[data-state="done"] .ustate{color:var(--good)}
+.up .uacts{grid-column:2;grid-row:1/span 2;display:flex;gap:6px}
+.up .ubar{grid-column:1/-1;height:5px;border-radius:99px;background:var(--surface);border:1px solid var(--line);overflow:hidden}
+.up .ubar i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .15s linear}
+
+/* this device */
+.devline{margin:14px 2px 0;color:var(--muted);font-size:14px;display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
+.devline b{color:var(--text);font-weight:600;overflow-wrap:anywhere}
+.devform{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 0;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.devform label{font-size:14px;color:var(--muted);flex-basis:100%}
+input[type=text],select{font:15px var(--sans);background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:7px 10px;min-height:38px;min-width:0}
+#deviceInput{flex:1 1 200px}
+
+/* the drops */
+.drops{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:10px}
+.empty{color:var(--muted);text-align:center;padding:26px 12px;border:1.5px dashed var(--line);border-radius:16px;margin:14px 0 0;font-size:15px}
+.drop{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-width:0;box-shadow:var(--shadow)}
+.drop.fresh{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft),var(--shadow)}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font-size:13px;color:var(--muted)}
+.meta .from{font-weight:500;color:var(--text);overflow-wrap:anywhere}
+.meta .pinmark{color:var(--accent);font-weight:600}
+.badge{display:inline-flex;align-items:center;gap:6px;font:600 12px var(--sans);padding:2px 9px 2px 7px;border-radius:99px;background:var(--surface-2);color:var(--text);border:1px solid var(--line)}
+.badge::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--t-text);flex:none}
+.badge[data-tone="pdf"]::before{background:var(--t-pdf)}.badge[data-tone="doc"]::before{background:var(--t-doc)}.badge[data-tone="sheet"]::before{background:var(--t-sheet)}
+.badge[data-tone="slides"]::before{background:var(--t-slides)}.badge[data-tone="image"]::before{background:var(--t-image)}.badge[data-tone="video"]::before{background:var(--t-video)}
+.badge[data-tone="audio"]::before{background:var(--t-audio)}.badge[data-tone="archive"]::before{background:var(--t-archive)}.badge[data-tone="code"]::before{background:var(--t-code)}
+pre.txt{font:13.5px/1.5 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere;tab-size:4;background:var(--code-bg);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:8px 0 0}
+pre.txt.folded{-webkit-mask-image:linear-gradient(to bottom,#000 72%,transparent);mask-image:linear-gradient(to bottom,#000 72%,transparent)}
+.drop[data-kind="text"] pre.txt,.drop[data-kind="link"] pre.txt{font-family:var(--sans);font-size:15px}
+.more{margin-top:4px}
+.thumb{margin-top:8px;border-radius:10px;overflow:hidden;background:var(--surface-2);border:1px solid var(--line);display:grid;place-items:center;min-height:64px}
+.thumb img{display:block;max-width:100%;max-height:340px;object-fit:contain}
+.thumb .tnote{color:var(--muted);font-size:13px;padding:14px}
+.filerow{display:flex;align-items:center;gap:12px;margin-top:8px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}
+.fico{width:38px;height:46px;flex:none;border-radius:6px;background:var(--surface);border:1px solid var(--line);position:relative}
+.fico::after{content:'';position:absolute;left:7px;right:7px;bottom:8px;height:6px;border-radius:3px;background:var(--t-text)}
+.fico[data-tone="pdf"]::after{background:var(--t-pdf)}.fico[data-tone="doc"]::after{background:var(--t-doc)}.fico[data-tone="sheet"]::after{background:var(--t-sheet)}
+.fico[data-tone="slides"]::after{background:var(--t-slides)}.fico[data-tone="image"]::after{background:var(--t-image)}.fico[data-tone="video"]::after{background:var(--t-video)}
+.fico[data-tone="audio"]::after{background:var(--t-audio)}.fico[data-tone="archive"]::after{background:var(--t-archive)}.fico[data-tone="code"]::after{background:var(--t-code)}
+.fname{font-weight:500;overflow-wrap:anywhere;min-width:0;color:var(--text)}
+.thumb+.fname{display:block;margin-top:6px;font-size:13.5px}
+.bignote{color:var(--muted);font-size:13px;margin:6px 0 0}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}
+.acts .pin{margin-left:auto}
+.ask{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px;padding:8px 10px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line);font-size:14px;color:var(--text)}
+.ask span{flex:1 1 200px}
+
+/* settings and the guide */
+details.card>summary{cursor:pointer;font-weight:600;list-style:none;display:flex;align-items:center;gap:8px}
+details.card>summary::-webkit-details-marker{display:none}
+details.card>summary::before{content:'\25B8';color:var(--muted);font-size:14px;transition:transform .15s}
+details.card[open]>summary::before{transform:rotate(90deg)}
+.fld{display:flex;gap:10px;align-items:center;margin:14px 0 6px;flex-wrap:wrap}
+.fld label{font-size:14px;color:var(--muted)}
+.guide p,.guide li{color:var(--muted);font-size:14.5px;margin:8px 0}
+.guide b{color:var(--text)}
+.guide ul{padding-left:20px;margin:6px 0}
+.foot{color:var(--muted);font-size:13px;margin:18px 2px 0}
+.foot code,.guide code{font:12.5px var(--mono);background:var(--surface-2);padding:1px 5px;border-radius:5px;overflow-wrap:anywhere}
+
+/* dragging files over the page */
+#dropzone{position:fixed;inset:10px;border:3px dashed var(--accent);border-radius:18px;background:color-mix(in srgb,var(--bg) 82%,transparent);display:grid;place-items:center;pointer-events:none;z-index:50}
+#dropzone div{font:600 20px var(--sans);color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 20px;box-shadow:var(--shadow);text-align:center;max-width:calc(100% - 40px)}
+
+#toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);max-width:calc(100% - 32px);width:max-content;display:flex;align-items:center;gap:12px;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:10px 12px 10px 14px;box-shadow:0 14px 34px rgba(0,0,0,.22);z-index:60;font-size:14.5px}
+#toast span{overflow-wrap:anywhere}
+@media (max-width:480px){
+  #app{padding:14px 12px 80px}
+  .drop{padding:10px 12px}
+  .acts{gap:6px}
+  .acts .btn{padding:6px 10px}
+}
+</style>
+</head>
+<body>
+<main id="app">
+  <header class="top">
+    <h1>Drop Tray</h1>
+    <div class="headright">
+      <div id="sync"></div>
+      <button class="btn icon" id="themeBtn" type="button" aria-label="Switch theme"></button>
+    </div>
+  </header>
+  <p class="lead">Paste it here on one device, pick it up on your others.</p>
+  <div class="banner" id="authNote" hidden></div>
+
+  <section class="card" aria-label="Send">
+    <textarea id="text" rows="3" spellcheck="false" aria-label="Text to send" placeholder="Type or paste here, then Send. Or press Ctrl+V anywhere on the page to send what you copied straight away."></textarea>
+    <div class="crow">
+      <button class="btn primary" id="sendBtn" type="button">Send</button>
+      <button class="btn" id="pickBtn" type="button">Choose files</button>
+      <input type="file" id="fileInput" multiple hidden>
+      <span class="hint" id="composeHint"></span>
+    </div>
+    <ul id="tray" hidden aria-label="Sending"></ul>
+  </section>
+
+  <div class="devline" id="deviceLine">This device: <b id="deviceName"></b><button class="btn sm quiet" id="renameBtn" type="button">Rename</button></div>
+  <form class="devform" id="deviceForm" hidden>
+    <label for="deviceInput" id="deviceAsk">Name this device, so your other devices can tell where a drop came from.</label>
+    <input id="deviceInput" type="text" maxlength="40" autocomplete="off" placeholder="Home laptop, Work laptop, Phone…">
+    <button class="btn sm primary" id="deviceSave" type="submit">Save</button>
+    <button class="btn sm quiet" id="deviceCancel" type="button">Not now</button>
+  </form>
+
+  <p class="empty" id="empty" hidden>Nothing here yet. Paste something on any of your devices and it shows up here.</p>
+  <ul class="drops" id="list" aria-label="Latest drops"></ul>
+  <section id="pinnedWrap" hidden aria-label="Pinned">
+    <h2 class="sect">Pinned · kept until you unpin them</h2>
+    <ul class="drops" id="pinned"></ul>
+  </section>
+
+  <details class="card" id="settings">
+    <summary>Settings</summary>
+    <div class="fld">
+      <label for="keepSel">Clear drops after</label>
+      <select id="keepSel">
+        <option value="1">1 day</option>
+        <option value="3">3 days</option>
+        <option value="7">7 days</option>
+        <option value="14">14 days</option>
+        <option value="30">30 days</option>
+        <option value="0">Until I delete them</option>
+      </select>
+    </div>
+    <p class="hint">Pinned drops always stay. A cleared file goes to your Drive's Trash, which keeps it for another 30 days. This setting is shared by all your devices.</p>
+  </details>
+
+  <details class="card guide" id="guide">
+    <summary>How it works</summary>
+    <p><b>Sending.</b> Press <b>Ctrl+V</b> anywhere on the page (not inside a box) and what you copied is sent at once: text, code, or a screenshot. To edit first, paste into the box above and press <b>Send</b> or <b>Ctrl+Enter</b>. Files go with <b>Choose files</b>, or drag them onto the page.</p>
+    <p><b>Picking up.</b> Your other devices show a new drop within about ten seconds while this page is open, and straight away when you click into the page. <b>Copy</b> puts text or a picture on the clipboard exactly as it was sent; files have <b>Download</b>.</p>
+    <p><b>Where it lives.</b> Text is kept in <code>Personal Apps/drop-tray.json</code> and pictures and files in <code>Personal Apps/Drop Tray</code>, both in your own Google Drive. Text over 200 KB goes up as a <code>.txt</code> file. Files can be up to 100 MB.</p>
+    <p><b>Not for secrets.</b> Everything is stored as plain text and plain files in your Drive. Passwords and keys belong in Strongroom.</p>
+    <p><b>Signing in.</b> Each device signs in with Google once, and the sign-in lasts an hour. After that the page asks for <b>Continue with Google</b> again: one tap, no questions. Pressing Send or Copy while it has run out starts that tap for you. Text sent while signed out waits on the device and goes up after the tap.</p>
+    <p><b>Clearing.</b> Drops older than the time in Settings (7 days unless you change it) are cleared on their own; pinned ones stay. Delete asks first and can be undone for a few seconds. Nothing is ever deleted for good here: files go to Drive's Trash.</p>
+  </details>
+
+  <p class="foot" id="foot"></p>
+</main>
+<div id="dropzone" hidden><div id="dropText">Drop to send to your other devices</div></div>
+<div id="toast" role="status" aria-live="polite" hidden><span id="toastText"></span><button class="btn sm quiet" id="toastAct" type="button" data-act="undo" hidden>Undo</button></div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ---------- small helpers ---------- */
+  function $(s){return document.querySelector(s);}
+  function pad(n){return n<10?'0'+n:''+n;}
+  function isObj(x){return !!x&&typeof x==='object'&&!Array.isArray(x);}
+  function lsGet(k,d){try{var v=localStorage.getItem(k);return v==null?d:v;}catch(e){return d;}}
+  function lsSet(k,v){try{if(v==null)localStorage.removeItem(k);else localStorage.setItem(k,v);}catch(e){}}
+  function rid(){var a=new Uint8Array(8);try{crypto.getRandomValues(a);}catch(e){for(var i=0;i<8;i++)a[i]=Math.random()*256;}return Array.prototype.map.call(a,function(b){return (b%36).toString(36);}).join('');}
+  function cleanName(s){return String(s==null?'':s).replace(/\s+/g,' ').trim().slice(0,40);}
+  var WD=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var MON=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var MAC=/Mac|iPhone|iPad/.test(navigator.platform||navigator.userAgent||'');
+  var TOUCH=!!(window.matchMedia&&matchMedia('(pointer:coarse)').matches&&!matchMedia('(pointer:fine)').matches);
+
+  /* ---------- limits ---------- */
+  var KEEP_CHOICES=[1,3,7,14,30,0],DEFAULT_KEEP=7,DAY_MS=86400000;
+  var MAX_FILE=100*1024*1024;      /* bigger files belong in Drive or Shoebox */
+  var INLINE_TEXT=200*1024;        /* text above this goes up as a .txt file, so the JSON every device reads stays small */
+  var PREVIEW_MAX=10*1024*1024;    /* pictures above this show as files, not previews */
+  var FOLD_LINES=12,FOLD_CHARS=1500;
+  var UNDO_MS=6000;                /* a deleted file goes to Drive's Trash once Undo has passed */
+  var ORPHAN_AGE=DAY_MS,ORPHAN_EVERY=3600000,SWEEP_EVERY=600000;
+  var FOLDER='Drop Tray',HAS_DRIVE=!!window.DriveStore;
+
+  /* ---------- this device: a name to stamp on what it sends, and an id to say "from this device" ---------- */
+  function guessDevice(){
+    var u=navigator.userAgent||'';
+    if(/Android/.test(u))return 'Android phone';
+    if(/iPhone/.test(u))return 'iPhone';
+    if(/iPad/.test(u))return 'iPad';
+    var os=/Windows/.test(u)?'Windows':/Mac OS X/.test(u)?'Mac':/CrOS/.test(u)?'Chromebook':/Linux/.test(u)?'Linux':'Computer';
+    var br=/Edg\//.test(u)?'Edge':/Firefox\//.test(u)?'Firefox':/Chrome\//.test(u)?'Chrome':/Safari\//.test(u)?'Safari':'';
+    return br?os+' · '+br:os;
+  }
+  var DEVICE_ID=lsGet('droptray.deviceId','');
+  if(!/^[\w-]{6,40}$/.test(DEVICE_ID)){DEVICE_ID='dv'+rid();lsSet('droptray.deviceId',DEVICE_ID);}
+  function deviceName(){return cleanName(lsGet('droptray.device',''))||guessDevice();}
+
+  /* ---------- store ----------
+     One document {v, app, items}. Items:
+       d…        {kind:'drop', type:'text', text, size, from, dev, createdAt, pinned?}
+                 {kind:'drop', type:'file', fileId, name, mime, size, from, dev, createdAt, pinned?,
+                  asText?, head?, lines?}   (asText: text over 200 KB, kept as a .txt file; head is its first lines)
+       settings  {kind:'settings', keepDays}
+     A drop never changes after it is sent except for its pin, so the shared newest-wins merge is enough.
+     Deletions are tombstones kept for 60 days (tombstoneDays): a drop that comes back from a device left
+     closed longer is older than any clear-after setting, so the clean-up removes it again. */
+  var BOOTED=false;
+  function localFallback(){
+    var K='droptray.local',d=null;
+    try{d=JSON.parse(localStorage.getItem(K));}catch(e){}
+    if(!isObj(d)||!isObj(d.items))d={v:1,app:'drop-tray',items:{}};
+    return {doc:d,synced:true,dirty:false,
+      mutate:function(fn){fn(d);lsSet(K,JSON.stringify(d));},sync:function(){}};
+  }
+  var STORE=(HAS_DRIVE
+    ? DriveStore.open({file:'drop-tray.json',cacheKey:'droptray.doc',pollMs:8000,debounceMs:300,tombstoneDays:60,
+        empty:function(){return {v:1,app:'drop-tray',items:{}};},
+        onChange:function(doc,src){if(src==='remote'&&BOOTED){noteArrivals();sweepOld();renderAll();}},
+        onStatus:function(){if(BOOTED){renderAuth();afterSync();}}})
+    : localFallback());
+  function items(){return STORE.doc.items;}
+  function put(list){var n=Date.now();STORE.mutate(function(d){list.forEach(function(it){it.updatedAt=n;d.items[it.id]=it;});});}
+  function tomb(id){return {id:id,kind:'drop',deleted:true};}
+  function validDrop(d){
+    if(!d||d.deleted||d.kind!=='drop'||typeof d.id!=='string')return false;
+    if(d.type==='text')return typeof d.text==='string';
+    return d.type==='file'&&typeof d.fileId==='string'&&!!d.fileId;
+  }
+  function drops(){
+    var m=items(),out=[];
+    Object.keys(m).forEach(function(k){if(validDrop(m[k]))out.push(m[k]);});
+    out.sort(function(a,b){return (+b.createdAt||0)-(+a.createdAt||0);});
+    return out;
+  }
+  function findDrop(id){var d=items()[id];return validDrop(d)?d:null;}
+  function keepDays(){var s=items().settings,n=s&&!s.deleted?+s.keepDays:NaN;return KEEP_CHOICES.indexOf(n)>=0?n:DEFAULT_KEEP;}
+
+  /* ---------- sign-in ---------- */
+  function auth(){return HAS_DRIVE?DriveStore.authState():{signedIn:false,configured:false,reason:''};}
+  function signedIn(){return auth().signedIn;}
+  function canFiles(){return HAS_DRIVE&&signedIn();}
+  /* called from a click, a key or a paste, which is what lets Google's sign-in window open */
+  function askSignIn(){
+    var a=auth();
+    if(!HAS_DRIVE||!a.configured)return Promise.resolve(false);
+    if(a.signedIn)return Promise.resolve(true);
+    return DriveStore.signIn().then(function(){return true;},function(){return false;});
+  }
+
+  /* ---------- what a drop is ---------- */
+  var CODE_LINE=/^\s*(import|from|export|package|def|class|function|const|let|var|public|private|protected|static|return|if|elif|else|for|while|switch|case|try|catch|async|await|SELECT|INSERT|UPDATE|DELETE|CREATE|ALTER|WITH|#include|using|namespace|fn|func|struct|impl|interface|@\w+)\b|[;{}]\s*$|^\s*[}\])]|=>|^\s*<\/?[a-zA-Z][\w-]*[\s>]|^\s*(\$|>|PS [A-Z]:\\[^>]*>)\s|^\s*(git|npm|npx|yarn|pnpm|pip3?|python3?|node|docker|kubectl|helm|curl|wget|cd|ls|cat|mkdir|rm|cp|mv|sudo|brew|mvn|gradle|java|go|cargo|ssh|scp)\s/;
+  function looksLikeCode(t){
+    var lines=t.split('\n').filter(function(l){return l.trim();});
+    if(!lines.length)return false;
+    var hits=0,indented=0;
+    lines.forEach(function(l){if(CODE_LINE.test(l))hits++;if(/^(\t| {2,})\S/.test(l))indented++;});
+    return hits/lines.length>=0.34||(lines.length>=3&&(hits+indented)/lines.length>=0.6);
+  }
+  function linkOf(t){var s=String(t).trim();return s.length<4000&&/^https?:\/\/[^\s]+$/i.test(s)?s:'';}
+  var IMAGE_MIME=/^image\/(png|jpeg|gif|webp|bmp|avif)$/;
+  function isImage(d){return d.type==='file'&&!d.asText&&IMAGE_MIME.test(d.mime||'');}
+  function kindOf(d){
+    if(d.type==='file')return d.asText?'bigtext':isImage(d)?'image':'file';
+    return linkOf(d.text)?'link':looksLikeCode(d.text)?'code':'text';
+  }
+  /* label, colour, by Drive type, by extension; an empty label shows the extension (ZIP, PNG) */
+  var TYPES=[
+    ['PDF','pdf',/^application\/pdf$/,/^pdf$/],
+    ['Word','doc',/^application\/(msword|vnd\.openxmlformats-officedocument\.wordprocessingml\.|vnd\.ms-word\.)/,/^(docx?|docm|dotx?)$/],
+    ['Excel','sheet',/^application\/(vnd\.ms-excel|vnd\.openxmlformats-officedocument\.spreadsheetml\.)/,/^(xlsx?|xlsm|xlsb|xltx?)$/],
+    ['PowerPoint','slides',/^application\/(vnd\.ms-powerpoint|vnd\.openxmlformats-officedocument\.presentationml\.)/,/^(pptx?|pptm|ppsx?|potx?)$/],
+    ['CSV','sheet',/^text\/(csv|tab-separated-values)$/,/^(csv|tsv)$/],
+    ['','image',/^image\//,/^(jpe?g|png|gif|webp|heic|heif|bmp|tiff?|avif|svg)$/],
+    ['Video','video',/^video\//,/^(mp4|mov|m4v|webm|avi|mkv|3gp)$/],
+    ['Audio','audio',/^audio\//,/^(mp3|m4a|wav|aac|ogg|oga|flac|opus)$/],
+    ['','archive',/^application\/(zip|x-zip-compressed|x-7z-compressed|x-rar-compressed|vnd\.rar|x-tar|gzip|x-gzip|x-bzip2)$/,/^(zip|7z|rar|tar|gz|tgz|bz2)$/],
+    ['','code',/^(application\/(json|javascript|xml|x-sh|x-python)|text\/(html|css|javascript|xml|x-))/,/^(json|js|mjs|ts|java|kt|py|go|rb|rs|sh|ps1|html?|css|xml|ya?ml|sql|c|cpp|cs|h)$/],
+    ['','text',/^text\//,/^(txt|md|log|rtf)$/]
+  ];
+  function extOf(name){var m=/\.([a-z0-9]{1,5})$/i.exec(String(name||''));return m?m[1].toLowerCase():'';}
+  function typeOf(d,k){
+    if(k==='text'||k==='bigtext')return {label:'Text',tone:'text'};
+    if(k==='code')return {label:'Code',tone:'code'};
+    if(k==='link')return {label:'Link',tone:'doc'};
+    var m=d.mime||'',ext=extOf(d.name),row=null,i;
+    for(i=0;i<TYPES.length&&!row;i++)if(TYPES[i][2].test(m))row=TYPES[i];
+    for(i=0;i<TYPES.length&&!row&&ext;i++)if(TYPES[i][3].test(ext))row=TYPES[i];
+    row=row||['','file'];
+    return {label:row[0]||(ext?(ext==='jpeg'?'JPG':ext.toUpperCase()):'File'),tone:row[1]};
+  }
+  function byteLen(s){try{return new TextEncoder().encode(s).length;}catch(e){return String(s).length;}}
+  function fmtSize(n){
+    n=+n||0;
+    if(n<1024)return n+' B';
+    if(n<1048576)return (+(n/1024).toFixed(n<10240?1:0))+' KB';
+    return (+(n/1048576).toFixed(n<10485760?1:0))+' MB';
+  }
+  function lineCount(t){return String(t).replace(/\n$/,'').split('\n').length;}
+  function headOf(t){return String(t).split('\n').slice(0,FOLD_LINES).join('\n').slice(0,FOLD_CHARS);}
+  function hm(d){return pad(d.getHours())+':'+pad(d.getMinutes());}
+  function sameDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
+  function ago(t){
+    t=+t||0;var s=(Date.now()-t)/1000,d=new Date(t),n=new Date();
+    if(s<45)return 'just now';
+    if(s<90)return '1 min ago';
+    if(s<3600)return Math.round(s/60)+' min ago';
+    if(s<6*3600)return Math.round(s/3600)+' h ago';
+    if(sameDay(d,n))return 'today '+hm(d);
+    var y=new Date(n.getTime());y.setDate(n.getDate()-1);
+    if(sameDay(d,y))return 'yesterday '+hm(d);
+    return WD[d.getDay()].slice(0,3)+' '+d.getDate()+' '+MON[d.getMonth()].slice(0,3)+' '+hm(d);
+  }
+  function stampName(prefix,ext){var d=new Date();return prefix+' '+d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+pad(d.getHours())+'.'+pad(d.getMinutes())+'.'+pad(d.getSeconds())+ext;}
+  function newDrop(){return {id:'d'+Date.now().toString(36)+rid().slice(0,6),kind:'drop',from:deviceName(),dev:DEVICE_ID,createdAt:Date.now()};}
+
+  /* ---------- DOM ---------- */
+  function h(tag,attrs,kids){
+    var e=document.createElement(tag);
+    if(attrs)Object.keys(attrs).forEach(function(k){
+      var v=attrs[k];if(v==null)return;
+      if(k==='class')e.className=v;
+      else if(k==='text')e.textContent=v;
+      else if(k==='disabled')e.disabled=!!v;
+      else if(k.slice(0,2)==='on')e.addEventListener(k.slice(2),v);
+      else if(k==='style')e.style.cssText=v;
+      else e.setAttribute(k,v);
+    });
+    (kids||[]).forEach(function(c){if(c==null)return;e.appendChild(typeof c==='string'?document.createTextNode(c):c);});
+    return e;
+  }
+  function clear(el){while(el.firstChild)el.removeChild(el.firstChild);}
+  function sel(id){return '.drop[data-id="'+(window.CSS&&CSS.escape?CSS.escape(id):id)+'"]';}
+
+  var toastTimer=null,TOAST_FN=null;
+  function toast(msg,actLabel,fn){
+    $('#toastText').textContent=msg;
+    var b=$('#toastAct');b.hidden=!actLabel;b.textContent=actLabel||'';TOAST_FN=fn||null;
+    $('#toast').hidden=false;clearTimeout(toastTimer);
+    toastTimer=setTimeout(function(){$('#toast').hidden=true;TOAST_FN=null;},actLabel?UNDO_MS:4000);
+  }
+  function errText(e,what){
+    e=e||{};
+    if(e.code==='signed_out')return 'Sign in with Google first, then try again.';
+    if(e.code==='network'||e.code==='blocked')return 'No connection to Google Drive, so I couldn\'t '+what+'.';
+    if(e.code==='not_found')return 'That file isn\'t in your Drive any more.';
+    if(e.code==='aborted')return 'Cancelled.';
+    if(e.code==='no_drive')return 'Files need the hosted page, which keeps them in your Google Drive.';
+    return 'Couldn\'t '+what+(e.message?': '+String(e.message).slice(0,120):'.');
+  }
+  function fail(what){return function(e){toast(errText(e,what));};}
+
+  /* ---------- the clipboard ---------- */
+  function legacyCopy(text){try{var ta=document.createElement('textarea');ta.value=text;ta.setAttribute('readonly','');ta.style.cssText='position:fixed;opacity:0;top:0;left:0';document.body.appendChild(ta);ta.select();var ok=document.execCommand('copy');ta.remove();return !!ok;}catch(e){return false;}}
+  function copyText(text,msg){
+    var done=function(ok){toast(ok?msg:'Copy is blocked here. Select the text instead.');};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(text).then(function(){done(true);},function(){done(legacyCopy(text));});
+    else done(legacyCopy(text));
+  }
+  /* Chrome puts only PNG on the clipboard, so any other picture is redrawn as one first */
+  function toPng(b){
+    if(b.type==='image/png')return Promise.resolve(b);
+    return new Promise(function(res,rej){
+      var u=URL.createObjectURL(b),img=new Image();
+      img.onload=function(){var c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;c.getContext('2d').drawImage(img,0,0);URL.revokeObjectURL(u);
+        c.toBlob(function(o){if(o)res(o);else rej({code:'convert'});},'image/png');};
+      img.onerror=function(){URL.revokeObjectURL(u);rej({code:'convert'});};
+      img.src=u;
+    });
+  }
+  function copyImage(d){
+    if(!navigator.clipboard||!navigator.clipboard.write||!window.ClipboardItem){toast('This browser can\'t copy pictures. Use Download instead.');return;}
+    var png=blobOf(d).then(toPng),item;
+    try{item=new ClipboardItem({'image/png':png});}catch(e){item=null;}
+    var direct=item?navigator.clipboard.write([item]):Promise.reject();
+    direct.then(function(){toast('Picture copied');},function(){
+      png.then(function(b){return navigator.clipboard.write([new ClipboardItem({'image/png':b})]);})
+        .then(function(){toast('Picture copied');},function(e){toast(e&&e.code?errText(e,'copy it'):'Copy is blocked here. Use Download instead.');});
+    });
+  }
+
+  /* ---------- files in Drive, kept for this visit once fetched ---------- */
+  var BLOBS={},PREV={};
+  function blobOf(d){
+    if(BLOBS[d.fileId])return Promise.resolve(BLOBS[d.fileId]);
+    if(!HAS_DRIVE)return Promise.reject({code:'no_drive'});
+    return askSignIn().then(function(ok){
+      if(!ok)throw {code:'signed_out'};
+      return DriveStore.files.download(d.fileId);
+    }).then(function(b){
+      if(!b.type&&d.mime)b=new Blob([b],{type:d.mime});
+      if(b.size<=PREVIEW_MAX)BLOBS[d.fileId]=b;
+      return b;
+    });
+  }
+  function trashFile(fid){if(!canFiles()||!fid)return Promise.resolve();return DriveStore.files.trash(fid).catch(function(){});}
+  function saveBlob(b,name){
+    var u=URL.createObjectURL(b),a=h('a',{href:u,download:name||'file'});
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(function(){URL.revokeObjectURL(u);},15000);
+  }
+
+  /* ---------- sending text ---------- */
+  function sendText(text){
+    text=String(text==null?'':text);
+    if(!text.trim())return false;
+    if(byteLen(text)>INLINE_TEXT){
+      if(!canFiles()){
+        toast(HAS_DRIVE?'Text this long goes up as a file, so sign in with Google first.':'Text this long needs the hosted page, which keeps it in your Google Drive.');
+        askSignIn();return false;
+      }
+      enqueue([new File([text],stampName('text','.txt'),{type:'text/plain'})],{asText:true,head:headOf(text),lines:lineCount(text)});
+      return true;
+    }
+    var d=newDrop();d.type='text';d.text=text;d.size=byteLen(text);
+    KNOWN[d.id]=1;put([d]);renderList();
+    if(HAS_DRIVE&&!signedIn())askSignIn();
+    return true;
+  }
+  function sendBox(){
+    var ta=$('#text');
+    if(!ta.value.trim()){ta.focus();return;}
+    if(sendText(ta.value)){ta.value='';toast('Sent');}
+  }
+
+  /* ---------- sending files: the file goes up first, and its drop is written only once Drive has it,
+     so another device never sees a drop whose file is not there yet ---------- */
+  var UP={list:[],active:0,raf:0};
+  function namePasted(f){
+    if(f.name&&!/^image\.\w+$/i.test(f.name))return f;
+    var ext={'image/png':'.png','image/jpeg':'.jpg','image/gif':'.gif','image/webp':'.webp','image/bmp':'.bmp'}[f.type]||('.'+(extOf(f.name)||'bin'));
+    return new File([f],stampName('pasted image',ext),{type:f.type});
+  }
+  function sendFiles(files){
+    if(!files.length)return;
+    if(!HAS_DRIVE){toast('Files need the hosted page, which keeps them in your Google Drive.');return;}
+    if(!signedIn()){toast('Sign in with Google first to send pictures and files.');askSignIn();return;}
+    var ok=[];
+    files.forEach(function(f){
+      if(f.size>MAX_FILE)toast(f.name+' is over 100 MB. Drop Tray takes files up to 100 MB; Shoebox or Drive itself can hold bigger ones.');
+      else ok.push(f);
+    });
+    enqueue(ok,{});
+  }
+  function enqueue(files,extra){
+    files.forEach(function(f){UP.list.push({file:f,name:f.name||'file',extra:extra||{},state:'waiting',loaded:0,total:f.size,task:null,msg:'',el:null});});
+    renderTray();pump();
+  }
+  function pump(){
+    while(UP.active<2){
+      var u=null;for(var i=0;i<UP.list.length;i++)if(UP.list[i].state==='waiting'){u=UP.list[i];break;}
+      if(!u)break;
+      startUpload(u);
+    }
+    renderTray();
+  }
+  function startUpload(u){
+    UP.active++;u.state='uploading';u.loaded=0;u.msg='';
+    DriveStore.files.folder(FOLDER).then(function(fid){
+      if(u.state!=='uploading')throw {code:'aborted'};
+      u.task=DriveStore.files.upload(u.file,{folderId:fid,name:u.name,onProgress:function(l,t){u.loaded=l;u.total=t;trayLater();}});
+      return u.task.promise;
+    }).then(function(f){
+      if(u.state!=='uploading')return;
+      u.state='done';u.loaded=u.total;
+      var d=newDrop();d.type='file';d.fileId=f.id;d.name=f.name||u.name;d.mime=f.mimeType||u.file.type||'';d.size=+f.size||u.file.size;
+      if(u.extra.asText){d.asText=true;d.head=u.extra.head;d.lines=u.extra.lines;}
+      if(u.file.size<=PREVIEW_MAX)BLOBS[f.id]=u.file;
+      KNOWN[d.id]=1;put([d]);renderList();
+      setTimeout(function(){UP.list=UP.list.filter(function(x){return x!==u;});renderTray();},2500);
+    },function(e){
+      if(u.state==='cancelled'||(e&&e.code==='aborted')){u.state='cancelled';u.msg='Cancelled';}
+      else{u.state='failed';u.msg=errText(e,'send it');}
+    }).then(function(){UP.active--;u.task=null;renderTray();pump();});
+  }
+  function cancelUpload(u){if(u.state!=='waiting'&&u.state!=='uploading')return;var t=u.task;u.state='cancelled';u.msg='Cancelled';if(t)t.abort();renderTray();}
+  function retryUpload(u){if(!canFiles()){toast('Sign in with Google first to send pictures and files.');askSignIn();return;}u.state='waiting';u.loaded=0;u.msg='';renderTray();pump();}
+  function dismissUpload(u){UP.list=UP.list.filter(function(x){return x!==u;});renderTray();}
+  function trayLater(){if(UP.raf)return;UP.raf=requestAnimationFrame(function(){UP.raf=0;paintProgress();});}
+  function upState(u){
+    if(u.state==='waiting')return 'Waiting…';
+    if(u.state==='uploading')return 'Sending · '+fmtSize(u.loaded)+' of '+fmtSize(u.total);
+    if(u.state==='done')return 'Sent';
+    return u.msg||u.state;
+  }
+  function paintProgress(){
+    UP.list.forEach(function(u){
+      if(!u.el)return;
+      var pct=u.state==='done'?100:u.total?Math.round(100*u.loaded/u.total):0;
+      u.el.querySelector('.ubar i').style.width=pct+'%';
+      u.el.querySelector('.ustate').textContent=upState(u);
+    });
+  }
+  function renderTray(){
+    var t=$('#tray');clear(t);t.hidden=!UP.list.length;
+    UP.list.forEach(function(u){
+      var acts=[];
+      if(u.state==='waiting'||u.state==='uploading')acts.push(h('button',{class:'btn sm','data-act':'cancel',type:'button',text:'Cancel',onclick:function(){cancelUpload(u);}}));
+      if(u.state==='failed'||u.state==='cancelled'){
+        acts.push(h('button',{class:'btn sm','data-act':'retry',type:'button',text:'Retry',onclick:function(){retryUpload(u);}}));
+        acts.push(h('button',{class:'btn sm quiet','data-act':'dismiss',type:'button',text:'Dismiss',onclick:function(){dismissUpload(u);}}));
+      }
+      u.el=h('li',{class:'up','data-name':u.name,'data-state':u.state},[
+        h('span',{class:'uname',text:u.name}),
+        h('span',{class:'uacts'},acts),
+        h('span',{class:'ustate',text:upState(u)}),
+        h('span',{class:'ubar'},[h('i',{style:'width:0%'})])]);
+      t.appendChild(u.el);
+    });
+    paintProgress();
+  }
+
+  /* ---------- deleting, pinning, clearing ---------- */
+  var ASK='',ASK_FOCUS=false,TRASH={};
+  function removeDrop(d){
+    ASK='';put([tomb(d.id)]);renderList();
+    if(d.type==='file')TRASH[d.id]={fileId:d.fileId,t:setTimeout(function(){delete TRASH[d.id];trashFile(d.fileId);},UNDO_MS)};
+    toast('Drop deleted','Undo',function(){
+      var p=TRASH[d.id];if(p){clearTimeout(p.t);delete TRASH[d.id];}
+      put([Object.assign({},d)]);renderList();toast('Brought back');
+    });
+  }
+  function togglePin(d){var c=Object.assign({},d);if(d.pinned)delete c.pinned;else c.pinned=true;put([c]);renderList();}
+  /* drops older than the clear-after setting go, pinned ones stay; their files go to Drive's Trash */
+  function sweepOld(){
+    var days=keepDays();if(!days)return;
+    var cut=Date.now()-days*DAY_MS,gone=drops().filter(function(d){return !d.pinned&&(+d.createdAt||0)<cut;});
+    if(!gone.length)return;
+    put(gone.map(function(d){return tomb(d.id);}));
+    gone.forEach(function(d){if(d.type==='file')trashFile(d.fileId);});
+    if(BOOTED)renderList();
+  }
+  /* A file no drop points at, over a day old: an upload whose drop was never written (a tab closed half-way),
+     or a deleted drop whose file could not be trashed then (signed out). At most once an hour per device,
+     and only after this visit has read Drive, so a drop it has not seen yet is never mistaken for one. */
+  var orphanBusy=false;
+  function sweepOrphans(){
+    if(!canFiles()||!STORE.synced||orphanBusy)return;
+    var last=+lsGet('droptray.orphansAt','0')||0;
+    if(Math.abs(Date.now()-last)<ORPHAN_EVERY)return;
+    orphanBusy=true;lsSet('droptray.orphansAt',String(Date.now()));
+    DriveStore.files.folders(FOLDER).then(function(ids){
+      return Promise.all(ids.map(function(id){return DriveStore.files.list(id);}));
+    }).then(function(lists){
+      var live={},cut=Date.now()-ORPHAN_AGE,jobs=[];
+      drops().forEach(function(d){if(d.fileId)live[d.fileId]=1;});
+      lists.forEach(function(l){l.forEach(function(f){if(!live[f.id]&&Date.parse(f.createdTime)<cut)jobs.push(f.id);});});
+      return jobs.reduce(function(p,id){return p.then(function(){return DriveStore.files.trash(id).catch(function(){});});},Promise.resolve());
+    }).catch(function(){lsSet('droptray.orphansAt',null);}).then(function(){orphanBusy=false;});
+  }
+  function afterSync(){if(STORE.synced&&canFiles())sweepOrphans();}
+
+  /* ---------- arrivals: a new drop from another device is outlined for a moment, and counted in the tab
+     title while you are looking elsewhere ---------- */
+  var KNOWN={},FRESH={},UNSEEN=0;
+  drops().forEach(function(d){KNOWN[d.id]=1;});
+  function noteArrivals(){
+    var n=0,now=Date.now();
+    drops().forEach(function(d){if(!KNOWN[d.id]){KNOWN[d.id]=1;if(d.dev!==DEVICE_ID){FRESH[d.id]=now;n++;}}});
+    if(!n)return;
+    if(document.hidden||!document.hasFocus()){UNSEEN+=n;paintTitle();}
+    setTimeout(function(){var changed=false;Object.keys(FRESH).forEach(function(id){if(Date.now()-FRESH[id]>=3900){delete FRESH[id];changed=true;}});if(changed)renderList();},4000);
+  }
+  function paintTitle(){document.title=UNSEEN?'('+UNSEEN+') Drop Tray':'Drop Tray';}
+  function seen(){if(UNSEEN){UNSEEN=0;paintTitle();}}
+
+  /* ---------- drawing the drops ---------- */
+  var OPEN={};
+  var IO=window.IntersectionObserver?new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){IO.unobserve(e.target);loadPreview(e.target.getAttribute('data-file'));}});},{rootMargin:'600px 0px'}):null;
+  function loadPreview(fid){
+    var p=PREV[fid];if(p)return;
+    var d=null;drops().some(function(x){if(x.fileId===fid){d=x;return true;}return false;});
+    if(!d)return;
+    if(!BLOBS[fid]&&!signedIn()){paintPreview(fid);return;}
+    PREV[fid]='busy';
+    blobOf(d).then(function(b){PREV[fid]=URL.createObjectURL(b);},function(){PREV[fid]='fail';}).then(function(){paintPreview(fid);});
+  }
+  function paintPreview(fid){
+    Array.prototype.forEach.call(document.querySelectorAll('.thumb[data-file]'),function(t){if(t.getAttribute('data-file')===fid)fillThumb(t,fid);});
+  }
+  function fillThumb(t,fid){
+    var p=PREV[fid];clear(t);
+    if(p&&p!=='busy'&&p!=='fail'){
+      var img=h('img',{class:'preview',alt:'',src:p});
+      img.addEventListener('error',function(){PREV[fid]='fail';fillThumb(t,fid);});
+      t.appendChild(img);return;
+    }
+    t.appendChild(h('span',{class:'tnote',text:p==='fail'?'No preview for this picture. Download still works.':p==='busy'?'Loading the picture…':signedIn()||BLOBS[fid]?'Loading the picture…':'Sign in with Google to see the picture.'}));
+  }
+  function card(d){
+    var k=kindOf(d),t=typeOf(d,k),mine=d.dev===DEVICE_ID,from=cleanName(d.from);
+    var li=h('li',{class:'drop'+(FRESH[d.id]?' fresh':''),'data-id':d.id,'data-kind':k,'data-type':d.type,'data-from':from});
+    li.appendChild(h('div',{class:'meta'},[
+      h('span',{class:'badge','data-tone':t.tone,text:t.label}),
+      h('span',{class:'from',text:mine?'from this device':'from '+(from||'another device')}),
+      h('span',{class:'when',text:ago(d.createdAt),title:new Date(+d.createdAt||0).toLocaleString()}),
+      h('span',{class:'size',text:fmtSize(d.size!=null?d.size:byteLen(d.text||''))}),
+      d.pinned?h('span',{class:'pinmark',text:'Pinned'}):null]));
+    var acts=[];
+    if(d.type==='text'){
+      var text=d.text,n=lineCount(text),long=n>FOLD_LINES||text.length>FOLD_CHARS,open=!!OPEN[d.id];
+      li.appendChild(h('pre',{class:'txt'+(long&&!open?' folded':''),text:long&&!open?headOf(text):text}));
+      if(long)li.appendChild(h('button',{class:'btn sm quiet more','data-act':'more',type:'button',text:open?'Show less':(n>FOLD_LINES?'Show all '+n+' lines':'Show all '+fmtSize(byteLen(text)))}));
+      var url=linkOf(text);
+      if(url)acts.push(h('a',{class:'btn primary','data-act':'open',href:url,target:'_blank',rel:'noopener noreferrer',text:'Open'}));
+      acts.push(h('button',{class:url?'btn':'btn primary','data-act':'copy',type:'button',text:'Copy'}));
+    }else if(k==='bigtext'){
+      li.appendChild(h('pre',{class:'txt folded',text:typeof d.head==='string'?d.head:''}));
+      li.appendChild(h('p',{class:'bignote',text:(+d.lines>0?d.lines+' lines, ':'')+fmtSize(d.size)+'. Copy copies all of it; Download saves it as '+(d.name||'a file')+'.'}));
+      acts.push(h('button',{class:'btn primary','data-act':'copy',type:'button',text:'Copy all'}));
+      acts.push(h('button',{class:'btn','data-act':'download',type:'button',text:'Download'}));
+    }else if(k==='image'&&(+d.size||0)<=PREVIEW_MAX){
+      var th=h('div',{class:'thumb','data-file':d.fileId});
+      if(!PREV[d.fileId]&&BLOBS[d.fileId])PREV[d.fileId]=URL.createObjectURL(BLOBS[d.fileId]);
+      fillThumb(th,d.fileId);
+      if(!PREV[d.fileId]){if(IO)IO.observe(th);else loadPreview(d.fileId);}
+      li.appendChild(th);
+      li.appendChild(h('span',{class:'fname',text:d.name||'picture'}));
+      acts.push(h('button',{class:'btn primary','data-act':'copyimg',type:'button',text:'Copy picture'}));
+      acts.push(h('button',{class:'btn','data-act':'download',type:'button',text:'Download'}));
+    }else{
+      li.appendChild(h('div',{class:'filerow'},[h('span',{class:'fico','data-tone':t.tone,'aria-hidden':'true'}),h('span',{class:'fname',text:d.name||'file'})]));
+      if(k==='image')acts.push(h('button',{class:'btn','data-act':'copyimg',type:'button',text:'Copy picture'}));
+      acts.push(h('button',{class:'btn primary','data-act':'download',type:'button',text:'Download'}));
+    }
+    acts.push(h('button',{class:'btn sm quiet pin','data-act':'pin',type:'button',text:d.pinned?'Unpin':'Pin'}));
+    acts.push(h('button',{class:'btn sm quiet danger','data-act':'del',type:'button',text:'Delete'}));
+    li.appendChild(h('div',{class:'acts'},acts));
+    if(ASK===d.id)li.appendChild(h('div',{class:'ask',role:'group','aria-label':'Delete this drop?'},[
+      h('span',{text:d.type==='file'?'Delete this drop? Its file goes to your Drive\'s Trash.':'Delete this drop from every device?'}),
+      h('button',{class:'btn sm','data-act':'no',type:'button',text:'Cancel'}),
+      h('button',{class:'btn sm danger solid','data-act':'yes',type:'button',text:'Delete'})]));
+    return li;
+  }
+  function renderList(){
+    var all=drops(),latest=[],pinned=[];
+    all.forEach(function(d){(d.pinned?pinned:latest).push(d);});
+    [['#list',latest],['#pinned',pinned]].forEach(function(x){var el=$(x[0]);clear(el);x[1].forEach(function(d){el.appendChild(card(d));});});
+    $('#pinnedWrap').hidden=!pinned.length;
+    $('#empty').hidden=!!all.length;
+    if(ASK&&!findDrop(ASK))ASK='';
+    if(ASK&&ASK_FOCUS){ASK_FOCUS=false;var b=document.querySelector(sel(ASK)+' .ask [data-act="no"]');if(b)b.focus();}
+  }
+  function renderAuth(){
+    var a=auth(),note=$('#authNote'),files=canFiles();
+    $('#pickBtn').disabled=!files;
+    if(!HAS_DRIVE)note.hidden=true;
+    else if(!a.configured){note.hidden=false;note.textContent='Google sign-in is not set up for this copy, so drops stay in this browser.';}
+    else if(!a.signedIn){note.hidden=false;note.textContent=(a.reason==='expired'?'Your Google sign-in ran out (it lasts an hour). ':'Not signed in on this device yet. ')+'Text you send waits here and goes up once you continue with Google; pictures and files need the sign-in first.';}
+    else note.hidden=true;
+    /* a phone has no Ctrl+V or dragging, so it is told only what it can do */
+    var key=MAC?'⌘+Enter':'Ctrl+Enter';
+    if(TOUCH){$('#text').placeholder='Paste or type here, then Send.';$('#composeHint').textContent=files||!HAS_DRIVE?'':'Sign in to send files';}
+    else $('#composeHint').textContent=files?key+' sends · drop files anywhere on the page':HAS_DRIVE?key+' sends · sign in to send files':key+' sends';
+  }
+  function renderDevice(){$('#deviceName').textContent=deviceName();}
+  function renderKeep(){$('#keepSel').value=String(keepDays());}
+  function renderAll(){renderAuth();renderDevice();renderKeep();renderList();}
+  function refreshTimes(){Array.prototype.forEach.call(document.querySelectorAll('.drop'),function(el){var d=findDrop(el.getAttribute('data-id'));if(d)el.querySelector('.when').textContent=ago(d.createdAt);});}
+
+  function onAct(e){
+    var b=e.target.closest('[data-act]'),li=e.target.closest('.drop');if(!b||!li)return;
+    var act=b.getAttribute('data-act'),d=findDrop(li.getAttribute('data-id'));if(!d)return;
+    if(act==='open')return;   /* a plain link, opened by the browser */
+    e.preventDefault();
+    if(act==='copy'){
+      if(d.type==='text')copyText(d.text,'Copied');
+      else blobOf(d).then(function(bl){return bl.text();}).then(function(t){copyText(t,'Copied all '+fmtSize(d.size));},fail('copy it'));
+    }
+    else if(act==='copyimg')copyImage(d);
+    else if(act==='download'){toast('Downloading '+(d.name||'the file')+'…');blobOf(d).then(function(bl){saveBlob(bl,d.name);toast('Downloaded '+(d.name||'the file'));},fail('download it'));}
+    else if(act==='more'){OPEN[d.id]=!OPEN[d.id];renderList();}
+    else if(act==='pin')togglePin(d);
+    else if(act==='del'){ASK=d.id;ASK_FOCUS=true;renderList();}
+    else if(act==='no'){ASK='';renderList();var del=document.querySelector(sel(d.id)+' [data-act="del"]');if(del)del.focus();}
+    else if(act==='yes')removeDrop(d);
+  }
+
+  /* ---------- theme: per page, per device (the head script applies it before first paint) ---------- */
+  var THEME_KEY='droptray.theme',darkQ=window.matchMedia?window.matchMedia('(prefers-color-scheme: dark)'):null;
+  var THEME_ICON={sun:'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41',moon:'M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z'};
+  function chosenTheme(){try{var t=JSON.parse(localStorage.getItem(THEME_KEY));return t==='light'||t==='dark'?t:'auto';}catch(e){return 'auto';}}
+  function deviceTheme(){return darkQ&&darkQ.matches?'dark':'light';}
+  function shownTheme(){var t=chosenTheme();return t==='auto'?deviceTheme():t;}
+  function paintTheme(){
+    var t=chosenTheme(),dark=shownTheme()==='dark',b=$('#themeBtn'),NS='http://www.w3.org/2000/svg',svg=document.createElementNS(NS,'svg'),path=document.createElementNS(NS,'path'),label=dark?'Switch to light':'Switch to dark';
+    if(t==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',t);
+    [['viewBox','0 0 24 24'],['fill','none'],['stroke','currentColor'],['stroke-width','2'],['stroke-linecap','round'],['stroke-linejoin','round'],['aria-hidden','true']].forEach(function(a){svg.setAttribute(a[0],a[1]);});
+    path.setAttribute('d',dark?THEME_ICON.sun:THEME_ICON.moon);svg.appendChild(path);clear(b);b.appendChild(svg);b.setAttribute('aria-label',label);b.title=label;
+  }
+
+  /* ---------- this device's name ---------- */
+  function openDeviceForm(first){
+    $('#deviceAsk').textContent=first?'Name this device, so your other devices can tell where a drop came from.':'Rename this device. Drops it already sent keep the old name.';
+    $('#deviceInput').value=deviceName();$('#deviceForm').hidden=false;$('#deviceInput').focus();$('#deviceInput').select();
+  }
+  function closeDeviceForm(save){
+    if(save||!cleanName(lsGet('droptray.device',''))){var n=cleanName($('#deviceInput').value)||guessDevice();lsSet('droptray.device',n);}
+    $('#deviceForm').hidden=true;renderDevice();
+  }
+
+  /* ---------- boot ---------- */
+  $('#sendBtn').addEventListener('click',sendBox);
+  $('#text').addEventListener('keydown',function(e){if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();sendBox();}});
+  $('#pickBtn').addEventListener('click',function(){$('#fileInput').click();});
+  $('#fileInput').addEventListener('change',function(){var f=Array.prototype.slice.call(this.files||[]);this.value='';sendFiles(f);});
+  $('#list').addEventListener('click',onAct);
+  $('#pinned').addEventListener('click',onAct);
+  document.addEventListener('keydown',function(e){
+    if(e.key!=='Escape')return;
+    if(ASK){var id=ASK;ASK='';renderList();var del=document.querySelector(sel(id)+' [data-act="del"]');if(del)del.focus();}
+    else if(!$('#deviceForm').hidden)closeDeviceForm(false);
+  });
+  /* Ctrl+V anywhere sends what was copied; inside a box it only pastes, so you can edit before Send.
+     Pictures and files on the clipboard are sent wherever you paste them. */
+  document.addEventListener('paste',function(e){
+    var cd=e.clipboardData;if(!cd)return;
+    var files=Array.prototype.slice.call(cd.files||[]);
+    if(files.length){e.preventDefault();sendFiles(files.map(namePasted));return;}
+    var t=e.target;
+    if(t&&t.closest&&t.closest('input,textarea,select,[contenteditable="true"],[contenteditable=""]'))return;
+    var text=cd.getData('text/plain');if(!text)return;
+    e.preventDefault();if(sendText(text))toast('Sent');
+  });
+  /* dragging files over the page */
+  var DRAG=0;
+  function hasFiles(e){var ty=e.dataTransfer&&e.dataTransfer.types;return !!ty&&Array.prototype.indexOf.call(ty,'Files')>=0;}
+  function zone(on){$('#dropText').textContent=canFiles()?'Drop to send to your other devices':HAS_DRIVE?'Sign in with Google first to send files':'Files need the hosted page';$('#dropzone').hidden=!on;}
+  document.addEventListener('dragenter',function(e){if(!hasFiles(e))return;e.preventDefault();DRAG++;zone(true);});
+  document.addEventListener('dragover',function(e){if(!hasFiles(e))return;e.preventDefault();e.dataTransfer.dropEffect=canFiles()?'copy':'none';zone(true);});
+  document.addEventListener('dragleave',function(e){if(!hasFiles(e))return;DRAG=Math.max(0,DRAG-1);if(!DRAG)zone(false);});
+  document.addEventListener('drop',function(e){
+    if(!hasFiles(e))return;e.preventDefault();DRAG=0;zone(false);
+    var it=e.dataTransfer.items,files=[],dirs=0;
+    for(var i=0;i<e.dataTransfer.files.length;i++){
+      var en=it&&it[i]&&it[i].webkitGetAsEntry?it[i].webkitGetAsEntry():null;
+      if(en&&en.isDirectory)dirs++;else files.push(e.dataTransfer.files[i]);
+    }
+    if(dirs)toast('Folders can\'t be sent; drop the files inside them instead.');
+    sendFiles(files);
+  });
+  $('#toastAct').addEventListener('click',function(){var f=TOAST_FN;TOAST_FN=null;$('#toast').hidden=true;if(f)f();});
+  $('#keepSel').addEventListener('change',function(){
+    var n=+this.value;if(KEEP_CHOICES.indexOf(n)<0)return;
+    put([{id:'settings',kind:'settings',keepDays:n}]);sweepOld();renderList();
+    toast(n?'Drops older than '+n+' day'+(n===1?'':'s')+' are cleared, on every device':'Drops stay until you delete them');
+  });
+  $('#renameBtn').addEventListener('click',function(){openDeviceForm(false);});
+  $('#deviceForm').addEventListener('submit',function(e){e.preventDefault();closeDeviceForm(true);});
+  $('#deviceCancel').addEventListener('click',function(){closeDeviceForm(false);});
+  $('#themeBtn').addEventListener('click',function(){var next=shownTheme()==='dark'?'light':'dark';lsSet(THEME_KEY,JSON.stringify(next===deviceTheme()?'auto':next));paintTheme();});
+  if(darkQ){if(darkQ.addEventListener)darkQ.addEventListener('change',paintTheme);else if(darkQ.addListener)darkQ.addListener(paintTheme);}
+  /* clicking into the page on another laptop picks up what was sent at once, without waiting for the poll */
+  window.addEventListener('focus',function(){seen();if(HAS_DRIVE&&signedIn())STORE.sync();});
+  document.addEventListener('visibilitychange',function(){if(!document.hidden){seen();refreshTimes();}});
+  /* a file whose Undo was still running when the page closes goes to the Trash now (or with the hourly sweep) */
+  window.addEventListener('pagehide',function(){Object.keys(TRASH).forEach(function(id){clearTimeout(TRASH[id].t);trashFile(TRASH[id].fileId);delete TRASH[id];});});
+  setInterval(refreshTimes,30000);
+  setInterval(function(){sweepOld();afterSync();},SWEEP_EVERY);
+
+  if(HAS_DRIVE)DriveStore.mountStatus($('#sync'),STORE);else $('#sync').textContent='Saved in this browser only';
+  $('#foot').appendChild(document.createTextNode(HAS_DRIVE
+    ? 'Text is saved to '
+    : 'This copy saves only in this browser, text only. The hosted page saves text to '));
+  $('#foot').appendChild(h('code',{text:'Personal Apps/drop-tray.json'}));
+  $('#foot').appendChild(document.createTextNode(' and pictures and files to '));
+  $('#foot').appendChild(h('code',{text:'Personal Apps/Drop Tray'}));
+  $('#foot').appendChild(document.createTextNode(HAS_DRIVE
+    ? ' in your Google Drive, so every device you sign in on sees the same tray.'
+    : ' in your Google Drive.'));
+  paintTheme();
+  sweepOld();
+  renderAll();
+  if(!cleanName(lsGet('droptray.device','')))openDeviceForm(true);
+  BOOTED=true;
+  afterSync();
+})();
+</script>
+</body>
+</html>

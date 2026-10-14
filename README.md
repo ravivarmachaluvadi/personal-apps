@@ -1,7 +1,8 @@
 # Personal Apps
 
-Nine single-file web apps that keep everything in **your own Google Drive**, not in any app's database. Eight
-of them store their data as one JSON file each; the ninth, **Shoebox**, is a calmer way to look after the photos
+Ten single-file web apps that keep everything in **your own Google Drive**, not in any app's database. Nine
+of them store their data as one JSON file each (Drop Tray also keeps the pictures and files you send through it,
+as ordinary files beside its JSON file); the tenth, **Shoebox**, is a calmer way to look after the photos
 and PDFs already in your Drive. Open them from a laptop or a phone, sign in with Google once per device, and every device sees the
 same data. The **Continue with Google** button sits in the header of every page; until you tap it on a device,
 that device keeps its data only in its own browser (the header then says *changes waiting*).
@@ -17,8 +18,9 @@ that device keeps its data only in its own browser (the header then says *change
 | Hack Shelf | `docs/hack-shelf.html` | `hack-shelf.json` — entries (write-up, code, fields, tags), topics, usage, settings |
 | Asana Rounds | `docs/asana-rounds.html` | `asana-rounds.json` — the routine, and each day's morning and evening ticks |
 | Shoebox | `docs/shoebox.html` | none — it works on your Drive's own files and folders ([details](#shoebox-your-photos-and-papers-in-drive)) |
+| Drop Tray | `docs/drop-tray.html` | `drop-tray.json` — text you sent between devices; pictures and files in `Drop Tray/` ([details](#drop-tray-one-clipboard-for-all-your-devices)) |
 
-`docs/index.html` is a launcher for all nine. `docs/drive-sync.js` is the shared storage layer; `docs/config.js`
+`docs/index.html` is a launcher for all ten. `docs/drive-sync.js` is the shared storage layer; `docs/config.js`
 holds the one setting you must fill in (the Google OAuth client ID).
 
 ## How the storage works
@@ -64,7 +66,7 @@ Every page starts on **Auto** and follows the device. Where to switch:
 
 | Page | Switch |
 |---|---|
-| Launcher, Keycap Atlas, Dumbbell Dojo, Tally Board, Spine Bell, Asana Rounds, Shoebox | Sun/moon button in the header |
+| Launcher, Keycap Atlas, Dumbbell Dojo, Tally Board, Spine Bell, Asana Rounds, Shoebox, Drop Tray | Sun/moon button in the header |
 | Strongroom | Sun/moon button in the header and on the lock screen, plus Settings → Appearance |
 | Event Log, Hack Shelf | Settings → Appearance (Auto / Light / Dark), saved with the page's data |
 
@@ -452,6 +454,76 @@ Undo and Restore, both upload routes and their fallbacks, dropping files on the 
 thumbnail fallbacks, the type label of each kind of file, an expired sign-in, the phone (390 px) and laptop
 (1280 px) layouts in both themes, and text contrast (type labels included).
 
+## Drop Tray: one clipboard for all your devices
+
+For moving a snippet, a command, a screenshot or a file from one laptop to another without messaging it to
+yourself. Hack Shelf stays the place for things worth keeping; Drop Tray is for things in transit, and it clears
+itself.
+
+| Area | What it does |
+|---|---|
+| Send | **Ctrl+V** anywhere on the page (not inside a box) sends what you copied at once: text, code or a picture. Paste into the box to edit first, then **Send** or Ctrl+Enter. **Choose files**, or drag files anywhere onto the page (a dashed outline says where) |
+| Pick up | Your other devices show a new drop within about 8 seconds while the page is open, and at once when you click into the page. A drop from another device is outlined for a moment, and the tab title counts drops that arrived while you were looking elsewhere |
+| Copy | Text is copied exactly as it was sent, tabs and spaces included (on Windows the clipboard itself stores line ends as CRLF). Pictures are copied as PNG: a JPEG is redrawn as PNG first, because Chrome only puts PNG on the clipboard. Files have **Download** |
+| What each drop says | Text, Code, Link, or the file's type (Excel, PDF, ZIP, PNG…), which device sent it, when, and how big. A single web address gets **Open** (only `http` and `https` ever become links) |
+| Long text | Over 12 lines (or 1,500 characters) shows the first 12 lines and *Show all N lines*. Text over 200 KB goes up as a `.txt` file; its first lines are kept for the preview, and **Copy all** fetches the rest |
+| Device name | Asked once per device and kept in that browser (`droptray.device`), with **Rename** beside it. Your own drops say *from this device* |
+| Pin and Delete | Pinned drops sit in their own list and never clear. Delete asks first (Cancel has the focus, Esc cancels), then offers Undo for 6 seconds; a file goes to Drive's Trash once the Undo has passed |
+| Clean-up | Settings → *Clear drops after*: 1, 3, **7** (the default), 14 or 30 days, or *Until I delete them*. The setting is shared by every device. Files that no drop points at and that are over a day old (an upload whose tab closed half-way) are swept too, at most once an hour per device |
+
+**Signed out.** Text you send waits on the device (the header says *changes waiting*) and goes up after
+*Continue with Google*. Pictures and files need the sign-in first. Pressing Send or Copy while signed out starts
+the sign-in, because a click is what lets Google's window open, so the hourly expiry costs one tap.
+
+**Not for secrets.** Text and files are stored as they are, unencrypted, in your Drive. Passwords belong in
+Strongroom.
+
+### Where the data lives
+
+| What | Where |
+|---|---|
+| Text drops, the list of every drop, the clear-after setting | `Personal Apps/drop-tray.json` |
+| Pictures and files, and text over 200 KB | ordinary files in `Personal Apps/Drop Tray/` |
+| Device name and id, theme | `localStorage` on that device (`droptray.*`) |
+
+| kind | id | What it holds |
+|---|---|---|
+| `drop`, text | `d…` | `text`, `size`, `from` (device name), `dev` (device id), `createdAt`, `pinned` |
+| `drop`, file | `d…` | `fileId`, `name`, `mime`, `size`, `from`, `dev`, `createdAt`, `pinned`; long text adds `asText`, `head`, `lines` |
+| `settings` | `settings` | `keepDays`: 1, 3, 7, 14, 30, or 0 for never |
+
+A file is uploaded first and its drop is written only once Drive has it, so another device never sees a drop
+whose file is not there yet. A drop never changes after it is sent except for its pin, so the shared newest-wins
+merge is enough. Deletions are remembered for 60 days instead of ten years (`tombstoneDays`), so the JSON file
+stays small however many drops pass through; a drop that comes back from a device left closed for longer is older
+than any clear-after setting, and is cleared again.
+
+**Sync speed.** This page polls Drive every 8 seconds while it is on screen (the other pages: 90) and saves
+0.3 seconds after a change (the others: 1.5). A poll is one small request for the file's modified time; the file
+itself is read only when it changed.
+
+**The shared file helpers.** `drive-sync.js` gained `DriveStore.files` for this page: `folder(name)`,
+`folders(name)`, `upload(file, {folderId, name, onProgress})`, `download(id)`, `trash(id)` and `list(folderId)`.
+The uploads are Shoebox's: one request up to 5 MB, a resumable session above that, and when the browser hides
+Google's answer, a look for the file before sending it again, so a blocked answer never leaves two copies. They
+use the same `drive.file` sign-in as the JSON files, because the site can read every file it created, from any
+device. Nothing in them deletes a file for good; `tools/build-site.py` refuses the page if a `DELETE` request or
+an *Empty Trash* call appears in it.
+
+**Testing.** `python tools/check-drop-tray.py` drives the built page in headless Chrome as two laptops sharing
+one in-memory fake Drive (the sign-in is a stub, and any other request to a Google host is aborted), then the
+source page with no Drive at all. It covers paste on one laptop and pickup on the other, both by the poll and on
+clicking in; exact copies; the box and Ctrl+Enter; links; folding; pictures (PNG, and JPEG copied as PNG); files
+by Choose files and by dragging, in one request and resumable; downloads compared byte for byte; text over
+200 KB; pin; delete, Undo and the Trash; the upload fallbacks, a failed upload and Retry, Cancel and the 100 MB
+limit; signed out and an expired sign-in; the clean-up on a fake clock (30 days, 7 days, pinned, swept leftovers,
+never, and 60-day tombstones); and the phone (390 px) and laptop (1280 px) layouts in both themes, with text
+contrast.
+
+**Not in this version:** staying signed in for more than an hour (that needs a server), an alert when a drop
+arrives while the page is closed, the phone's Share menu sending to Drop Tray, colouring code, encryption,
+sending a whole folder.
+
 ## Sign-in details worth knowing
 
 - The Google token lasts one hour. After that the pages show *Continue with Google* again; one tap, no consent
@@ -474,7 +546,7 @@ the old `Documents/FromClaude/FromClaude/Personal` folder and are linked from th
 
 ## Repository layout
 
-- `docs/` — the site. `tools/build-site.py` regenerates the nine pages from the sources below; run it after
+- `docs/` — the site. `tools/build-site.py` regenerates the ten pages from the sources below; run it after
   editing any source. It leaves `docs/data/keycap-atlas.json` alone unless the gitignored `seed/export/` folder
   is present. `docs/sw.js` is the notification service worker (not built, edit in place).
 - `keycap-atlas.html`, `strongroom.html` — page sources (artifact-style fragments; the build adds the storage layer
@@ -497,6 +569,10 @@ the old `Documents/FromClaude/FromClaude/Personal` folder and are linked from th
   sign-in and calls the Drive API itself, so the build injects only `config.js`. The build also refuses every
   markup-string API, any `DELETE` request or *Empty Trash* call, and a duplicate function declaration.
 - `tools/check-shoebox.py` — Shoebox's checker (see *Testing* in the Shoebox section).
+- `site/drop-tray.html` — page source for Drop Tray, built like Hack Shelf (every markup-string API and a
+  duplicate function are refused) and, like Shoebox, refused if it ever sends `DELETE` or empties the Trash.
+  The build also asserts its 8-second poll and its 60-day tombstones.
+- `tools/check-drop-tray.py` — Drop Tray's checker (see *Testing* in the Drop Tray section).
 - `seed/shortcuts.txt`, `seed/build-seed.mjs` — the starter shortcut set and its builder.
 - `seed/ocr-notebook-to-csv.py` — turns OCR text of a scanned password notebook into the vault's import CSV.
 - `seed/text-notebook-to-csv.py` — the same for a notebook already typed as plain text (blank line between
