@@ -88,6 +88,11 @@ h1{font-weight:700;font-size:clamp(24px,5vw,32px);letter-spacing:-.02em;margin:0
 .devform label{font-size:14px;color:var(--muted);flex-basis:100%}
 input[type=text],select{font:15px var(--sans);background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:7px 10px;min-height:38px;min-width:0}
 #deviceInput{flex:1 1 200px}
+.devopts{display:flex;flex-wrap:wrap;align-items:center;gap:6px 20px;margin:6px 2px 0;font-size:14px;color:var(--text)}
+.tog{display:inline-flex;align-items:center;gap:8px;cursor:pointer}
+.tog input{width:17px;height:17px;margin:0;accent-color:var(--accent);flex:none}
+.tog input:disabled+span{opacity:.6}
+#notifyState:empty{display:none}
 
 /* the drops */
 .drops{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:10px}
@@ -174,6 +179,11 @@ details.card[open]>summary::before{transform:rotate(90deg)}
   </section>
 
   <div class="devline" id="deviceLine">This device: <b id="deviceName"></b><button class="btn sm quiet" id="renameBtn" type="button">Rename</button></div>
+  <div class="devopts" id="devOpts">
+    <label class="tog" title="When a drop arrives from another device, it goes onto this device's clipboard as soon as you click into the page. Text and pictures only."><input type="checkbox" id="autoCopy"><span>Copy new drops to this clipboard</span></label>
+    <label class="tog" title="A notification when a drop arrives while this page is open in the background."><input type="checkbox" id="notifyChk"><span>Notify me of new drops</span></label>
+    <span class="hint" id="notifyState"></span>
+  </div>
   <form class="devform" id="deviceForm" hidden>
     <label for="deviceInput" id="deviceAsk">Name this device, so your other devices can tell where a drop came from.</label>
     <input id="deviceInput" type="text" maxlength="40" autocomplete="off" placeholder="Home laptop, Work laptop, Phone…">
@@ -207,10 +217,11 @@ details.card[open]>summary::before{transform:rotate(90deg)}
   <details class="card guide" id="guide">
     <summary>How it works</summary>
     <p><b>Sending.</b> Press <b>Ctrl+V</b> anywhere on the page (not inside a box) and what you copied is sent at once: text, code, or a screenshot. To edit first, paste into the box above and press <b>Send</b> or <b>Ctrl+Enter</b>. Files go with <b>Choose files</b>, or drag them onto the page.</p>
-    <p><b>Picking up.</b> Your other devices show a new drop within about ten seconds while this page is open, and straight away when you click into the page. <b>Copy</b> puts text or a picture on the clipboard exactly as it was sent; files have <b>Download</b>.</p>
+    <p><b>Picking up.</b> Your other devices show a new drop within about ten seconds while this page is open, and straight away when you click into the page. <b>Copy</b> puts text or a picture on the clipboard exactly as it was sent; files have <b>Download</b>. Press <b>C</b> (outside the box) to copy the newest drop.</p>
+    <p><b>Even quicker, per device.</b> Tick <b>Copy new drops to this clipboard</b> on a laptop and a drop sent from another device lands on its clipboard as soon as you click into the page: switch laptops, click the tab, press Ctrl+V. Text and pictures only, and only drops sent in the last hour. Tick <b>Notify me of new drops</b> for a notification while the page sits in another tab or behind another window (it checks Drive every 20 seconds while hidden, and only while the sign-in lasts). Both are off until you turn them on, and each laptop has its own.</p>
     <p><b>Where it lives.</b> Text is kept in <code>Personal Apps/drop-tray.json</code> and pictures and files in <code>Personal Apps/Drop Tray</code>, both in your own Google Drive. Text over 200 KB goes up as a <code>.txt</code> file. Files can be up to 100 MB.</p>
     <p><b>Not for secrets.</b> Everything is stored as plain text and plain files in your Drive. Passwords and keys belong in Strongroom.</p>
-    <p><b>Signing in.</b> Each device signs in with Google once, and the sign-in lasts an hour. After that the page asks for <b>Continue with Google</b> again: one tap, no questions. Pressing Send or Copy while it has run out starts that tap for you. Text sent while signed out waits on the device and goes up after the tap.</p>
+    <p><b>Signing in.</b> Each device signs in with Google once, and the sign-in lasts an hour. After that, one click anywhere on the page signs it back in (Google's window may flash open and close). If you close that window, use <b>Continue with Google</b> at the top instead. Text sent while signed out waits on the device and goes up after the tap.</p>
     <p><b>Clearing.</b> Drops older than the time in Settings (7 days unless you change it) are cleared on their own; pinned ones stay. Delete asks first and can be undone for a few seconds. Nothing is ever deleted for good here: files go to Drive's Trash.</p>
   </details>
 
@@ -245,6 +256,9 @@ details.card[open]>summary::before{transform:rotate(90deg)}
   var UNDO_MS=6000;                /* a deleted file goes to Drive's Trash once Undo has passed */
   var ORPHAN_AGE=DAY_MS,ORPHAN_EVERY=3600000,SWEEP_EVERY=600000;
   var FOLDER='Drop Tray',HAS_DRIVE=!!window.DriveStore;
+  var ARRIVAL_MS=3600000;          /* only drops sent in the last hour count as arriving: a device opened after a week copies nothing old */
+  var HIDDEN_POLL_MS=20000;        /* with notifications on, a hidden page still checks Drive this often */
+  var AUTO_KEY='droptray.autocopy',NOTIFY_KEY='droptray.notify',WAS_KEY='droptray.wasSignedIn';
 
   /* ---------- this device: a name to stamp on what it sends, and an id to say "from this device" ---------- */
   function guessDevice(){
@@ -305,11 +319,26 @@ details.card[open]>summary::before{transform:rotate(90deg)}
   function signedIn(){return auth().signedIn;}
   function canFiles(){return HAS_DRIVE&&signedIn();}
   /* called from a click, a key or a paste, which is what lets Google's sign-in window open */
+  var SIGNING=null;
   function askSignIn(){
     var a=auth();
     if(!HAS_DRIVE||!a.configured)return Promise.resolve(false);
     if(a.signedIn)return Promise.resolve(true);
-    return DriveStore.signIn().then(function(){return true;},function(){return false;});
+    /* a click can ask twice (the click anywhere, then Send or Copy): both share one Google window */
+    if(!SIGNING)SIGNING=DriveStore.signIn().then(function(){return true;},function(){return false;}).then(function(ok){SIGNING=null;return ok;});
+    return SIGNING;
+  }
+  /* After the hour-long sign-in runs out, the first click anywhere on the page signs back in: any click lets
+     Google's window open. Only on a device that has signed in before, never from Continue with Google
+     itself (it signs in on its own), and only once: after you close Google's window, clicks are just clicks. */
+  var RESIGN_TRIED=false;
+  function wasSignedIn(){return lsGet(WAS_KEY,'')==='1'||auth().reason==='expired';}
+  function maybeResign(e){
+    if(!HAS_DRIVE||RESIGN_TRIED)return;
+    var a=auth();
+    if(a.signedIn||!a.configured||!wasSignedIn())return;
+    if(e.target&&e.target.closest&&e.target.closest('#sync'))return;
+    RESIGN_TRIED=true;askSignIn();
   }
 
   /* ---------- what a drop is ---------- */
@@ -432,16 +461,26 @@ details.card[open]>summary::before{transform:rotate(90deg)}
       img.src=u;
     });
   }
-  function copyImage(d){
+  function copyImage(d,msg){
+    msg=msg||'Picture copied';
     if(!navigator.clipboard||!navigator.clipboard.write||!window.ClipboardItem){toast('This browser can\'t copy pictures. Use Download instead.');return;}
     var png=blobOf(d).then(toPng),item;
     try{item=new ClipboardItem({'image/png':png});}catch(e){item=null;}
     var direct=item?navigator.clipboard.write([item]):Promise.reject();
-    direct.then(function(){toast('Picture copied');},function(){
+    direct.then(function(){toast(msg);},function(){
       png.then(function(b){return navigator.clipboard.write([new ClipboardItem({'image/png':b})]);})
-        .then(function(){toast('Picture copied');},function(e){toast(e&&e.code?errText(e,'copy it'):'Copy is blocked here. Use Download instead.');});
+        .then(function(){toast(msg);},function(e){toast(e&&e.code?errText(e,'copy it'):'Copy is blocked here. Use Download instead.');});
     });
   }
+  /* what can go on a clipboard: text of any length, and pictures small enough to preview */
+  function copyable(d){var k=kindOf(d);return k==='text'||k==='code'||k==='link'||k==='bigtext'||(k==='image'&&(+d.size||0)<=PREVIEW_MAX);}
+  function copyDrop(d,msg){
+    var k=kindOf(d);
+    if(d.type==='text')copyText(d.text,msg||'Copied');
+    else if(k==='bigtext')blobOf(d).then(function(bl){return bl.text();}).then(function(t){copyText(t,msg||'Copied all '+fmtSize(d.size));},fail('copy it'));
+    else if(k==='image')copyImage(d,msg);
+  }
+  function fromWho(d){return d.dev===DEVICE_ID?'this device':(cleanName(d.from)||'another device');}
 
   /* ---------- files in Drive, kept for this visit once fetched ---------- */
   var BLOBS={},PREV={};
@@ -616,17 +655,56 @@ details.card[open]>summary::before{transform:rotate(90deg)}
 
   /* ---------- arrivals: a new drop from another device is outlined for a moment, and counted in the tab
      title while you are looking elsewhere ---------- */
-  var KNOWN={},FRESH={},UNSEEN=0;
+  var KNOWN={},FRESH={},UNSEEN=0,PENDING_COPY='';
   drops().forEach(function(d){KNOWN[d.id]=1;});
+  function away(){return document.hidden||!document.hasFocus();}
+  /* an arrival: a drop this page has not shown before, sent from another device in the last hour */
   function noteArrivals(){
-    var n=0,now=Date.now();
-    drops().forEach(function(d){if(!KNOWN[d.id]){KNOWN[d.id]=1;if(d.dev!==DEVICE_ID){FRESH[d.id]=now;n++;}}});
+    var n=0,now=Date.now(),newest=null;
+    drops().forEach(function(d){
+      if(KNOWN[d.id])return;KNOWN[d.id]=1;
+      if(d.dev===DEVICE_ID||now-(+d.createdAt||0)>ARRIVAL_MS)return;
+      FRESH[d.id]=now;n++;
+      if(!newest||(+d.createdAt||0)>(+newest.createdAt||0))newest=d;
+    });
     if(!n)return;
-    if(document.hidden||!document.hasFocus()){UNSEEN+=n;paintTitle();}
+    if(away()){UNSEEN+=n;paintTitle();notifyArrival(newest,n);}
+    /* the clipboard can only be written while the page has the focus, so a drop that arrives while you are
+       elsewhere waits for you to click back in; a newer arrival replaces it */
+    if(autoCopyOn()&&copyable(newest)){if(away())PENDING_COPY=newest.id;else autoCopy(newest);}
     setTimeout(function(){var changed=false;Object.keys(FRESH).forEach(function(id){if(Date.now()-FRESH[id]>=3900){delete FRESH[id];changed=true;}});if(changed)renderList();},4000);
   }
+  function autoCopy(d){PENDING_COPY='';copyDrop(d,'Copied the drop from '+fromWho(d)+' to your clipboard');}
+  function flushPending(){if(!PENDING_COPY||away())return;var d=findDrop(PENDING_COPY);PENDING_COPY='';if(d&&autoCopyOn())autoCopy(d);}
   function paintTitle(){document.title=UNSEEN?'('+UNSEEN+') Drop Tray':'Drop Tray';}
   function seen(){if(UNSEEN){UNSEEN=0;paintTitle();}}
+
+  /* ---------- per device: auto-copy and notifications (localStorage, never in Drive) ---------- */
+  function autoCopyOn(){return lsGet(AUTO_KEY,'')==='1';}
+  function canNotify(){return 'Notification' in window;}
+  function notifyOn(){return lsGet(NOTIFY_KEY,'')==='1'&&canNotify()&&Notification.permission==='granted';}
+  var SWREG=null;
+  /* Android shows notifications only through a service worker; sw.js is the shared one (it caches nothing),
+     and a click on the notification brings this tab forward */
+  function setupSW(){
+    if(SWREG||!('serviceWorker' in navigator)||!HAS_DRIVE)return;
+    try{navigator.serviceWorker.register('sw.js').catch(function(){});navigator.serviceWorker.ready.then(function(r){SWREG=r;}).catch(function(){});}catch(e){}
+  }
+  function firstLine(t){var l=String(t||'').split('\n').filter(function(x){return x.trim();})[0]||'';return l.length>90?l.slice(0,89)+'…':l;}
+  function notifyArrival(d,n){
+    if(!d||!notifyOn())return;
+    var title=n>1?n+' new drops, the newest from '+fromWho(d):'New drop from '+fromWho(d);
+    var o={body:d.type==='text'?firstLine(d.text):(d.name||'a file'),tag:'droptray',renotify:true,data:{url:location.href}};
+    function plain(){try{var nt=new Notification(title,o);nt.onclick=function(){window.focus();nt.close();};}catch(e){}}
+    if(SWREG&&SWREG.showNotification)SWREG.showNotification(title,o).catch(plain);else plain();
+  }
+  function paintDeviceOpts(){
+    $('#autoCopy').checked=autoCopyOn();
+    var c=$('#notifyChk'),st=$('#notifyState');
+    if(!HAS_DRIVE||!canNotify()){c.checked=false;c.disabled=true;st.textContent=HAS_DRIVE?'This browser can\'t show notifications.':'';return;}
+    if(Notification.permission==='denied'){c.checked=false;c.disabled=true;st.textContent='Notifications are blocked in this browser\'s settings for this site.';return;}
+    c.disabled=false;c.checked=notifyOn();st.textContent='';
+  }
 
   /* ---------- drawing the drops ---------- */
   var OPEN={};
@@ -708,18 +786,20 @@ details.card[open]>summary::before{transform:rotate(90deg)}
   function renderAuth(){
     var a=auth(),note=$('#authNote'),files=canFiles();
     $('#pickBtn').disabled=!files;
+    if(a.signedIn){lsSet(WAS_KEY,'1');RESIGN_TRIED=false;}
     if(!HAS_DRIVE)note.hidden=true;
     else if(!a.configured){note.hidden=false;note.textContent='Google sign-in is not set up for this copy, so drops stay in this browser.';}
-    else if(!a.signedIn){note.hidden=false;note.textContent=(a.reason==='expired'?'Your Google sign-in ran out (it lasts an hour). ':'Not signed in on this device yet. ')+'Text you send waits here and goes up once you continue with Google; pictures and files need the sign-in first.';}
+    else if(!a.signedIn&&wasSignedIn()){note.hidden=false;note.textContent='Your Google sign-in ran out (it lasts an hour). Click anywhere on the page to sign back in. Text you send meanwhile waits here.';}
+    else if(!a.signedIn){note.hidden=false;note.textContent='Not signed in on this device yet. Text you send waits here and goes up once you continue with Google; pictures and files need the sign-in first.';}
     else note.hidden=true;
     /* a phone has no Ctrl+V or dragging, so it is told only what it can do */
     var key=MAC?'⌘+Enter':'Ctrl+Enter';
     if(TOUCH){$('#text').placeholder='Paste or type here, then Send.';$('#composeHint').textContent=files||!HAS_DRIVE?'':'Sign in to send files';}
-    else $('#composeHint').textContent=files?key+' sends · drop files anywhere on the page':HAS_DRIVE?key+' sends · sign in to send files':key+' sends';
+    else $('#composeHint').textContent=(files?key+' sends · drop files anywhere on the page':HAS_DRIVE?key+' sends · sign in to send files':key+' sends')+' · C copies the newest drop';
   }
   function renderDevice(){$('#deviceName').textContent=deviceName();}
   function renderKeep(){$('#keepSel').value=String(keepDays());}
-  function renderAll(){renderAuth();renderDevice();renderKeep();renderList();}
+  function renderAll(){renderAuth();renderDevice();renderKeep();paintDeviceOpts();renderList();}
   function refreshTimes(){Array.prototype.forEach.call(document.querySelectorAll('.drop'),function(el){var d=findDrop(el.getAttribute('data-id'));if(d)el.querySelector('.when').textContent=ago(d.createdAt);});}
 
   function onAct(e){
@@ -727,11 +807,7 @@ details.card[open]>summary::before{transform:rotate(90deg)}
     var act=b.getAttribute('data-act'),d=findDrop(li.getAttribute('data-id'));if(!d)return;
     if(act==='open')return;   /* a plain link, opened by the browser */
     e.preventDefault();
-    if(act==='copy'){
-      if(d.type==='text')copyText(d.text,'Copied');
-      else blobOf(d).then(function(bl){return bl.text();}).then(function(t){copyText(t,'Copied all '+fmtSize(d.size));},fail('copy it'));
-    }
-    else if(act==='copyimg')copyImage(d);
+    if(act==='copy'||act==='copyimg')copyDrop(d);
     else if(act==='download'){toast('Downloading '+(d.name||'the file')+'…');blobOf(d).then(function(bl){saveBlob(bl,d.name);toast('Downloaded '+(d.name||'the file'));},fail('download it'));}
     else if(act==='more'){OPEN[d.id]=!OPEN[d.id];renderList();}
     else if(act==='pin')togglePin(d);
@@ -770,19 +846,29 @@ details.card[open]>summary::before{transform:rotate(90deg)}
   $('#fileInput').addEventListener('change',function(){var f=Array.prototype.slice.call(this.files||[]);this.value='';sendFiles(f);});
   $('#list').addEventListener('click',onAct);
   $('#pinned').addEventListener('click',onAct);
+  function isTyping(t){return !!(t&&t.closest&&t.closest('input,textarea,select,[contenteditable="true"],[contenteditable=""]'));}
   document.addEventListener('keydown',function(e){
-    if(e.key!=='Escape')return;
-    if(ASK){var id=ASK;ASK='';renderList();var del=document.querySelector(sel(id)+' [data-act="del"]');if(del)del.focus();}
-    else if(!$('#deviceForm').hidden)closeDeviceForm(false);
+    if(e.key==='Escape'){
+      if(ASK){var id=ASK;ASK='';renderList();var del=document.querySelector(sel(id)+' [data-act="del"]');if(del)del.focus();}
+      else if(!$('#deviceForm').hidden)closeDeviceForm(false);
+      return;
+    }
+    /* C (no Ctrl, outside a box) copies the newest drop that fits on a clipboard */
+    if((e.key==='c'||e.key==='C')&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!isTyping(e.target)){
+      var d=drops().filter(copyable)[0];
+      e.preventDefault();
+      if(!d){toast('Nothing to copy yet.');return;}
+      copyDrop(d,'Copied the newest drop, from '+fromWho(d));
+    }
   });
+  document.addEventListener('click',maybeResign,true);
   /* Ctrl+V anywhere sends what was copied; inside a box it only pastes, so you can edit before Send.
      Pictures and files on the clipboard are sent wherever you paste them. */
   document.addEventListener('paste',function(e){
     var cd=e.clipboardData;if(!cd)return;
     var files=Array.prototype.slice.call(cd.files||[]);
     if(files.length){e.preventDefault();sendFiles(files.map(namePasted));return;}
-    var t=e.target;
-    if(t&&t.closest&&t.closest('input,textarea,select,[contenteditable="true"],[contenteditable=""]'))return;
+    if(isTyping(e.target))return;
     var text=cd.getData('text/plain');if(!text)return;
     e.preventDefault();if(sendText(text))toast('Sent');
   });
@@ -812,11 +898,24 @@ details.card[open]>summary::before{transform:rotate(90deg)}
   $('#renameBtn').addEventListener('click',function(){openDeviceForm(false);});
   $('#deviceForm').addEventListener('submit',function(e){e.preventDefault();closeDeviceForm(true);});
   $('#deviceCancel').addEventListener('click',function(){closeDeviceForm(false);});
+  $('#autoCopy').addEventListener('change',function(){
+    lsSet(AUTO_KEY,this.checked?'1':null);
+    toast(this.checked?'New drops from your other devices will be copied here when you click into the page':'New drops are no longer copied automatically');
+  });
+  $('#notifyChk').addEventListener('change',function(){
+    var c=this;
+    if(!c.checked){lsSet(NOTIFY_KEY,null);paintDeviceOpts();return;}
+    var ask=Notification.requestPermission(),got=function(perm){lsSet(NOTIFY_KEY,perm==='granted'?'1':null);if(perm==='granted'){setupSW();toast('You will get a notification when a drop arrives while this page is in the background');}paintDeviceOpts();};
+    if(ask&&ask.then)ask.then(got,function(){got('denied');});
+  });
   $('#themeBtn').addEventListener('click',function(){var next=shownTheme()==='dark'?'light':'dark';lsSet(THEME_KEY,JSON.stringify(next===deviceTheme()?'auto':next));paintTheme();});
   if(darkQ){if(darkQ.addEventListener)darkQ.addEventListener('change',paintTheme);else if(darkQ.addListener)darkQ.addListener(paintTheme);}
   /* clicking into the page on another laptop picks up what was sent at once, without waiting for the poll */
-  window.addEventListener('focus',function(){seen();if(HAS_DRIVE&&signedIn())STORE.sync();});
-  document.addEventListener('visibilitychange',function(){if(!document.hidden){seen();refreshTimes();}});
+  window.addEventListener('focus',function(){seen();flushPending();if(HAS_DRIVE&&signedIn())STORE.sync();});
+  document.addEventListener('visibilitychange',function(){if(!document.hidden){seen();refreshTimes();flushPending();}});
+  /* a hidden page does not check Drive by itself (drive-sync polls only while visible); with notifications on it
+     looks every 20 s, so a drop can still be announced. Browsers slow this down in a tab left hidden for long. */
+  setInterval(function(){if(HAS_DRIVE&&document.hidden&&notifyOn()&&signedIn()&&!STORE.dirty)STORE.pull();},HIDDEN_POLL_MS);
   /* a file whose Undo was still running when the page closes goes to the Trash now (or with the hourly sweep) */
   window.addEventListener('pagehide',function(){Object.keys(TRASH).forEach(function(id){clearTimeout(TRASH[id].t);trashFile(TRASH[id].fileId);delete TRASH[id];});});
   setInterval(refreshTimes,30000);
@@ -833,6 +932,7 @@ details.card[open]>summary::before{transform:rotate(90deg)}
     ? ' in your Google Drive, so every device you sign in on sees the same tray.'
     : ' in your Google Drive.'));
   paintTheme();
+  if(notifyOn())setupSW();
   sweepOld();
   renderAll();
   if(!cleanName(lsGet('droptray.device','')))openDeviceForm(true);

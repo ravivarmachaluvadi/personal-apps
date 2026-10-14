@@ -464,7 +464,9 @@ itself.
 |---|---|
 | Send | **Ctrl+V** anywhere on the page (not inside a box) sends what you copied at once: text, code or a picture. Paste into the box to edit first, then **Send** or Ctrl+Enter. **Choose files**, or drag files anywhere onto the page (a dashed outline says where) |
 | Pick up | Your other devices show a new drop within about 8 seconds while the page is open, and at once when you click into the page. A drop from another device is outlined for a moment, and the tab title counts drops that arrived while you were looking elsewhere |
-| Copy | Text is copied exactly as it was sent, tabs and spaces included (on Windows the clipboard itself stores line ends as CRLF). Pictures are copied as PNG: a JPEG is redrawn as PNG first, because Chrome only puts PNG on the clipboard. Files have **Download** |
+| Copy | Text is copied exactly as it was sent, tabs and spaces included (on Windows the clipboard itself stores line ends as CRLF). Pictures are copied as PNG: a JPEG is redrawn as PNG first, because Chrome only puts PNG on the clipboard. Files have **Download**. **C** (outside a box, no Ctrl) copies the newest drop that fits on a clipboard, skipping files |
+| Copy new drops to this clipboard | A switch under the device name, off until you turn it on, and per device (`droptray.autocopy`). A drop that arrives from another device goes onto this device's clipboard as soon as you click into the page, so switching laptops is: click the tab, press Ctrl+V. A browser lets a page write the clipboard only while it has the focus, so a drop that arrives while you are elsewhere waits for that click; a newer one replaces it. Text and pictures only, and only drops sent in the last hour, so a device opened after a weekend copies nothing old |
+| Notify me of new drops | The second switch, also per device (`droptray.notify`), asks the browser's permission once. A notification ("New drop from Home laptop" and the first line, or the file's name) shows when a drop arrives while the page is in another tab or behind another window; clicking it brings the tab forward (through `docs/sw.js`, which Android needs). The page does not check Drive while hidden, so with this on it looks every 20 seconds; browsers slow that down in a tab left hidden for long, and it stops when the hour-long sign-in runs out |
 | What each drop says | Text, Code, Link, or the file's type (Excel, PDF, ZIP, PNG…), which device sent it, when, and how big. A single web address gets **Open** (only `http` and `https` ever become links) |
 | Long text | Over 12 lines (or 1,500 characters) shows the first 12 lines and *Show all N lines*. Text over 200 KB goes up as a `.txt` file; its first lines are kept for the preview, and **Copy all** fetches the rest |
 | Device name | Asked once per device and kept in that browser (`droptray.device`), with **Rename** beside it. Your own drops say *from this device* |
@@ -472,8 +474,11 @@ itself.
 | Clean-up | Settings → *Clear drops after*: 1, 3, **7** (the default), 14 or 30 days, or *Until I delete them*. The setting is shared by every device. Files that no drop points at and that are over a day old (an upload whose tab closed half-way) are swept too, at most once an hour per device |
 
 **Signed out.** Text you send waits on the device (the header says *changes waiting*) and goes up after
-*Continue with Google*. Pictures and files need the sign-in first. Pressing Send or Copy while signed out starts
-the sign-in, because a click is what lets Google's window open, so the hourly expiry costs one tap.
+*Continue with Google*. Pictures and files need the sign-in first. On a device that has signed in before
+(`droptray.wasSignedIn`), the first click anywhere on the page after the hour runs out signs it back in, because
+any click is what lets Google's window open; the window may flash open and close. It asks once: after you close
+Google's window, clicks are only clicks, and *Continue with Google* stays at the top. A click that also presses
+Send or Copy shares that one sign-in rather than opening a second window.
 
 **Not for secrets.** Text and files are stored as they are, unencrypted, in your Drive. Passwords belong in
 Strongroom.
@@ -511,17 +516,22 @@ device. Nothing in them deletes a file for good; `tools/build-site.py` refuses t
 an *Empty Trash* call appears in it.
 
 **Testing.** `python tools/check-drop-tray.py` drives the built page in headless Chrome as two laptops sharing
-one in-memory fake Drive (the sign-in is a stub, and any other request to a Google host is aborted), then the
+one in-memory fake Drive (the sign-in is a stub, and any other request to a Google host is aborted; a laptop
+looking at another window or tab is pretended by overriding `document.hasFocus` and `document.hidden`, and
+notifications are recorded instead of shown), then the
 source page with no Drive at all. It covers paste on one laptop and pickup on the other, both by the poll and on
 clicking in; exact copies; the box and Ctrl+Enter; links; folding; pictures (PNG, and JPEG copied as PNG); files
 by Choose files and by dragging, in one request and resumable; downloads compared byte for byte; text over
-200 KB; pin; delete, Undo and the Trash; the upload fallbacks, a failed upload and Retry, Cancel and the 100 MB
-limit; signed out and an expired sign-in; the clean-up on a fake clock (30 days, 7 days, pinned, swept leftovers,
+200 KB; pin; delete, Undo and the Trash; auto-copy (on arrival and on clicking back in, pictures, files left
+alone, off by default, nothing older than an hour on a newly opened device); C; a click renewing the sign-in
+(after a reload too, once only, one window with Send); notifications (behind another window, in a hidden tab by
+the 20-second check, none while you look, none when off); the upload fallbacks, a failed upload and Retry, Cancel
+and the 100 MB limit; signed out and an expired sign-in; the clean-up on a fake clock (30 days, 7 days, pinned, swept leftovers,
 never, and 60-day tombstones); and the phone (390 px) and laptop (1280 px) layouts in both themes, with text
 contrast.
 
-**Not in this version:** staying signed in for more than an hour (that needs a server), an alert when a drop
-arrives while the page is closed, the phone's Share menu sending to Drop Tray, colouring code, encryption,
+**Not in this version:** staying signed in for more than an hour (that needs a server), a notification when a
+drop arrives while the page is closed, the phone's Share menu sending to Drop Tray, colouring code, encryption,
 sending a whole folder.
 
 ## Sign-in details worth knowing

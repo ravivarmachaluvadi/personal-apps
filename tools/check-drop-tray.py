@@ -366,15 +366,32 @@ def serve(directory):
     return httpd, 'http://127.0.0.1:%d/' % port
 
 
+# Headless pages always have focus and are never hidden, so a laptop "looking elsewhere" is pretended: __blur
+# makes document.hasFocus() false (another window in front), __hide also makes the page hidden (another tab, or
+# minimised). Notifications are recorded in __shown instead of being shown.
+AWAY_HOOKS = r"""(function(){
+  var hf=Document.prototype.hasFocus;
+  Document.prototype.hasFocus=function(){return window.__blur||window.__hide?false:hf.call(this);};
+  Object.defineProperty(Document.prototype,'hidden',{configurable:true,get:function(){return !!window.__hide;}});
+  Object.defineProperty(Document.prototype,'visibilityState',{configurable:true,get:function(){return window.__hide?'hidden':'visible';}});
+  window.__shown=[];
+  if(window.ServiceWorkerRegistration)ServiceWorkerRegistration.prototype.showNotification=function(t,o){window.__shown.push({title:t,body:o&&o.body,via:'sw'});return Promise.resolve();};
+  if(window.Notification)window.Notification=new Proxy(window.Notification,{construct:function(T,a){window.__shown.push({title:a[0],body:a[1]&&a[1].body,via:'page'});return {close:function(){}};}});
+})();"""
+
+
 class Session:
     """One browser context (one laptop) wired to a fake Drive."""
 
-    def __init__(self, browser, base, fake, device=None, viewport=(1280, 900), clock=None):
+    def __init__(self, browser, base, fake, device=None, viewport=(1280, 900), clock=None, prefs=None):
         self.fake, self.blocked, self.errors, self.base = fake, [], [], base
         self.ctx = browser.new_context(viewport={'width': viewport[0], 'height': viewport[1]}, accept_downloads=True)
-        self.ctx.grant_permissions(['clipboard-read', 'clipboard-write'], origin=base.rstrip('/'))
+        self.ctx.grant_permissions(['clipboard-read', 'clipboard-write', 'notifications'], origin=base.rstrip('/'))
+        self.ctx.add_init_script(AWAY_HOOKS)
         if device:
             self.ctx.add_init_script("try{if(!localStorage.getItem('droptray.device'))localStorage.setItem('droptray.device',%s);}catch(e){}" % json.dumps(device))
+        for k, v in (prefs or {}).items():
+            self.ctx.add_init_script("try{if(localStorage.getItem(%s)==null)localStorage.setItem(%s,%s);}catch(e){}" % (json.dumps(k), json.dumps(k), json.dumps(v)))
         self.ctx.route('**/*', self.route)
         self.page = self.ctx.new_page()
         PAGES.append(self.page)
@@ -419,9 +436,36 @@ class Session:
         self.page.goto(self.base + PAGE)
         self.page.locator('#list').wait_for(state='attached')
 
+    def signed(self):
+        return self.page.evaluate("document.querySelector('#sync').dataset.state==='saved'")
+
     def sign_in(self):
-        self.page.locator('#sync .ds-google').click()
-        self.page.wait_for_function("document.querySelector('#sync').dataset.state==='saved'", timeout=10000)
+        """Press Continue with Google, unless a sign-in started some other way gets there first."""
+        p = self.page
+        if not wait_until(self.signed, 0.3):
+            b = p.locator('#sync .ds-google')
+            try:
+                b.click(timeout=3000)
+            except Exception:
+                pass   # it went away: the sign-in finished on its own
+        p.wait_for_function("document.querySelector('#sync').dataset.state==='saved'", timeout=10000)
+
+    def gis_requests(self):
+        return self.page.evaluate('window.__gis&&window.__gis.requests||0')
+
+    def away(self, hide=False):
+        """Look elsewhere: another window in front (hide=False), or another tab or minimised (hide=True)."""
+        self.page.evaluate("(h)=>{window.__blur=true;window.__hide=h;window.dispatchEvent(new Event('blur'));if(h)document.dispatchEvent(new Event('visibilitychange'));}", hide)
+
+    def back(self):
+        """Come back to the page: it is shown, then gets the focus, as when you click into it."""
+        self.page.evaluate("()=>{var h=window.__hide;window.__blur=false;window.__hide=false;if(h)document.dispatchEvent(new Event('visibilitychange'));window.dispatchEvent(new Event('focus'));}")
+
+    def shown(self):
+        return self.page.evaluate('window.__shown')
+
+    def set_clip(self, text):
+        self.page.evaluate('(t)=>navigator.clipboard.writeText(t)', text)
 
     def nap_until_refused(self):
         """The stub answers a sign-in 20 ms after it is asked; wait for that answer before changing what it says."""
@@ -752,6 +796,219 @@ def two_laptops(browser, base):
         A.close(); B.close()
 
 
+# ------------------------------------------------------------------ picking up fast: auto-copy, C, a click to renew, notifications
+def quick_pickup(browser, base):
+    fake = FakeDrive()
+    A = Session(browser, base, fake, device='Home laptop')
+    B = Session(browser, base, fake, device='Work laptop')
+    st = {}
+    try:
+        def boot():
+            for s in (A, B):
+                s.open(); s.sign_in()
+            for s in (A, B):
+                check(not s.page.is_checked('#autoCopy') and not s.page.is_checked('#notifyChk'), 'auto-copy and notifications start off')
+            check(A.page.locator('#autoCopy').is_visible(), 'the auto-copy switch is on the page, not hidden in Settings')
+        run_section('quick pickup: sign in', boot)
+
+        def auto_copy():
+            B.page.check('#autoCopy')
+            check(B.ls('droptray.autocopy') == '1', 'auto-copy is remembered on this device')
+            check(A.ls('droptray.autocopy') is None, 'and only on this device')
+            B.set_clip('sentinel')
+            B.away()
+            A.paste(text='auto one')
+            check(doc_has(fake, lambda d: d.get('text') == 'auto one') is not None, 'A sent it')
+            B.wait_drop(lambda d: d['text'] == 'auto one', timeout=12, what='the drop on B while it looks elsewhere')
+            nap(400)
+            check(B.clip_text() == 'sentinel', 'nothing is copied while you are in another window (%r)' % B.clip_text())
+            check(B.page.title().startswith('(1)'), 'the tab title counts the drop that came in (%r)' % B.page.title())
+            B.back()
+            check(wait_until(lambda: B.clip_text() == 'auto one', 4), 'clicking back into the page puts it on the clipboard (%r)' % B.clip_text())
+            check('Home laptop' in B.toast(), 'and says where it came from (%r)' % B.toast())
+            check(B.page.title() == 'Drop Tray', 'the count clears when you come back (%r)' % B.page.title())
+            A.paste(text='auto two')
+            check(doc_has(fake, lambda d: d.get('text') == 'auto two') is not None, 'A sent another')
+            B.focus()
+            check(wait_until(lambda: B.clip_text() == 'auto two', 5), 'a drop arriving while you are on the page is copied at once (%r)' % B.clip_text())
+            # a picture goes on the clipboard as a picture
+            B.set_clip('sentinel')
+            A.paste(files=[{'name': 'image.png', 'type': 'image/png', 'b64': __import__('base64').b64encode(png(30, 20, (200, 40, 90))).decode()}])
+            A.wait_drop(lambda d: d['kind'] == 'image', timeout=10, what='the picture on A')
+            check(doc_has(fake, lambda d: (d.get('mime') or '').startswith('image/')) is not None, 'A sent the picture')
+            B.focus()
+            check(wait_until(lambda: 'image/png' in B.clip_types(), 6), 'a picture is copied as a picture (%s)' % B.clip_types())
+            # a file cannot go on a clipboard, so it is left alone
+            B.set_clip('sentinel 2')
+            A.pick('report.pdf', b'%PDF-1.4 tiny', 'application/pdf')
+            A.wait_up('report.pdf')
+            check(doc_has(fake, lambda d: d.get('name') == 'report.pdf') is not None, 'A sent the PDF')
+            B.focus()
+            B.wait_drop(lambda d: d['name'] == 'report.pdf', what='the PDF on B')
+            nap(600)
+            check(B.clip_text() == 'sentinel 2', 'a file is not put on the clipboard (%r)' % B.clip_text())
+            # A never turned it on: B's drops leave A's clipboard alone
+            A.set_clip('a sentinel')
+            B.paste(text='from B')
+            check(doc_has(fake, lambda d: d.get('text') == 'from B') is not None, 'B sent one')
+            A.focus()
+            A.wait_drop(lambda d: d['text'] == 'from B', what='B\'s drop on A')
+            nap(500)
+            check(A.clip_text() == 'a sentinel', 'a device with auto-copy off keeps its clipboard (%r)' % A.clip_text())
+            # switched off again
+            B.page.uncheck('#autoCopy')
+            check(B.ls('droptray.autocopy') is None, 'switching it off is remembered')
+            B.set_clip('kept')
+            A.paste(text='after off')
+            check(doc_has(fake, lambda d: d.get('text') == 'after off') is not None, 'A sent it')
+            B.focus()
+            B.wait_drop(lambda d: d['text'] == 'after off', what='after off on B')
+            nap(500)
+            check(B.clip_text() == 'kept', 'with auto-copy off nothing is copied (%r)' % B.clip_text())
+        run_section('quick pickup: copy new drops to the clipboard', auto_copy)
+
+        def stale_on_a_new_device():
+            # a device opened for the first time copies only what was sent in the last hour, not yesterday's drop
+            d = next(x for x in fake.drops() if x.get('text') == 'after off')
+            f = fake.live(DOC)[0]
+            doc = json.loads(f['content'])
+            doc['items'][d['id']]['createdAt'] = d['createdAt'] - 2 * 3600 * 1000
+            for it in doc['items'].values():   # everything else older still, so 'after off' is the newest
+                if it.get('kind') == 'drop' and it['id'] != d['id'] and not it.get('deleted'):
+                    it['createdAt'] = d['createdAt'] - 3 * 3600 * 1000
+            f['content'], f['modifiedTime'] = json.dumps(doc).encode(), fake.stamp()
+            C = Session(browser, base, fake, device='Old laptop', prefs={'droptray.autocopy': '1'})
+            try:
+                C.open()
+                C.set_clip('c sentinel')
+                C.sign_in()
+                C.wait_drop(lambda x: x['text'] == 'after off', what='the old drop on a new device')
+                nap(600)
+                check(C.clip_text() == 'c sentinel', 'a drop from two hours ago is not copied on a newly opened device (%r)' % C.clip_text())
+                A.paste(text='fresh one')
+                check(doc_has(fake, lambda x: x.get('text') == 'fresh one') is not None, 'A sent a fresh one')
+                C.focus()
+                check(wait_until(lambda: C.clip_text() == 'fresh one', 5), 'but a new one is (%r)' % C.clip_text())
+                C.report()
+            finally:
+                C.close()
+        run_section('quick pickup: a newly opened device', stale_on_a_new_device)
+
+        def key_c():
+            check('C copies' in A.page.locator('#composeHint').text_content(), 'the hint mentions C (%r)' % A.page.locator('#composeHint').text_content())
+            A.page.locator('h1').click()
+            A.set_clip('nothing yet')
+            A.page.keyboard.press('c')
+            newest = next(d for d in A.drops() if d['kind'] in ('text', 'code', 'link'))
+            check(wait_until(lambda: A.clip_text() == newest['text'], 3), 'C copies the newest drop (%r, wanted %r)' % (A.clip_text(), newest['text']))
+            check('newest' in A.toast().lower(), 'and says so (%r)' % A.toast())
+            A.pick('newer.zip', b'PK\x03\x04', 'application/zip')
+            A.wait_up('newer.zip')
+            A.page.locator('h1').click()
+            A.set_clip('nothing yet')
+            A.page.keyboard.press('c')
+            check(wait_until(lambda: A.clip_text() == newest['text'], 3), 'C skips a file and copies the newest thing that fits on a clipboard (%r)' % A.clip_text())
+            A.page.fill('#text', '')
+            A.page.focus('#text')
+            A.set_clip('untouched')
+            A.page.keyboard.press('c')
+            nap(300)
+            check(A.page.input_value('#text') == 'c' and A.clip_text() == 'untouched', 'C typed in the box is just a letter')
+            A.page.fill('#text', '')
+        run_section('quick pickup: C copies the newest drop', key_c)
+
+        def click_to_renew():
+            p = B.page
+            expire_b = lambda: fake.dead.add(B.token())   # only B's hour runs out; A keeps sending
+            expire_b()
+            B.focus()
+            check(wait_until(lambda: p.locator('#sync .ds-google').count() == 1, 6), 'the hour ran out')
+            check('click anywhere' in p.locator('#authNote').text_content().lower(), 'the note says a click renews it (%r)' % p.locator('#authNote').text_content())
+            before = B.gis_requests()
+            p.locator('.lead').click()
+            check(wait_until(lambda: B.gis_requests() == before + 1, 3), 'a click anywhere on the page starts the sign-in, once (%d -> %d)' % (before, B.gis_requests()))
+            check(wait_until(B.signed, 6), 'and signs back in')
+            # after a reload the token is simply gone; the page still knows this device was signed in
+            p.evaluate("()=>{var t=JSON.parse(localStorage.getItem('drivesync.token'));t.exp=Date.now()-1000;localStorage.setItem('drivesync.token',JSON.stringify(t));}")
+            p.reload(); p.locator('#list').wait_for(state='attached')
+            check(p.locator('#sync .ds-google').count() == 1, 'reloaded after the hour: signed out')
+            p.locator('h1').click()
+            check(wait_until(B.signed, 6), 'one click on the page signs back in after a reload too')
+            # Send in a run-out sign-in asks once, not twice
+            expire_b()
+            B.focus()
+            wait_until(lambda: p.locator('#sync .ds-google').count() == 1, 6)
+            before = B.gis_requests()
+            p.fill('#text', 'one sign-in')
+            p.click('#sendBtn')
+            check(wait_until(B.signed, 6), 'Send signs back in')
+            check(B.gis_requests() == before + 1, 'with one sign-in, not one for the click and one for Send (%d)' % (B.gis_requests() - before))
+            check(doc_has(fake, lambda d: d.get('text') == 'one sign-in') is not None, 'and the text arrives')
+            # a refused sign-in is not asked again on every click
+            expire_b()
+            B.focus()
+            wait_until(lambda: p.locator('#sync .ds-google').count() == 1, 6)
+            p.evaluate('window.__gisDeny=true')
+            before = B.gis_requests()
+            p.locator('.lead').click()
+            B.nap_until_refused()
+            p.locator('.lead').click()
+            p.locator('h1').click()
+            nap(300)
+            check(B.gis_requests() == before + 1, 'after you cancel Google\'s window, clicking around does not reopen it (%d)' % (B.gis_requests() - before))
+            p.evaluate('window.__gisDeny=false')
+            before = B.gis_requests()
+            B.sign_in()
+            check(B.gis_requests() == before + 1, 'Continue with Google asks once (%d)' % (B.gis_requests() - before))
+        run_section('quick pickup: a click anywhere renews the hour-long sign-in', click_to_renew)
+
+        def notifications():
+            p = B.page
+            p.check('#notifyChk')
+            check(wait_until(lambda: B.ls('droptray.notify') == '1', 3), 'notifications are remembered on this device')
+            check(not A.page.is_checked('#notifyChk'), 'and only on this device')
+            p.evaluate('window.__shown=[]')
+            B.away()
+            A.paste(text='ping from home\nsecond line')
+            check(doc_has(fake, lambda d: (d.get('text') or '').startswith('ping from home')) is not None, 'A sent it')
+            got = wait_until(lambda: B.shown(), 12)
+            check(got and got[0]['title'] == 'New drop from Home laptop' and got[0]['body'] == 'ping from home',
+                  'B shows "New drop from Home laptop" with the first line (%s)' % got)
+            B.back()
+            p.evaluate('window.__shown=[]')
+            A.paste(text='no ping')
+            check(doc_has(fake, lambda d: d.get('text') == 'no ping') is not None, 'A sent another')
+            B.focus()
+            B.wait_drop(lambda d: d['text'] == 'no ping', what='no ping on B')
+            nap(400)
+            check(not B.shown(), 'no notification while you are looking at the page (%s)' % B.shown())
+            # in another tab the page does not check Drive by itself; with notifications on it looks every 20 s
+            B.away(hide=True)
+            p.evaluate('window.__shown=[]')
+            A.pick('hidden tab.pdf', b'%PDF-1.4 x', 'application/pdf')
+            A.wait_up('hidden tab.pdf')
+            check(doc_has(fake, lambda d: d.get('name') == 'hidden tab.pdf') is not None, 'A sent a file')
+            got = wait_until(lambda: B.shown(), 26)
+            check(got and got[0]['body'] == 'hidden tab.pdf', 'a page in a background tab still notifies, within about 20 s (%s)' % got)
+            B.back()
+            p.uncheck('#notifyChk')
+            check(B.ls('droptray.notify') is None, 'switching notifications off is remembered')
+            p.evaluate('window.__shown=[]')
+            B.away()
+            A.paste(text='quiet')
+            check(doc_has(fake, lambda d: d.get('text') == 'quiet') is not None, 'A sent one more')
+            B.wait_drop(lambda d: d['text'] == 'quiet', timeout=12, what='quiet on B')
+            nap(400)
+            check(not B.shown(), 'with notifications off nothing pops up (%s)' % B.shown())
+            B.back()
+        run_section('quick pickup: a notification when a drop arrives', notifications)
+        for s in (A, B):
+            SECTION[0] = 'quick pickup: browser'
+            s.report()
+    finally:
+        A.close(); B.close()
+
+
 # ------------------------------------------------------------------ uploads that go wrong
 def upload_failures(browser, base):
     fake = FakeDrive()
@@ -849,6 +1106,7 @@ def signed_out(browser, base):
             check(wait_until(lambda: p.evaluate('window.__gis&&window.__gis.requests||0') >= 1, 3), 'Send while signed out asks Google to sign in')
             check(wait_until(lambda: 'changes waiting' in p.locator('#sync').text_content(), 3), 'the text waits on this device (%r)' % p.locator('#sync').text_content())
             check(fake.doc() is None, 'nothing reached Drive')
+            s.nap_until_refused()   # while Send's sign-in is still open, a paste shares it rather than opening a second window
             n, asked = len(fake.uploads), p.evaluate('window.__gis.requests')
             s.paste(files=[{'name': 'image.png', 'type': 'image/png', 'b64': __import__('base64').b64encode(png(4, 4, (1, 2, 3))).decode()}])
             check(wait_until(lambda: 'sign in' in s.toast().lower(), 3), 'an image pasted while signed out says to sign in (%r)' % s.toast())
@@ -1049,7 +1307,7 @@ def main():
     httpd, base = serve(docs)
     with sync_playwright() as pw:
         browser = pw.chromium.launch(channel='chrome', headless=not HEADED)
-        for label, flow in (('two laptops', two_laptops), ('uploads', upload_failures), ('signed out', signed_out),
+        for label, flow in (('two laptops', two_laptops), ('quick pickup', quick_pickup), ('uploads', upload_failures), ('signed out', signed_out),
                             ('clean-up', clean_up), ('layout', layout)):
             print('==', label)
             flow(browser, base)
