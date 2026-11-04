@@ -381,6 +381,14 @@ _dupes = sorted({n for n in _decls if _decls.count(n) > 1})
 assert not _dupes, 'duplicate function declarations in drop tray (the later one silently wins): ' + ', '.join(_dupes)
 wr('docs/drop-tray.html', dt)
 
+# ---------------------------------------------------------------- launcher
+# docs/index.html is written by hand; every app and game it links to opens in a new tab, so the launcher stays open
+_idx = rd('docs/index.html')
+_links = re.findall(r'<a\b[^>]*\bhref="[^"#]*\.html"[^>]*>', _idx)
+assert len(_links) >= 15, 'launcher: expected the ten apps and five games, found %d page links' % len(_links)
+_same_tab = [a for a in _links if 'target="_blank"' not in a or 'rel="noopener"' not in a]
+assert not _same_tab, 'launcher links must open in a new tab (target="_blank" rel="noopener"): ' + ', '.join(re.search(r'href="([^"]*)"', a).group(1) for a in _same_tab)
+
 # ---------------------------------------------------------------- starter data
 docs = []
 for f in sorted(glob.glob(os.path.join(ROOT, 'seed', 'export', 'keycap', 'shortcuts', '*.json'))):

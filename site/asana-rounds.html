@@ -125,10 +125,12 @@ h1{font-weight:700;font-size:clamp(24px,5vw,32px);letter-spacing:-.02em;margin:0
 #history li.today{background:var(--surface-2);outline:1px solid var(--line)}
 #history .wd{font-size:11px;color:var(--faint);line-height:1}
 #history .dn{font-size:12.5px;font-weight:600;line-height:1.1}
-.dot{width:13px;height:13px;border-radius:50%;border:2px solid var(--accent);display:inline-block;background:transparent}
-.dot[data-state="full"]{background:var(--accent)}
-.dot[data-state="part"]{background:linear-gradient(to top,var(--accent) 50%,transparent 50%)}
+/* a dot holds the rounds done that session: 5, 2.6, or nothing when none */
+.dot{display:inline-grid;place-items:center;width:26px;max-width:100%;aspect-ratio:1;border-radius:50%;border:2px solid var(--accent);background:transparent;color:var(--text);font:600 12px/1 Lexend,system-ui,sans-serif;letter-spacing:-.03em;font-style:normal;padding:0}
+.dot[data-state="full"]{background:var(--accent);color:var(--accent-ink)}
+.dot[data-state="part"]{background:var(--accent-soft)}
 .dot[data-state="none"]{border-color:var(--line)}
+.legend .dot{width:24px;font-size:11px}
 .legend{margin:10px 0 0;color:var(--muted);font-size:13px;display:flex;gap:6px 14px;flex-wrap:wrap;align-items:center}
 .legend span{display:inline-flex;gap:5px;align-items:center}
 
@@ -168,7 +170,8 @@ input[type=text],input[type=number],select{font:15px Lexend,system-ui,sans-serif
   .prow .num{grid-area:num}.prow .pname{grid-area:name}.prow .psec{grid-area:sec;justify-self:start}
   .prow .up{grid-area:up}.prow .down{grid-area:down}.prow .rm{grid-area:rm}
   #history .wd{font-size:10px}
-  .dot{width:11px;height:11px}
+  /* fourteen columns are about 20 px wide at 390 px */
+  .dot{width:20px;border-width:1.5px;font-size:9.5px}
 }
 </style>
 </head>
@@ -238,9 +241,9 @@ input[type=text],input[type=number],select{font:15px Lexend,system-ui,sans-serif
   <section class="card" aria-labelledby="histHead">
     <h2 class="sect" id="histHead">Last 14 days</h2>
     <ol id="history"></ol>
-    <p class="legend"><span>Top dot morning, bottom dot evening:</span>
-      <span><i class="dot" data-state="full"></i>all rounds</span>
-      <span><i class="dot" data-state="part"></i>some</span>
+    <p class="legend"><span>Top dot morning, bottom dot evening. The number is rounds done:</span>
+      <span><i class="dot" id="histLegendFull" data-state="full">5</i>all rounds</span>
+      <span><i class="dot" data-state="part">2.6</i>some</span>
       <span><i class="dot" data-state="none"></i>none</span></p>
   </section>
 
@@ -388,6 +391,13 @@ input[type=text],input[type=number],select{font:15px Lexend,system-ui,sans-serif
       for(var i=0;i<N;i++){if(isOn(s,r+':'+pl.ids[i]))count++;else{all=false;if(!cur)cur={r:r,i:i};}}
       if(all)full++;}
     return {plan:pl,s:s,count:count,total:R*N,full:full,cur:cur,complete:!cur};
+  }
+  /* rounds done as asanas ticked over asanas per round: 26 of 10 asanas is 2.6. Cut to one decimal and never
+     rounded up, so it reads the full count only when every cell is ticked. A session folded to its totals
+     keeps its own rounds; count x rounds / total works for both kinds */
+  function roundsDone(x){
+    var R=x.s&&x.s.compact?(+x.s.rounds||x.plan.rounds):x.plan.rounds;
+    return x.total?Math.floor(x.count*R*10/x.total+1e-9)/10:0;
   }
   /* a time later than any already in this session, so the newest action always wins on this device */
   function stamp(s){var t=Date.now();[s.marks,s.off].forEach(function(m){Object.keys(m).forEach(function(k){if(+m[k]>=t)t=+m[k]+1;});});return t;}
@@ -641,13 +651,16 @@ input[type=text],input[type=number],select{font:15px Lexend,system-ui,sans-serif
     for(var n=13;n>=0;n--){
       var day=addDays(DAY,-n),d=dateOf(day),a=stats(day,'am'),b=stats(day,'pm');
       var st=function(x){return x.complete&&x.count?'full':(x.count?'part':'none');};
-      var say=function(name,x){return name+' '+(x.count?x.full+'/'+x.plan.rounds+' rounds':'not done');};
+      var num=function(x){return x.count?String(roundsDone(x)):'';};
+      var say=function(name,x){var R=x.s&&x.s.compact?(+x.s.rounds||x.plan.rounds):x.plan.rounds;
+        return name+' '+(!x.count?'not done':x.complete?'all '+R+' rounds':roundsDone(x)+' of '+R+' rounds');};
       ol.appendChild(h('li',{'data-day':day,class:n===0?'today':null,title:fmtShort(day)+': '+say('morning',a)+', '+say('evening',b),'aria-label':fmtShort(day)+': '+say('morning',a)+', '+say('evening',b)},[
         h('span',{class:'wd','aria-hidden':'true',text:WD[d.getDay()].slice(0,1)}),
         h('span',{class:'dn','aria-hidden':'true',text:String(d.getDate())}),
-        h('span',{class:'dot','data-part':'am','data-state':st(a)}),
-        h('span',{class:'dot','data-part':'pm','data-state':st(b)})]));
+        h('span',{class:'dot','data-part':'am','data-state':st(a),'aria-hidden':'true',text:num(a)}),
+        h('span',{class:'dot','data-part':'pm','data-state':st(b),'aria-hidden':'true',text:num(b)})]));
     }
+    $('#histLegendFull').textContent=String(routine().rounds);
   }
 
   /* the editor is left alone while you are typing in it, so a sync from another device cannot eat a half-typed name */

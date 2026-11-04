@@ -117,6 +117,13 @@ class Session:
     def dot(self, day, part):
         return self.page.locator('#history li[data-day="%s"] .dot[data-part="%s"]' % (day, part)).get_attribute('data-state')
 
+    def dot_text(self, day, part):
+        """the rounds done written inside a history dot: '2.6', '5', or '' for none"""
+        return self.page.locator('#history li[data-day="%s"] .dot[data-part="%s"]' % (day, part)).inner_text().strip()
+
+    def day_label(self, day):
+        return self.page.locator('#history li[data-day="%s"]' % day).get_attribute('aria-label') or ''
+
 
 # ------------------------------------------------------------------ the checks
 def flow(s):
@@ -206,6 +213,11 @@ def flow(s):
         check(s.dot(y, 'am') == 'full', 'yesterday morning shows full (%r)' % s.dot(y, 'am'))
         check(s.dot(y, 'pm') == 'part', 'yesterday evening shows partly done (%r)' % s.dot(y, 'pm'))
         check(s.dot(tom, 'am') == 'none' and s.dot(tom, 'pm') == 'none', 'today shows nothing yet')
+        check(s.dot_text(y, 'am') == '5', 'yesterday morning (50 of 50 ticks) reads 5 rounds in its dot (%r)' % s.dot_text(y, 'am'))
+        check(s.dot_text(y, 'pm') == '0.3', 'yesterday evening (3 of 50 ticks) reads 0.3 rounds in its dot (%r)' % s.dot_text(y, 'pm'))
+        check(s.dot_text(tom, 'am') == '' and s.dot_text(tom, 'pm') == '', 'an empty session has no number in its dot')
+        check('morning all 5 rounds' in s.day_label(y) and 'evening 0.3 of 5 rounds' in s.day_label(y),
+              'yesterday is read out as all 5 rounds and 0.3 of 5 (%r)' % s.day_label(y))
 
     def out_of_order():
         p.locator('#grid .cell[data-round="1"][data-pose="rightfold"]').click()
@@ -269,6 +281,21 @@ def flow(s):
         check(s.dot(real['today'], 'am') == 'full', 'other days are untouched')
         p.evaluate("()=>localStorage.removeItem('asanarounds.faketoday')")
 
+    def history_numbers():
+        # here the routine is 10 asanas x 3 rounds and today's (pretend) morning was just cleared
+        tom = p.locator('#history li.today').get_attribute('data-day')
+        check(s.dot_text(tom, 'am') == '', 'the cleared morning has no number (%r)' % s.dot_text(tom, 'am'))
+        s.done(26)
+        check(s.dot_text(tom, 'am') == '2.6', '26 of 30 ticks read 2.6 in today\'s morning dot (%r)' % s.dot_text(tom, 'am'))
+        check(s.dot(tom, 'am') == 'part', 'and the dot is part-done (%r)' % s.dot(tom, 'am'))
+        check('morning 2.6 of 3 rounds' in s.day_label(tom), 'today is read out as 2.6 of 3 rounds (%r)' % s.day_label(tom))
+        s.done(3)
+        check(s.dot_text(tom, 'am') == '2.9', '29 of 30 ticks read 2.9, never rounded up to 3 (%r)' % s.dot_text(tom, 'am'))
+        s.done(1)
+        check(s.dot_text(tom, 'am') == '3' and s.dot(tom, 'am') == 'full', 'all 30 read 3 and the dot is full (%r, %r)' % (s.dot_text(tom, 'am'), s.dot(tom, 'am')))
+        check(s.txt('#histLegendFull') == '3', 'the legend\'s full dot shows the routine\'s 3 rounds (%r)' % s.txt('#histLegendFull'))
+        check(s.dot_text(real['today'], 'am') == '5', 'yesterday still reads 5, the rounds it was done with')
+
     def theme():
         dark0 = p.evaluate("matchMedia('(prefers-color-scheme: dark)').matches")
         p.locator('#themeBtn').click()
@@ -282,7 +309,7 @@ def flow(s):
 
     for name, fn in [('fresh page', fresh), ('ten Done', ten), ('undo', undo), ('whole morning', all_fifty),
                      ('reload', reload), ('next day', tomorrow), ('grid taps', out_of_order),
-                     ('edit routine', edit), ('start over', start_over), ('theme', theme)]:
+                     ('edit routine', edit), ('start over', start_over), ('history numbers', history_numbers), ('theme', theme)]:
         run_section(name, fn)
 
 
@@ -717,8 +744,23 @@ def layout_flow(browser, base):
                             check(r >= 4.5, '%s on %s is %.2f:1 in %s (needs 4.5)' % (fg, bg, r, scheme))
                     r = ratio(v['--accent-ink'], v['--accent'])
                     check(r >= 4.5, 'button text on accent is %.2f:1 in %s' % (r, scheme))
+                    # a part-done history dot writes its number in --text on --accent-soft
+                    soft = p.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--accent-soft').trim()")
+                    r = ratio(v['--text'], soft)
+                    check(r >= 4.5, 'a part-done dot\'s number (--text on --accent-soft) is %.2f:1 in %s' % (r, scheme))
                     if SHOTS:
                         p.screenshot(path=os.path.join(SHOTS, '%s-%d.png' % (scheme, w)), full_page=True)
+                    # the widest numbers a dot can hold still fit inside the circle, with no sideways scroll
+                    check(p.locator('#history .dot').count() == 28, 'the strip has 28 dots (%d)' % p.locator('#history .dot').count())
+                    for wide in ('9.9', '10', '2.6'):
+                        fit = p.evaluate("""(t)=>{var worst=-99,dots=document.querySelectorAll('#history .dot, .legend .dot');
+                            dots.forEach(d=>{d.textContent=t;var r=document.createRange();r.selectNodeContents(d);
+                              var tw=r.getBoundingClientRect().width,cs=getComputedStyle(d);
+                              var inner=d.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight);
+                              worst=Math.max(worst,tw-inner);});
+                            return {worst:Math.round(worst*10)/10,sw:document.documentElement.scrollWidth,dot:Math.round(dots[0].getBoundingClientRect().width*10)/10};}""", wide)
+                        check(fit['worst'] <= 0, '%r fits inside every dot at %d px (text overflows by %s px; dot %s px)' % (wide, w, fit['worst'], fit['dot']))
+                        check(fit['sw'] <= w, 'with %r in every dot the page still fits %d px (%d)' % (wide, w, fit['sw']))
                 run_section('layout %s %dpx' % (scheme, w), one)
                 for e in s.errors:
                     check(False, 'browser error: ' + e)

@@ -20,7 +20,7 @@ that device keeps its data only in its own browser (the header then says *change
 | Shoebox | `docs/shoebox.html` | none — it works on your Drive's own files and folders ([details](#shoebox-your-photos-and-papers-in-drive)) |
 | Drop Tray | `docs/drop-tray.html` | `drop-tray.json` — text you sent between devices; pictures and files in `Drop Tray/` ([details](#drop-tray-one-clipboard-for-all-your-devices)) |
 
-`docs/index.html` is a launcher for all ten. `docs/drive-sync.js` is the shared storage layer; `docs/config.js`
+`docs/index.html` is a launcher for all ten; each app and game opens in a new tab, so the launcher stays open (the build checks every link). `docs/drive-sync.js` is the shared storage layer; `docs/config.js`
 holds the one setting you must fill in (the Google OAuth client ID).
 
 ## How the storage works
@@ -340,7 +340,10 @@ three things at a glance: **which session** (Morning or Evening, and whether eac
   morning is done it says so, and the big button becomes *Start evening*.
 - **A new day starts empty on its own**, at midnight: progress is stored per date and per session, so nothing has
   to be reset or deleted. An evening finished after midnight counts as the next day.
-- **Last 14 days** shows two dots per day (top morning, bottom evening): full for all rounds, half for some.
+- **Last 14 days** shows two dots per day (top morning, bottom evening), each with the rounds done written in it:
+  asanas ticked ÷ asanas per round, so 26 ticks of 10 asanas reads `2.6`. It is cut to one decimal, never rounded
+  up, so a dot reads the full count (filled) only when every cell is ticked; 49 of 50 reads `4.9`. No ticks, no
+  number. The Morning and Evening buttons above still count whole rounds (`2/5 rounds`).
 - **Edit routine** renames, reorders, adds and removes asanas, sets the rounds (1–10) and the hour Evening starts. It starts with Left Fold,
   Right Fold, Left Raise, Right Raise, 45D, SLP BackBend, 2Sd45, Cobra, Sit BackBend and Plank, 5 rounds. Today
   follows the routine as it is now; past days keep the routine they were done with.
