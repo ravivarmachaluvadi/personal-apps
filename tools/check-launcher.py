@@ -26,7 +26,8 @@ DAY0 = datetime.date(2026, 11, 6)
 LH = 'https://ravivarmachaluvadi.github.io/learning-hub/'
 EXTERNAL = {
     LH,
-    *(LH + 'tools/%s/' % t for t in ('claude', 'lead-engineer', 'ui', 'react', 'python', 'kotlin', 'java-concurrency')),
+    *(LH + 'tools/%s/' % t for t in ('claude', 'lead-engineer', 'ui', 'react', 'python', 'kotlin', 'java-concurrency',
+                                          'java-practice')),
     'https://ravivarmachaluvadi.github.io/',
     'https://github.com/ravivarmachaluvadi/java-interview-practice',
     'http://127.0.0.1:8025/',

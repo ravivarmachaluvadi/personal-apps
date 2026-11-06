@@ -72,7 +72,7 @@ On a phone: open the site, sign in, and use *Install app* (see [Home](#home-toda
 | Today | The to-do list: add (with an optional due date), tick, untick, delete with *Undo*, and *Paste a list* (one to-do per line; `-`, `*`, `1.` and `[ ]` bullets are dropped) |
 | Apps | The ten app cards; on a phone (560 px or narrower) two columns, icon and name only |
 | Learning | The Learning Hub on GitHub Pages and its seven tools; these open on the Coforge laptop too |
-| Career | Portfolio and the `java-interview-practice` repo |
+| Career | Portfolio, the Java practice website (Code Viewer's website copy on the Learning Hub) and the `java-interview-practice` repo |
 | On this laptop | Code Viewer (`127.0.0.1:8025`), Java Concurrency Learning Tool (`127.0.0.1:8028`), Home Hub (`localhost:8765`); each starts from its Desktop icon and works only while running |
 | Games | The five games |
 
