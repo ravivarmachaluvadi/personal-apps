@@ -386,8 +386,21 @@ wr('docs/drop-tray.html', dt)
 _idx = rd('docs/index.html')
 _links = re.findall(r'<a\b[^>]*\bhref="[^"#]*\.html"[^>]*>', _idx)
 assert len(_links) >= 15, 'launcher: expected the ten apps and five games, found %d page links' % len(_links)
-_same_tab = [a for a in _links if 'target="_blank"' not in a or 'rel="noopener"' not in a]
+_all_links = [a for a in re.findall(r'<a\b[^>]*\bhref="[^"]*"[^>]*>', _idx) if not re.search(r'href="#', a)]
+_same_tab = [a for a in _all_links if 'target="_blank"' not in a or 'rel="noopener"' not in a]
 assert not _same_tab, 'launcher links must open in a new tab (target="_blank" rel="noopener"): ' + ', '.join(re.search(r'href="([^"]*)"', a).group(1) for a in _same_tab)
+# the Today list shows text you typed, so the launcher is held to the same rules as Hack Shelf
+assert '<link rel="manifest" href="manifest.webmanifest">' in _idx, 'launcher must link docs/manifest.webmanifest (it is what makes the site installable)'
+assert os.path.isfile(os.path.join(DOCS, 'manifest.webmanifest')), 'docs/manifest.webmanifest is missing'
+for _ic in json.load(open(os.path.join(DOCS, 'manifest.webmanifest'), encoding='utf-8'))['icons']:
+    assert os.path.isfile(os.path.join(DOCS, *_ic['src'].split('/'))), 'manifest icon missing (run tools/make-icons.py): ' + _ic['src']
+assert "navigator.serviceWorker.register('sw.js')" in _idx, 'launcher must register sw.js'
+assert "DriveStore.open({file:'home.json'" in _idx, "anchor not found: launcher's home.json Drive store"
+for _api in ('innerHTML', 'outerHTML', 'insertAdjacentHTML', 'document.write'):
+    assert _api not in _idx, 'launcher must build DOM with createElement/textContent, never ' + _api
+_decls = re.findall(r'^  function ([A-Za-z_$][\w$]*)\s*\(', _idx, re.M)
+_dupes = sorted({n for n in _decls if _decls.count(n) > 1})
+assert not _dupes, 'duplicate function declarations in the launcher (the later one silently wins): ' + ', '.join(_dupes)
 
 # ---------------------------------------------------------------- starter data
 docs = []

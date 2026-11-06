@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Personal Apps</title>
+<meta name="description" content="Today's to-dos and every app and tool you use, on phone and laptop.">
+<meta name="theme-color" content="#E9ECF1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14171C" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <script>/* the light/dark choice for this page on this device, applied before first paint */try{var pageTheme=JSON.parse(localStorage.getItem('launcher.theme'));if(pageTheme==='light'||pageTheme==='dark')document.documentElement.setAttribute('data-theme',pageTheme);}catch(e){}</script>
 <script src="config.js"></script>
 <script src="drive-sync.js"></script>
@@ -14,76 +20,308 @@
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171C;--surface:#1C2027;--surface-2:#242932;--line:#323945;--text:#E8EAEE;--muted:#9AA4B1;--faint:#89919B;--accent:#FF7A4D;--accent-ink:#1B0F0A;--good:#6BCF8B;--warn:#E2A33B;--danger:#F27A6B;color-scheme:dark}}
 :root[data-theme="dark"]{--bg:#14171C;--surface:#1C2027;--surface-2:#242932;--line:#323945;--text:#E8EAEE;--muted:#9AA4B1;--faint:#89919B;--accent:#FF7A4D;--accent-ink:#1B0F0A;--good:#6BCF8B;--warn:#E2A33B;--danger:#F27A6B;color-scheme:dark}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 "IBM Plex Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
-main{max-width:860px;margin:0 auto;padding:28px 18px 60px}
+main{max-width:860px;margin:0 auto;padding:28px 16px 60px}
 h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:clamp(30px,6vw,42px);letter-spacing:-.03em;margin:0 0 4px}
-.lead{color:var(--muted);margin:0 0 18px;max-width:60ch}
-.apps{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin:18px 0 26px}
+.lead{color:var(--muted);margin:0 0 14px;max-width:60ch}
+.hdr{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.themebtn{width:36px;height:36px;display:inline-grid;place-items:center;padding:0;margin:0;min-height:0;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--text);cursor:pointer;flex:none;align-self:center;font:inherit}
+.themebtn svg{width:17px;height:17px;display:block}
+.themebtn:hover{border-color:var(--accent)}
+.themebtn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+#auth{margin:0 0 18px}
+section{margin-bottom:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 20px}
+.card h2,h2.sec{font-family:"Bricolage Grotesque",sans-serif;font-size:20px;margin:0 0 8px;letter-spacing:-.01em}
+h2.sec{margin:26px 2px 10px}
+.card p,.card li{color:var(--muted);font-size:14.5px;margin:6px 0}
+.card ol{padding-left:20px;margin:6px 0}
+code{font:12.5px "IBM Plex Mono",monospace;background:var(--surface-2);padding:1px 6px;border-radius:5px}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* ---- Today */
+.today{border-color:var(--accent);box-shadow:0 10px 30px rgba(0,0,0,.06)}
+.today-h{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px;margin-bottom:10px}
+.today-h h2{margin:0}
+#todoDate{font:500 13px "IBM Plex Mono",monospace;color:var(--faint)}
+#todoSummary{margin-left:auto;font-size:14px;font-weight:600;color:var(--muted)}
+#todoSummary[data-overdue="true"]{color:var(--danger)}
+#todoForm{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 6px}
+#todoForm input{font:inherit;font-size:16px;color:var(--text);background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-height:44px}
+#todoText{flex:1 1 240px;min-width:0}
+#todoDue{flex:1 1 150px;max-width:190px}
+.btn{font:600 15px "IBM Plex Sans",system-ui,sans-serif;min-height:44px;padding:8px 16px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.small{min-height:36px;padding:6px 12px;font-size:14px}
+ul.todos{list-style:none;margin:0;padding:0}
+li.todo{display:flex;align-items:center;gap:10px;padding:6px 0;border-top:1px solid var(--line);margin:0}
+ul.todos li.todo:first-child{border-top:0}
+li.todo .body{flex:1;min-width:0;display:flex;flex-direction:column}
+li.todo .t{color:var(--text);font-size:15.5px;overflow-wrap:anywhere}
+li.todo .due{font:500 12.5px "IBM Plex Mono",monospace;color:var(--muted)}
+li.todo[data-state="overdue"] .due{color:var(--danger);font-weight:600}
+li.todo .due.is-today{color:var(--warn);font-weight:600}
+li.todo[data-state="done"] .t{color:var(--muted);text-decoration:line-through}
+input.tick{appearance:none;-webkit-appearance:none;flex:none;width:32px;height:32px;margin:0;border:2px solid var(--line);border-radius:9px;background:var(--surface) center/20px no-repeat;cursor:pointer}
+input.tick:hover{border-color:var(--accent)}
+input.tick:checked{background-color:var(--good);border-color:var(--good);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E")}
+button.del{flex:none;width:32px;height:32px;display:grid;place-items:center;padding:0;border:0;border-radius:9px;background:transparent;color:var(--faint);cursor:pointer}
+button.del:hover{background:var(--surface-2);color:var(--danger)}
+button.del svg{width:16px;height:16px}
+#todoEmpty{margin:10px 0 4px}
+#todoDoneWrap h3{font:600 12.5px "IBM Plex Mono",monospace;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);margin:14px 0 2px}
+.today-tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+#pastePanel{margin-top:10px;display:grid;gap:8px}
+#pasteBox{font:inherit;font-size:15px;color:var(--text);background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;resize:vertical}
+#pastePanel p{margin:0;font-size:13.5px}
+#undoBar{display:flex;align-items:center;gap:10px;margin-top:10px;padding:8px 12px;border-radius:10px;background:var(--surface-2);font-size:14px;color:var(--muted)}
+#undoBar span{flex:1;min-width:0;overflow-wrap:anywhere}
+
+/* ---- Apps */
+.apps{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
 .app{display:block;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;text-decoration:none;color:inherit;box-shadow:0 10px 30px rgba(0,0,0,.06)}
 .app:hover{border-color:var(--accent)}
 .app .ic{font-size:28px;line-height:1;margin-bottom:10px}
 .app b{display:block;font-family:"Bricolage Grotesque",sans-serif;font-size:20px;font-weight:700;letter-spacing:-.01em}
 .app span{display:block;color:var(--muted);font-size:14px;margin-top:4px}
 .app code{font:12px "IBM Plex Mono",monospace;color:var(--faint)}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:14px}
-.card h2{font-family:"Bricolage Grotesque",sans-serif;font-size:19px;margin:0 0 8px;letter-spacing:-.01em}
-.card p,.card li{color:var(--muted);font-size:14.5px;margin:6px 0}
-.card ol{padding-left:20px;margin:6px 0}
-code{font:12.5px "IBM Plex Mono",monospace;background:var(--surface-2);padding:1px 6px;border-radius:5px}
-#auth{margin:6px 0 0}
-.hdr{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.themebtn{width:36px;height:36px;display:inline-grid;place-items:center;padding:0;margin:0;min-height:0;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--text);cursor:pointer;flex:none;align-self:center;font:inherit}
-.themebtn svg{width:17px;height:17px;display:block}
-.themebtn:hover{border-color:var(--accent)}
-.themebtn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* ---- link lists */
+.feature{display:block;text-decoration:none;color:inherit;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--surface-2)}
+.feature:hover{border-color:var(--accent)}
+.feature b{display:block;font-size:16.5px;color:var(--text)}
+.feature span{display:block;color:var(--muted);font-size:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 2px}
+.chips a{display:inline-flex;align-items:center;min-height:36px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--text);text-decoration:none;font-size:14px;font-weight:500}
+.chips a:hover{border-color:var(--accent);color:var(--accent)}
+ul.rows{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:10px}
+ul.rows li{margin:0}
+ul.rows a{font-weight:600;font-size:16px;text-decoration:none}
+ul.rows a:hover{text-decoration:underline}
+ul.rows .addr{font:12.5px "IBM Plex Mono",monospace;color:var(--faint);margin-left:6px}
+ul.rows small{display:block;color:var(--muted);font-size:14px}
+
+@media (max-width:560px){
+  .card{padding:16px}
+  .apps{grid-template-columns:1fr 1fr;gap:10px}
+  .app{padding:14px}
+  .app .ic{font-size:24px;margin-bottom:6px}
+  .app b{font-size:16px}
+  .app span,.app code{display:none}
+  #todoDue{max-width:none}
+  #todoForm .btn{flex:1 1 90px}
+}
 </style>
 </head>
 <body>
 <main>
   <div class="hdr"><h1>Personal Apps</h1><button class="themebtn" id="themeBtn" type="button" aria-label="Switch theme"></button></div>
-  <p class="lead">Ten pages, all in your Google Drive. Sign in once per device; everything else is a file you own.</p>
+  <p class="lead">Today's to-dos and every app and tool you use. Sign in once per device and the to-dos sync through your Google Drive.</p>
   <div id="auth"></div>
-  <div class="apps">
-    <a class="app" href="keycap-atlas.html" target="_blank" rel="noopener"><div class="ic">⌨️</div><b>Keycap Atlas</b><span>Shortcuts and commands, by app and OS, with a drill mode.</span><code>keycap-atlas.json</code></a>
-    <a class="app" href="strongroom.html" target="_blank" rel="noopener"><div class="ic">🔐</div><b>Strongroom</b><span>Password vault. Encrypted in the browser with your master password.</span><code>strongroom-vault.json</code></a>
-    <a class="app" href="dumbbell-dojo.html" target="_blank" rel="noopener"><div class="ic">🏋️</div><b>Dumbbell Dojo</b><span>Home strength plans, weight logs, back care, and a Do &amp; Don't tab for a desk-sore back.</span><code>dumbbell-dojo.json</code></a>
-    <a class="app" href="tally-board.html" target="_blank" rel="noopener"><div class="ic">📌</div><b>Tally Board</b><span>Activities and what you actually did each day, plus plans, milestones and sticky notes.</span><code>tally-board.json</code></a>
-    <a class="app" href="spine-bell.html" target="_blank" rel="noopener"><div class="ic">🔔</div><b>Spine Bell</b><span>Stand-up timer, plain countdown timer, and a pain, sleep and movement diary.</span><code>spine-bell.json</code></a>
-    <a class="app" href="event-log.html" target="_blank" rel="noopener"><div class="ic">🗓️</div><b>Event Log</b><span>Plan events by type, one-off or repeating, tick them done or missed, and look up what happened and when.</span><code>event-log.json</code></a>
-    <a class="app" href="hack-shelf.html" target="_blank" rel="noopener"><div class="ic">🧰</div><b>Hack Shelf</b><span>Commands, snippets and things you learned: one tap to copy, topics and tags, and a nudge to revisit old ones.</span><code>hack-shelf.json</code></a>
-    <a class="app" href="asana-rounds.html" target="_blank" rel="noopener"><div class="ic">🧘</div><b>Asana Rounds</b><span>Your asana routine, morning and evening: which round you are on, which asana now and which next. Starts fresh every day.</span><code>asana-rounds.json</code></a>
-    <a class="app" href="shoebox.html" target="_blank" rel="noopener"><div class="ic">📦</div><b>Shoebox</b><span>Your photos and PDFs in Drive, calmly: big thumbnails, quick previews, upload, move, star, and a delete you can undo.</span><code>your whole Drive</code></a>
-    <a class="app" href="drop-tray.html" target="_blank" rel="noopener"><div class="ic">📋</div><b>Drop Tray</b><span>A clipboard all your devices share: paste text, code, a screenshot or a file on one, copy or download it on another.</span><code>drop-tray.json</code></a>
-  </div>
-  <section class="card">
-    <h2>Games</h2>
+
+  <section id="today" class="card today" aria-labelledby="todayTitle">
+    <div class="today-h"><h2 id="todayTitle">Today</h2><span id="todoDate"></span><span id="todoSummary" aria-live="polite"></span></div>
+    <form id="todoForm" autocomplete="off">
+      <input id="todoText" type="text" maxlength="300" placeholder="Add a to-do" aria-label="New to-do">
+      <input id="todoDue" type="date" aria-label="Due date (optional)" title="Due date (optional)">
+      <button id="todoAddBtn" class="btn primary" type="submit">Add</button>
+    </form>
+    <ul id="todoOpen" class="todos" aria-label="To do"></ul>
+    <p id="todoEmpty">Nothing to do. Add one above, or paste a list.</p>
+    <div id="todoDoneWrap" hidden><h3>Done today</h3><ul id="todoDone" class="todos" aria-label="Done today"></ul></div>
+    <div id="undoBar" hidden role="status"><span id="undoMsg"></span><button id="undoBtn" class="btn small" type="button">Undo</button></div>
+    <div class="today-tools"><button id="pasteToggle" class="btn small" type="button" aria-expanded="false" aria-controls="pastePanel">Paste a list</button></div>
+    <div id="pastePanel" hidden>
+      <textarea id="pasteBox" rows="5" aria-label="To-dos to add, one per line" placeholder="One to-do per line"></textarea>
+      <p>Each line becomes a to-do. Bullets like <code>-</code>, <code>*</code> or <code>1.</code> are dropped, and blank lines are skipped.</p>
+      <div><button id="pasteAddBtn" class="btn primary small" type="button">Add these</button></div>
+    </div>
+  </section>
+
+  <section id="apps" aria-labelledby="appsTitle">
+    <h2 class="sec" id="appsTitle">Apps</h2>
+    <div class="apps">
+      <a class="app" href="keycap-atlas.html" target="_blank" rel="noopener"><div class="ic">⌨️</div><b>Keycap Atlas</b><span>Shortcuts and commands, by app and OS, with a drill mode.</span><code>keycap-atlas.json</code></a>
+      <a class="app" href="strongroom.html" target="_blank" rel="noopener"><div class="ic">🔐</div><b>Strongroom</b><span>Password vault. Encrypted in the browser with your master password.</span><code>strongroom-vault.json</code></a>
+      <a class="app" href="dumbbell-dojo.html" target="_blank" rel="noopener"><div class="ic">🏋️</div><b>Dumbbell Dojo</b><span>Home strength plans, weight logs, back care, and a Do &amp; Don't tab for a desk-sore back.</span><code>dumbbell-dojo.json</code></a>
+      <a class="app" href="tally-board.html" target="_blank" rel="noopener"><div class="ic">📌</div><b>Tally Board</b><span>Activities and what you actually did each day, plus plans, milestones and sticky notes.</span><code>tally-board.json</code></a>
+      <a class="app" href="spine-bell.html" target="_blank" rel="noopener"><div class="ic">🔔</div><b>Spine Bell</b><span>Stand-up timer, plain countdown timer, and a pain, sleep and movement diary.</span><code>spine-bell.json</code></a>
+      <a class="app" href="event-log.html" target="_blank" rel="noopener"><div class="ic">🗓️</div><b>Event Log</b><span>Plan events by type, one-off or repeating, tick them done or missed, and look up what happened and when.</span><code>event-log.json</code></a>
+      <a class="app" href="hack-shelf.html" target="_blank" rel="noopener"><div class="ic">🧰</div><b>Hack Shelf</b><span>Commands, snippets and things you learned: one tap to copy, topics and tags, and a nudge to revisit old ones.</span><code>hack-shelf.json</code></a>
+      <a class="app" href="asana-rounds.html" target="_blank" rel="noopener"><div class="ic">🧘</div><b>Asana Rounds</b><span>Your asana routine, morning and evening: which round you are on, which asana now and which next. Starts fresh every day.</span><code>asana-rounds.json</code></a>
+      <a class="app" href="shoebox.html" target="_blank" rel="noopener"><div class="ic">📦</div><b>Shoebox</b><span>Your photos and PDFs in Drive, calmly: big thumbnails, quick previews, upload, move, star, and a delete you can undo.</span><code>your whole Drive</code></a>
+      <a class="app" href="drop-tray.html" target="_blank" rel="noopener"><div class="ic">📋</div><b>Drop Tray</b><span>A clipboard all your devices share: paste text, code, a screenshot or a file on one, copy or download it on another.</span><code>drop-tray.json</code></a>
+    </div>
+  </section>
+
+  <section id="learning" class="card" aria-labelledby="learningTitle">
+    <h2 id="learningTitle">Learning</h2>
+    <p>Opens anywhere, including the Coforge laptop.</p>
+    <a class="feature" href="https://ravivarmachaluvadi.github.io/learning-hub/" target="_blank" rel="noopener"><b>Learning Hub</b><span>All the labs, the Atlas and the learning tools in one place.</span></a>
+    <div class="chips" aria-label="Learning tools">
+      <a href="https://ravivarmachaluvadi.github.io/learning-hub/tools/claude/" target="_blank" rel="noopener">Claude</a>
+      <a href="https://ravivarmachaluvadi.github.io/learning-hub/tools/lead-engineer/" target="_blank" rel="noopener">Lead Engineer</a>
+      <a href="https://ravivarmachaluvadi.github.io/learning-hub/tools/java-concurrency/" target="_blank" rel="noopener">Java Concurrency</a>
+      <a href="https://ravivarmachaluvadi.github.io/learning-hub/tools/ui/" target="_blank" rel="noopener">UI</a>
+      <a href="https://ravivarmachaluvadi.github.io/learning-hub/tools/react/" target="_blank" rel="noopener">React</a>
+      <a href="https://ravivarmachaluvadi.github.io/learning-hub/tools/python/" target="_blank" rel="noopener">Python</a>
+      <a href="https://ravivarmachaluvadi.github.io/learning-hub/tools/kotlin/" target="_blank" rel="noopener">Kotlin</a>
+    </div>
+  </section>
+
+  <section id="career" class="card" aria-labelledby="careerTitle">
+    <h2 id="careerTitle">Career</h2>
+    <ul class="rows">
+      <li><a href="https://ravivarmachaluvadi.github.io/" target="_blank" rel="noopener">Portfolio</a><small>Your public profile page: experience, projects and résumé.</small></li>
+      <li><a href="https://github.com/ravivarmachaluvadi/java-interview-practice" target="_blank" rel="noopener">Java interview practice</a><small>The practice files on GitHub, ordered from building blocks to hard.</small></li>
+    </ul>
+  </section>
+
+  <section id="laptop" class="card" aria-labelledby="laptopTitle">
+    <h2 id="laptopTitle">On this laptop</h2>
+    <p>These run on your own laptop, so the links work only there and only while the tool is running. Each one starts from its icon on the Desktop.</p>
+    <ul class="rows">
+      <li><a href="http://127.0.0.1:8025/" target="_blank" rel="noopener">Code Viewer</a><span class="addr">127.0.0.1:8025</span><small>Read and run the Java practice files. Start: the Code Viewer icon on the Desktop.</small></li>
+      <li><a href="http://127.0.0.1:8028/" target="_blank" rel="noopener">Java Concurrency Learning Tool</a><span class="addr">127.0.0.1:8028</span><small>Runs the Java 25 examples. Start: its icon on the Desktop.</small></li>
+      <li><a href="http://localhost:8765/" target="_blank" rel="noopener">Home Hub</a><span class="addr">localhost:8765</span><small>Send, browse and sign files with your other devices on home Wi-Fi. Start: the Home Hub icon on the Desktop or by the clock. A phone uses the address Home Hub shows, not this one.</small></li>
+    </ul>
+  </section>
+
+  <section id="games" class="card" aria-labelledby="gamesTitle">
+    <h2 id="gamesTitle">Games</h2>
     <p>Small games kept alongside the apps. They save nothing to Drive.</p>
     <p><a href="river-rapids/river-rapids.html" target="_blank" rel="noopener">River Rapids</a> · <a href="sky-rings/sky-rings.html" target="_blank" rel="noopener">Sky Rings</a> · <a href="sound-safari/sound-safari.html" target="_blank" rel="noopener">Sound Safari</a> · <a href="vroom-valley/vroom-valley.html" target="_blank" rel="noopener">Vroom Valley</a> · <a href="word-racer/word-racer.html" target="_blank" rel="noopener">Word Racer</a></p>
   </section>
+
+  <section class="card">
+    <h2>Install it on a phone</h2>
+    <ol>
+      <li>Open this page in Chrome and tap <b>Continue with Google</b> once.</li>
+      <li>Chrome menu (⋮) → <b>Install app</b>, or <b>Add to Home screen</b> if that is what it offers. On an iPhone or iPad: Share → <b>Add to Home Screen</b>.</li>
+      <li>It then opens full-screen from its own icon, like an app.</li>
+    </ol>
+  </section>
+
   <section class="card">
     <h2>How the data moves</h2>
-    <p>Each page keeps its data as one JSON file in <b>My Drive → Personal Apps</b>. The browser caches a copy so pages open instantly and work offline; changes are saved to Drive a second or two after you make them and picked up by your other devices within about a minute, or the moment you return to the page.</p>
+    <p>Each app keeps its data as one JSON file in <b>My Drive → Personal Apps</b>; the to-do list above is <code>home.json</code>. The browser keeps a copy so pages open instantly and work offline. Changes are saved to Drive a second or two after you make them, and your other devices pick them up within about a minute, or the moment you come back to the page.</p>
+    <p>Until you sign in on a device, its to-dos stay in that browser only. On a work laptop you can use every link without signing in.</p>
     <p>The vault file holds only ciphertext. Your master password never leaves the device.</p>
-  </section>
-  <section class="card">
-    <h2>On a phone</h2>
-    <ol>
-      <li>Open this page in Chrome or Safari and sign in with Google.</li>
-      <li>Use the browser's <b>Add to Home Screen</b> for the pages you use most.</li>
-    </ol>
   </section>
 </main>
 <script>
+/* Today: a to-do list kept in My Drive/Personal Apps/home.json, one item per to-do:
+   {text, due:'YYYY-MM-DD'|'', done, doneDay:'YYYY-MM-DD'|'', createdAt, updatedAt}; a delete is a tombstone {deleted:true, updatedAt}.
+   A done item shows under "Done today" on the day it was ticked and is kept, unseen, after that.
+   Typed text only ever reaches the page through textContent. */
 (function(){
-  var el=document.getElementById('auth');
-  function render(){var a=DriveStore.authState();while(el.firstChild)el.removeChild(el.firstChild);
-    var wrap=document.createElement('div');wrap.className='ds';
-    if(!a.configured){wrap.textContent='Google sign-in is not set up yet: paste your OAuth client ID into config.js (see the README).';el.appendChild(wrap);return;}
-    if(a.signedIn){var d=document.createElement('i');wrap.appendChild(d);wrap.dataset.state='saved';var s=document.createElement('span');s.textContent='Signed in'+(a.email?' as '+a.email:'');wrap.appendChild(s);var o=document.createElement('button');o.type='button';o.textContent='Sign out';o.style.marginLeft='8px';o.addEventListener('click',function(){DriveStore.signOut();});wrap.appendChild(o);}
-    else{var b=document.createElement('button');b.type='button';b.className='ds-google';b.textContent='Continue with Google';b.addEventListener('click',function(){DriveStore.signIn().catch(function(){});});wrap.appendChild(b);}
-    el.appendChild(wrap);}
-  DriveStore.ensureCss();
-  DriveStore.onAuth(render);render();
+  var STORE=DriveStore.open({file:'home.json',empty:function(){return {v:1,app:'home',items:{}};},onChange:function(){render();}});
+  DriveStore.mountStatus(document.getElementById('auth'),STORE);
+  var $=function(id){return document.getElementById(id);};
+  var form=$('todoForm'),textIn=$('todoText'),dueIn=$('todoDue'),openUl=$('todoOpen'),doneUl=$('todoDone');
+  var DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var undo=null,undoTimer=0,shownDay='';
+
+  function pad(n){return (n<10?'0':'')+n;}
+  function dayKey(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+  function todayKey(){return dayKey(new Date());}
+  function addDays(key,n){var p=key.split('-'),d=new Date(+p[0],+p[1]-1,+p[2]);d.setDate(d.getDate()+n);return dayKey(d);}
+  function pretty(key,withYear){var p=key.split('-'),d=new Date(+p[0],+p[1]-1,+p[2]);return DAYS[d.getDay()]+' '+d.getDate()+' '+MONTHS[d.getMonth()]+(withYear?' '+d.getFullYear():'');}
+  function newId(){return 't'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+  function live(){var items=STORE.doc.items;return Object.keys(items).filter(function(id){var it=items[id];return it&&!it.deleted&&typeof it.text==='string';}).map(function(id){return {id:id,it:items[id]};});}
+
+  function dueLabel(due,today){
+    if(!due)return null;
+    var sameYear=due.slice(0,4)===today.slice(0,4);
+    if(due<today)return {text:'overdue · '+pretty(due,!sameYear),cls:''};
+    if(due===today)return {text:'today',cls:'is-today'};
+    if(due===addDays(today,1))return {text:'tomorrow',cls:''};
+    return {text:pretty(due,!sameYear),cls:''};
+  }
+  function svgX(){var NS='http://www.w3.org/2000/svg',s=document.createElementNS(NS,'svg'),p=document.createElementNS(NS,'path');
+    [['viewBox','0 0 24 24'],['fill','none'],['stroke','currentColor'],['stroke-width','2.4'],['stroke-linecap','round'],['aria-hidden','true']].forEach(function(a){s.setAttribute(a[0],a[1]);});
+    p.setAttribute('d','M6 6l12 12M18 6L6 18');s.appendChild(p);return s;}
+  function row(entry,today){
+    var it=entry.it,li=document.createElement('li'),tick=document.createElement('input'),body=document.createElement('div'),t=document.createElement('span'),del=document.createElement('button');
+    var overdue=!it.done&&it.due&&it.due<today;
+    li.className='todo';li.dataset.id=entry.id;li.dataset.state=it.done?'done':(overdue?'overdue':'open');
+    tick.type='checkbox';tick.className='tick';tick.checked=!!it.done;tick.setAttribute('aria-label',(it.done?'Not done: ':'Done: ')+it.text);
+    tick.addEventListener('change',function(){setDone(entry.id,tick.checked);});
+    body.className='body';t.className='t';t.textContent=it.text;body.appendChild(t);
+    var lab=it.done?null:dueLabel(it.due,today);
+    if(lab){var d=document.createElement('span');d.className='due'+(lab.cls?' '+lab.cls:'');d.textContent=lab.text;body.appendChild(d);}
+    del.type='button';del.className='del';del.title='Delete';del.setAttribute('aria-label','Delete: '+it.text);del.appendChild(svgX());
+    del.addEventListener('click',function(){remove(entry.id);});
+    li.appendChild(tick);li.appendChild(body);li.appendChild(del);
+    return li;
+  }
+  function render(){
+    var today=todayKey(),all=live();shownDay=today;
+    var open=all.filter(function(e){return !e.it.done;}),done=all.filter(function(e){return e.it.done&&e.it.doneDay===today;});
+    open.sort(function(a,b){var x=a.it.due||'9999-99-99',y=b.it.due||'9999-99-99';if(x!==y)return x<y?-1:1;return (a.it.createdAt||0)-(b.it.createdAt||0);});
+    done.sort(function(a,b){return (b.it.updatedAt||0)-(a.it.updatedAt||0);});
+    var focusId=document.activeElement&&document.activeElement.closest?(function(li){return li&&li.dataset.id;})(document.activeElement.closest('li.todo')):null;
+    while(openUl.firstChild)openUl.removeChild(openUl.firstChild);
+    while(doneUl.firstChild)doneUl.removeChild(doneUl.firstChild);
+    open.forEach(function(e){openUl.appendChild(row(e,today));});
+    done.forEach(function(e){doneUl.appendChild(row(e,today));});
+    $('todoEmpty').hidden=open.length>0;
+    $('todoDoneWrap').hidden=done.length===0;
+    var late=open.filter(function(e){return e.it.due&&e.it.due<today;}).length,s=$('todoSummary');
+    s.textContent=open.length?(open.length+' to do'+(late?' · '+late+' overdue':'')):(done.length?'All done':'');
+    s.dataset.overdue=late?'true':'false';
+    $('todoDate').textContent=pretty(today,false);
+    if(focusId){var back=document.querySelector('li.todo[data-id="'+focusId+'"] input.tick');if(back)back.focus();}
+  }
+
+  function add(text,due){
+    text=String(text||'').replace(/\s+/g,' ').trim().slice(0,300);
+    if(!text)return false;
+    var now=Date.now(),id=newId();
+    STORE.mutate(function(doc){doc.items[id]={text:text,due:due||'',done:false,doneDay:'',createdAt:now,updatedAt:now};});
+    return true;
+  }
+  function setDone(id,on){
+    STORE.mutate(function(doc){var it=doc.items[id];if(!it||it.deleted)return;it.done=!!on;it.doneDay=on?todayKey():'';it.updatedAt=Date.now();});
+  }
+  function remove(id){
+    var it=STORE.doc.items[id];if(!it||it.deleted)return;
+    var kept=JSON.parse(JSON.stringify(it));
+    STORE.mutate(function(doc){doc.items[id]={deleted:true,updatedAt:Date.now()};});
+    undo={id:id,item:kept};$('undoMsg').textContent='Deleted “'+kept.text+'”';$('undoBar').hidden=false;
+    clearTimeout(undoTimer);undoTimer=setTimeout(hideUndo,8000);
+  }
+  function hideUndo(){undo=null;$('undoBar').hidden=true;clearTimeout(undoTimer);}
+  $('undoBtn').addEventListener('click',function(){
+    if(!undo)return hideUndo();var u=undo;
+    STORE.mutate(function(doc){var it=u.item;it.updatedAt=Date.now();doc.items[u.id]=it;});
+    hideUndo();
+  });
+
+  form.addEventListener('submit',function(ev){
+    ev.preventDefault();
+    if(add(textIn.value,dueIn.value)){textIn.value='';dueIn.value='';}
+    textIn.focus();
+  });
+
+  var pasteBtn=$('pasteToggle'),panel=$('pastePanel'),box=$('pasteBox');
+  function showPaste(on){panel.hidden=!on;pasteBtn.setAttribute('aria-expanded',on?'true':'false');if(on)box.focus();}
+  pasteBtn.addEventListener('click',function(){showPaste(panel.hidden);});
+  $('pasteAddBtn').addEventListener('click',function(){
+    var bullet=/^\s*(?:(?:[-*•–]|\d+[.)])\s+)?(?:\[[ xX]?\]\s+)?/;
+    box.value.split(/\r?\n/).forEach(function(line){add(line.replace(bullet,''),'');});
+    box.value='';showPaste(false);textIn.focus();
+  });
+
+  /* a page left open past midnight moves on to the new day by itself */
+  setInterval(function(){if(todayKey()!==shownDay)render();},60000);
+  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&todayKey()!==shownDay)render();});
+  render();
+
+  if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}
 })();
 </script>
 <script>

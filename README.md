@@ -20,7 +20,10 @@ that device keeps its data only in its own browser (the header then says *change
 | Shoebox | `docs/shoebox.html` | none — it works on your Drive's own files and folders ([details](#shoebox-your-photos-and-papers-in-drive)) |
 | Drop Tray | `docs/drop-tray.html` | `drop-tray.json` — text you sent between devices; pictures and files in `Drop Tray/` ([details](#drop-tray-one-clipboard-for-all-your-devices)) |
 
-`docs/index.html` is a launcher for all ten; each app and game opens in a new tab, so the launcher stays open (the build checks every link). `docs/drive-sync.js` is the shared storage layer; `docs/config.js`
+`docs/index.html` is the **Home** page: today's to-dos (`home.json`), then a launcher for all ten apps, the
+Learning Hub, career links, the tools that run only on this laptop, and the games. Every link opens in a new
+tab, so Home stays open (the build checks every link). It can be installed on a phone as an app; see
+[Home](#home-todays-to-dos-and-every-link). `docs/drive-sync.js` is the shared storage layer; `docs/config.js`
 holds the one setting you must fill in (the Google OAuth client ID).
 
 ## How the storage works
@@ -58,7 +61,53 @@ and that the origin you are using is listed on the client.
   and the source PDF afterwards).
 - **Dumbbell Dojo**: Guide tab → *Import a backup* if you exported data from the old page; otherwise just start.
 
-On a phone: open the site, sign in, and use *Add to Home Screen*.
+On a phone: open the site, sign in, and use *Install app* (see [Home](#home-todays-to-dos-and-every-link)).
+
+## Home: today's to-dos and every link
+
+`docs/index.html`, hand-written (the build only checks it). Top to bottom:
+
+| Section | What it holds |
+|---|---|
+| Today | The to-do list: add (with an optional due date), tick, untick, delete with *Undo*, and *Paste a list* (one to-do per line; `-`, `*`, `1.` and `[ ]` bullets are dropped) |
+| Apps | The ten app cards; on a phone (560 px or narrower) two columns, icon and name only |
+| Learning | The Learning Hub on GitHub Pages and its seven tools; these open on the Coforge laptop too |
+| Career | Portfolio and the `java-interview-practice` repo |
+| On this laptop | Code Viewer (`127.0.0.1:8025`), Java Concurrency Learning Tool (`127.0.0.1:8028`), Home Hub (`localhost:8765`); each starts from its Desktop icon and works only while running |
+| Games | The five games |
+
+### The to-do list
+
+- One Drive file, `home.json`, opened with `DriveStore.open` and the default merge (newest `updatedAt` per item
+  wins; a delete is a tombstone). The browser cache key is `drivesync.home.json`.
+- An item is `{text, due, done, doneDay, createdAt, updatedAt}`; `due` and `doneDay` are local `YYYY-MM-DD`
+  dates or `''`.
+- Open items sort by due date, undated last, so overdue ones come first and show their date in red. Due today
+  says *today*, due tomorrow says *tomorrow*.
+- A ticked item shows under *Done today* on the day it was ticked. From the next day it is no longer shown,
+  but it stays in the file. A page left open past midnight moves to the new day by itself.
+- Typed text reaches the page only through `textContent`; the build refuses every markup-string API in this
+  page, as it does for Hack Shelf.
+
+### Install on a phone
+
+1. Open https://ravivarmachaluvadi.github.io/personal-apps/ in Chrome and tap **Continue with Google** once.
+2. Chrome menu (⋮) → **Install app** (or **Add to Home screen**). On an iPhone or iPad: Share → **Add to Home
+   Screen**.
+3. It opens full-screen from its own icon. Links still open in new tabs, which Android shows in Chrome.
+
+What makes it installable: `docs/manifest.webmanifest` (name *Personal Apps*, short name *Home*, standalone),
+the icons in `docs/icons/` (192, 512 and a maskable 512, drawn by `python tools/make-icons.py`), and Home
+registering the existing `docs/sw.js`. `sw.js` still caches nothing, so every page loads from the network as
+before.
+
+### Testing
+
+`python tools/check-launcher.py` (a few seconds, headless Chrome, signed out, every outside request blocked)
+runs the to-do list on a fixed date (2026-11-06): order, overdue, markup shown as text, tick and untick, delete
+and Undo, paste, reload, and the next day. It also checks every same-site link answers 200, that the external
+links are exactly the planned ones, the manifest and its icons, the service worker, and layout at 390 and
+1280 px in light and dark. `LAUNCHER_SHOTS=<folder>` saves a screenshot of each layout.
 
 ## Light and dark
 
@@ -586,6 +635,12 @@ the old `Documents/FromClaude/FromClaude/Personal` folder and are linked from th
   duplicate function are refused) and, like Shoebox, refused if it ever sends `DELETE` or empties the Trash.
   The build also asserts its 8-second poll and its 60-day tombstones.
 - `tools/check-drop-tray.py` — Drop Tray's checker (see *Testing* in the Drop Tray section).
+- `docs/index.html` — Home, hand-written in place. The build checks that every link opens in a new tab, that the
+  manifest and its icons exist, that `sw.js` is registered and the `home.json` store is wired, and refuses every
+  markup-string API and a duplicate function.
+- `docs/manifest.webmanifest`, `docs/icons/` — what makes the site installable; `tools/make-icons.py` redraws
+  the icons.
+- `tools/check-launcher.py` — Home's checker (see *Testing* in the Home section).
 - `seed/shortcuts.txt`, `seed/build-seed.mjs` — the starter shortcut set and its builder.
 - `seed/ocr-notebook-to-csv.py` — turns OCR text of a scanned password notebook into the vault's import CSV.
 - `seed/text-notebook-to-csv.py` — the same for a notebook already typed as plain text (blank line between
