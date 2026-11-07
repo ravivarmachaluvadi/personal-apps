@@ -88,7 +88,7 @@ body.selecting .toast{bottom:92px}
 
 /* layout: places on the left on a laptop, a row of pills above the files on a phone */
 .layout{display:grid;grid-template-columns:200px minmax(0,1fr);gap:24px;margin-top:18px;align-items:start}
-.rail{position:sticky;top:12px;display:grid;gap:16px}
+.rail{position:sticky;top:calc(var(--appnav-h,0px) + 12px);display:grid;gap:16px}
 #nav{display:grid;gap:2px}
 #nav button{display:flex;align-items:center;gap:10px;border:0;background:none;border-radius:10px;padding:8px 10px;font:600 14.5px "Plus Jakarta Sans",system-ui,sans-serif;color:var(--muted);cursor:pointer;text-align:left;min-height:40px;white-space:nowrap}
 #nav button svg{width:18px;height:18px;flex:none}

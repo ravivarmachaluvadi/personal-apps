@@ -5,6 +5,8 @@
  *     .mutate(fn)          fn(doc) edits in place; the change is cached at once and saved shortly after
  *     .sync()              pull from Drive (merge) and push if anything is waiting
  *     .signIn() / .signOut()
+ *   DriveStore.flushAll(ms)                  save every store with a change waiting now, instead of after the usual
+ *                                            pause; resolves when done or after ms (used before leaving the page)
  *   DriveStore.mountStatus(element, store)   renders the sign-in button / sync state into an element
  *   DriveStore.files                          ordinary files (images, uploads) beside the JSON files; see below
  *   tombstoneDays (option)                    how long a deletion is remembered; ten years unless a page says less
@@ -247,8 +249,10 @@
   }
 
   /* ---------------- store ---------------- */
+  var stores = [];
   function Store(o) {
     var self = this;
+    stores.push(this);
     this.o = o; this.file = o.file; this.folderName = CFG.driveFolderName || 'Personal Apps'; this.cacheKey = o.cacheKey || ('drivesync.' + o.file);
     var c = loadJSON(this.cacheKey, null);
     this.doc = (c && isObj(c.doc)) ? c.doc : o.empty(); if (!isObj(this.doc.items)) this.doc.items = {};
@@ -357,6 +361,25 @@
   Store.prototype.signOut = function () { signOut(); };
   Store.prototype.replaceDoc = function (doc) { this.doc = doc; if (!isObj(this.doc.items)) this.doc.items = {}; this.dirty = true; this.persist(); if (this.o.onChange) this.o.onChange(this.doc, 'local'); this.push(); };
 
+  /* Save now, before the page is left: each store with a change waiting is pushed at once (after any save or
+     check already running), instead of after the usual 1.5 s pause. Resolves when every store is done or after
+     ms, whichever comes first; at once when signed out. A failed save stays waiting in this browser, as before. */
+  function flushAll(ms) {
+    var deadline = Date.now() + (ms > 0 ? ms : 2500);
+    function one(s) {
+      return new Promise(function (res) {
+        (function step(pushed) {
+          if (!s.dirty || !hasToken() || Date.now() >= deadline) return res();
+          if (s.busy) return setTimeout(function () { step(pushed); }, 50);
+          if (pushed) return res();
+          clearTimeout(s.timer); s.timer = null;
+          s.push().then(function () { step(true); }, function () { res(); });
+        })(false);
+      });
+    }
+    return Promise.race([Promise.all(stores.map(one)), new Promise(function (res) { setTimeout(res, Math.max(0, deadline - Date.now())); })]).then(function () {});
+  }
+
   /* ---------------- status control ---------------- */
   var CSS = '.ds{display:inline-flex;align-items:center;gap:8px;font:12.5px ui-monospace,Menlo,Consolas,monospace;color:var(--muted,#666);position:relative}' +
     '.ds i{width:8px;height:8px;border-radius:50%;background:var(--faint,#aaa);display:inline-block;flex:none}' +
@@ -406,7 +429,7 @@
 
   global.DriveStore = {
     open: function (o) { return new Store(o); },
-    mountStatus: mountStatus, ensureCss: ensureCss, files: files,
+    mountStatus: mountStatus, ensureCss: ensureCss, files: files, flushAll: flushAll,
     signIn: signIn, signOut: signOut, authState: authState, onAuth: function (fn) { auth.listeners.push(fn); }
   };
 })(window);

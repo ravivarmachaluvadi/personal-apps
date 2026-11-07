@@ -21,9 +21,10 @@ that device keeps its data only in its own browser (the header then says *change
 | Drop Tray | `docs/drop-tray.html` | `drop-tray.json` — text you sent between devices; pictures and files in `Drop Tray/` ([details](#drop-tray-one-clipboard-for-all-your-devices)) |
 
 `docs/index.html` is the **Home** page: today's to-dos (`home.json`), then a launcher for all ten apps, the
-Learning Hub, career links, the tools that run only on this laptop, and the games. Every link opens in a new
-tab, so Home stays open (the build checks every link). It can be installed on a phone as an app; see
-[Home](#home-todays-to-dos-and-every-link). `docs/drive-sync.js` is the shared storage layer; `docs/config.js`
+Learning Hub, career links, the tools that run only on this laptop, and the games. In a browser tab every link
+opens in a new tab, so Home stays open (the build checks every link). It can be installed on a phone as an app;
+see [Home](#home-todays-to-dos-and-every-link). Every page, Home included, has a strip across the top with Home and
+all ten apps; see [Moving between apps](#moving-between-apps-the-strip-home-and-back). `docs/drive-sync.js` is the shared storage layer; `docs/config.js`
 holds the one setting you must fill in (the Google OAuth client ID).
 
 ## How the storage works
@@ -94,7 +95,10 @@ On a phone: open the site, sign in, and use *Install app* (see [Home](#home-toda
 1. Open https://ravivarmachaluvadi.github.io/personal-apps/ in Chrome and tap **Continue with Google** once.
 2. Chrome menu (⋮) → **Install app** (or **Add to Home screen**). On an iPhone or iPad: Share → **Add to Home
    Screen**.
-3. It opens full-screen from its own icon. Links still open in new tabs, which Android shows in Chrome.
+3. It opens full-screen from its own icon. Inside the installed app, Home's cards and the strip open each app in
+   the same window, so the phone's Back gesture works and you stay in the app (see
+   [Moving between apps](#moving-between-apps-the-strip-home-and-back)). Learning Hub, portfolio and the laptop
+   tools still open outside it.
 
 What makes it installable: `docs/manifest.webmanifest` (name *Personal Apps*, short name *Home*, standalone),
 the icons in `docs/icons/` (192, 512 and a maskable 512, drawn by `python tools/make-icons.py`), and Home
@@ -108,6 +112,55 @@ runs the to-do list on a fixed date (2026-11-06): order, overdue, markup shown a
 and Undo, paste, reload, and the next day. It also checks every same-site link answers 200, that the external
 links are exactly the planned ones, the manifest and its icons, the service worker, and layout at 390 and
 1280 px in light and dark. `LAUNCHER_SHOTS=<folder>` saves a screenshot of each layout.
+
+## Moving between apps: the strip, Home and Back
+
+Every page (Home and the ten apps) starts with a strip: **Home**, then the ten apps in Home's order, then
+**Games** (Home's Games section). It is `docs/app-nav.js`, one shared file, loaded right after `<body>` (the build
+adds the tag to every app page; Home has it by hand), so it is in place before the page's own content and nothing
+jumps. It stays stuck to the top while you scroll.
+
+| Where | What happens |
+|---|---|
+| Laptop, wide window | Icon and short name for every item; the current page is shaded with an accent underline |
+| Phone, narrow window | Icons only (the current page keeps its name); Home stays pinned on the left and the rest scrolls sideways, fading at the right edge; the current page is scrolled into view |
+| An app, browser tab | Strip links open in the same tab; Ctrl+click or middle-click opens a new one. Tapping the current page scrolls back to the top |
+| Home, browser tab | Strip links open new tabs, like Home's cards, so Home stays open |
+| Installed app (phone or laptop) | Home's own links and the strip open in the same window, so the phone's Back works. A **‹ Back** arrow appears at the left of the strip when there is a page to go back to (`navigation.canGoBack`); a browser tab has its own Back, so it never shows there |
+
+**Saving before leaving.** A plain click on a strip link (or on a Home link in the installed app) first calls
+`DriveStore.flushAll(2500)` in `drive-sync.js`, which saves every store with a change waiting at once instead of
+after the usual 1.5 s pause, then navigates. Signed out there is nothing to send, so it goes straight away. The
+phone's own Back gesture cannot wait: a change made in the last moment before it stays on the device and goes up
+the next time that app opens, as when a tab is closed.
+
+**Worth knowing.** Leaving Spine Bell or Asana Rounds mid-countdown in the installed app stops the sound until
+you come back (the time stays right); in a browser tab, Ctrl+click keeps the timer in its own tab. Leaving
+Strongroom locks the vault. An upload still running in Drop Tray or Shoebox is cut off if you switch away. The
+games keep their full screen and have no strip.
+
+**One list.** The ten apps (file, name, icon) live in `app-nav.js`'s `PAGES`; the build refuses to ship it if it
+differs from Home's cards in file, order, name or icon, so adding an app means adding it in both places.
+
+**Fitting into every page.** Every class the strip uses starts with `appnav-`, because pages have their own
+short class names (Dumbbell Dojo's `.more` put a dashed border and 18 px on the strip before that). The strip
+cancels any padding the page gives `<body>` (Dumbbell Dojo has 16 px) so it runs edge to edge; it re-measures
+after the page has parsed, because the older pages set that padding below the strip's script. It publishes its
+height as `--appnav-h` on `<html>`, and the pages' own sticky panels (Keycap Atlas, Strongroom and Shoebox rails,
+Hack Shelf's topic list and toolbar) sit at `calc(var(--appnav-h,0px) + …)` so they stop below it.
+
+**Testing.** `python tools/check-nav.py` (about 15 seconds, headless Chrome) opens all eleven pages at 390 and
+1280 px in light and dark: one strip, first in `<body>`, edge to edge, the same boxes and fonts as on Home (any
+page CSS that leaks in shows up), Home's order and icons, the current page marked, no sideways page scroll,
+36 px tap targets, 4.5:1 contrast, names at 1280 px, the current app in view at 390 px, and nothing of the page
+sticking underneath it. Then same-tab and Ctrl+click, Home's new tabs, and the installed app: same window, Back
+appearing and working. Chrome cannot fake `display-mode: standalone` (CDP ignores it), so the checker sets
+`window.APPNAV_TEST_INSTALLED` before the page loads; nothing is stored, so it cannot stick in a real browser.
+Those installed-app checks run with Chrome's back/forward cache switched on (Playwright turns it off by default):
+on a phone, Back brings a page back from that cache exactly as it was left, and an early version of the strip
+stopped responding after that. The checker confirms the page really came from the cache before testing it.
+Finally, with the fake Google Drive from `check-drop-tray.py`, a change made just before tapping Home must be in
+Drive before Home opens. `NAV_SHOTS=<folder>` saves a screenshot of every page.
 
 ## Light and dark
 
@@ -608,8 +661,8 @@ the old `Documents/FromClaude/FromClaude/Personal` folder and are linked from th
 
 ## Repository layout
 
-- `docs/` — the site. `tools/build-site.py` regenerates the ten pages from the sources below; run it after
-  editing any source. It leaves `docs/data/keycap-atlas.json` alone unless the gitignored `seed/export/` folder
+- `docs/` — the site. `tools/build-site.py` regenerates the ten pages from the sources below (and adds the
+  strip's script to each); run it after editing any source. It leaves `docs/data/keycap-atlas.json` alone unless the gitignored `seed/export/` folder
   is present. `docs/sw.js` is the notification service worker (not built, edit in place).
 - `keycap-atlas.html`, `strongroom.html` — page sources (artifact-style fragments; the build adds the storage layer
   and the HTML skeleton).
@@ -638,6 +691,10 @@ the old `Documents/FromClaude/FromClaude/Personal` folder and are linked from th
 - `docs/index.html` — Home, hand-written in place. The build checks that every link opens in a new tab, that the
   manifest and its icons exist, that `sw.js` is registered and the `home.json` store is wired, and refuses every
   markup-string API and a duplicate function.
+- `docs/app-nav.js` — the strip at the top of every page (not built, edit in place). The build adds its script tag
+  right after `<body>` on the ten app pages and checks that every page loads it exactly once, that its app list
+  matches Home's cards and that it uses no markup-string API.
+- `tools/check-nav.py` — the strip's checker (see *Testing* in Moving between apps).
 - `docs/manifest.webmanifest`, `docs/icons/` — what makes the site installable; `tools/make-icons.py` redraws
   the icons.
 - `tools/check-launcher.py` — Home's checker (see *Testing* in the Home section).

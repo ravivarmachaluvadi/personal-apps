@@ -116,7 +116,7 @@ label.ck .hint{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
 
 /* shelf layout: a sticky rail beside the list on a laptop, a fold-out row above it on a phone */
 .layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:18px;align-items:start}
-.railbox{position:sticky;top:10px;max-height:calc(100vh - 20px);overflow:auto}
+.railbox{position:sticky;top:calc(var(--appnav-h,0px) + 10px);max-height:calc(100vh - 20px - var(--appnav-h,0px));overflow:auto}
 .railbox>summary{cursor:pointer;list-style:none;font-weight:600;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 12px;overflow-wrap:anywhere}
 .railbox>summary::-webkit-details-marker{display:none}
 .railbox>summary::before{content:'\25B8  ';color:var(--faint)}
@@ -130,7 +130,7 @@ label.ck .hint{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
 .rtags{display:flex;flex-wrap:wrap;gap:5px}
 .rtag{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:3px 9px;font:500 12.5px "Source Code Pro",ui-monospace,monospace;cursor:pointer;min-height:28px;max-width:100%;overflow-wrap:anywhere}
 .linkish{background:none;border:0;color:var(--accent);cursor:pointer;font:inherit;font-size:13px;padding:0;text-decoration:underline dotted;text-underline-offset:3px}
-.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;position:sticky;top:0;z-index:5;background:var(--bg);padding:2px 0 8px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;position:sticky;top:var(--appnav-h,0px);z-index:5;background:var(--bg);padding:2px 0 8px}
 .toolbar #q{flex:1 1 220px}
 .toolbar select{width:auto;flex:0 0 auto}
 .filters{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 6px}
@@ -267,6 +267,7 @@ textarea.code{font:13.5px/1.5 "Source Code Pro",ui-monospace,monospace;white-spa
 </style>
 </head>
 <body>
+<script src="app-nav.js"></script>
 <main id="app">
   <header class="top">
     <h1>Hack Shelf</h1>

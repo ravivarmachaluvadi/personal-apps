@@ -16,6 +16,9 @@
       (Drive-native like Hack Shelf, plus files beside the JSON; no DELETE request either)
   seed/export/keycap/shortcuts/*.json ->  docs/data/keycap-atlas.json (starter set)
 
+Every page also gets the strip across the top (docs/app-nav.js: Home, the ten apps, Games), loaded right after
+<body> so it is in place before the page's own content.
+
 Every replacement asserts that its anchor text exists, so a drifted source fails loudly.
 """
 import json, os, glob, re, sys
@@ -44,9 +47,20 @@ HEAD = ('<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<met
         '<script src="config.js"></script>\n<script src="drive-sync.js"></script>\n')
 
 
+NAV = '<script src="app-nav.js"></script>'
+
+
 def wrap(fragment):
     head, body = fragment.split('</style>\n', 1)
-    return HEAD + head + '</style>\n</head>\n<body>\n' + body + '\n</body>\n</html>\n'
+    return HEAD + head + '</style>\n</head>\n<body>\n' + NAV + '\n' + body + '\n</body>\n</html>\n'
+
+
+def with_nav(s, anchor):
+    # put the strip's script right after the <body ...> tag found at anchor (asserted, like rep)
+    assert anchor in s, 'anchor not found: ' + anchor[:80]
+    i = s.index('<body', s.index(anchor))
+    j = s.index('>', i) + 1
+    return s[:j] + '\n' + NAV + s[j:]
 
 
 # ---------------------------------------------------------------- Keycap Atlas
@@ -128,6 +142,7 @@ wr('docs/strongroom.html', wrap(sr))
 
 # ---------------------------------------------------------------- Dumbbell Dojo
 dj = rd('site/dumbbell-dojo.html')
+dj = with_nav(dj, '</head><body>')
 dj = rep(dj, '<title>Dumbbell Dojo</title>', '<title>Dumbbell Dojo</title>\n<script src="config.js"></script>\n<script src="drive-sync.js"></script>')
 dj = rep(dj, '<div class="tagline">home strength · a pair of dumbbells · every muscle, every variety</div>',
          '<div class="tagline">home strength · a pair of dumbbells · every muscle, every variety</div>\n    <div id="sync"></div>')
@@ -229,6 +244,7 @@ wr('docs/dumbbell-dojo.html', dj)
 
 # ---------------------------------------------------------------- Tally Board
 tb = rd('site/tally-board.html')
+tb = with_nav(tb, '</head><body>')
 tb = rep(tb, '<title>Tally Board</title>', '<title>Tally Board</title>\n<script src="config.js"></script>\n<script src="drive-sync.js"></script>')
 tb = rep(tb, '          <div class="sync" id="sync" data-state="local"><i></i><span id="syncText">Local only on this device</span></div>\n', '')
 tb = rep(tb, '<div class="datel" id="dateLine"></div>\n', '<div class="datel" id="dateLine"></div>\n    <div id="sync"></div>\n')
@@ -259,6 +275,7 @@ wr('docs/tally-board.html', tb)
 
 # ---------------------------------------------------------------- Spine Bell
 sb = rd('site/spine-bell.html')
+sb = with_nav(sb, '</head><body>')
 sb = rep(sb, '<title>Spine Bell</title>', '<title>Spine Bell</title>\n<script src="config.js"></script>\n<script src="drive-sync.js"></script>')
 sb = rep(sb, '      <div class="sync" id="sync" data-state="local"><i></i><span id="syncText">Local only on this device</span></div>\n', '')
 sb = rep(sb, '<div class="chip" id="todayChip">Today · 0 blocks · stood up 0×</div>\n', '<div class="chip" id="todayChip">Today · 0 blocks · stood up 0×</div>\n    <div id="sync"></div>\n')
@@ -298,6 +315,7 @@ wr('docs/spine-bell.html', sb)
 # DriveStore directly and falls back to browser-only storage when drive-sync.js is absent
 # (which is what lets site/event-log.html be opened straight from the filesystem).
 el = rd('site/event-log.html')
+el = with_nav(el, '<body>\n<main id="app">')
 el = rep(el, '<title>Event Log</title>',
          '<title>Event Log</title>\n<script src="config.js"></script>\n<script src="drive-sync.js"></script>')
 assert "file:'event-log.json'" in el, 'anchor not found: event-log Drive store'
@@ -315,6 +333,7 @@ wr('docs/event-log.html', el)
 # change independently. The ban is wider than Event Log's: this page renders text and code the
 # user typed, so every markup-string API is refused, not only the one.
 hs = rd('site/hack-shelf.html')
+hs = with_nav(hs, '<body>\n<main id="app">')
 hs = rep(hs, '<title>Hack Shelf</title>',
          '<title>Hack Shelf</title>\n<script src="config.js"></script>\n<script src="drive-sync.js"></script>')
 assert "file:'hack-shelf.json'" in hs, 'anchor not found: hack-shelf Drive store'
@@ -330,6 +349,7 @@ wr('docs/hack-shelf.html', hs)
 # Drive-native and built like Hack Shelf, in its own block. It brings its own merge (ticks and
 # unticks combine cell by cell), so the store must be opened with it.
 ar = rd('site/asana-rounds.html')
+ar = with_nav(ar, '<body>\n<main id="app">')
 ar = rep(ar, '<title>Asana Rounds</title>',
          '<title>Asana Rounds</title>\n<script src="config.js"></script>\n<script src="drive-sync.js"></script>')
 assert "file:'asana-rounds.json'" in ar, 'anchor not found: asana-rounds Drive store'
@@ -348,6 +368,7 @@ wr('docs/asana-rounds.html', ar)
 # would sign it in with the other pages' narrow scope. Deleting must only ever move things to Drive's
 # Trash, so the build refuses a DELETE request or an Empty Trash call anywhere in the page.
 sx = rd('site/shoebox.html')
+sx = with_nav(sx, '<body data-auth="out">')
 sx = rep(sx, '<title>Shoebox</title>', '<title>Shoebox</title>\n<script src="config.js"></script>')
 assert "SCOPE='https://www.googleapis.com/auth/drive';" in sx, 'anchor not found: shoebox full-Drive scope'
 assert "TOKEN_KEY='shoebox.token';" in sx, 'anchor not found: shoebox token key'
@@ -367,6 +388,7 @@ wr('docs/shoebox.html', sx)
 # markup-string API is refused), and it keeps files in Drive, which it may only ever move to the
 # Trash, so a DELETE request or an Empty Trash call is refused as in Shoebox.
 dt = rd('site/drop-tray.html')
+dt = with_nav(dt, '<body>\n<main id="app">')
 dt = rep(dt, '<title>Drop Tray</title>',
          '<title>Drop Tray</title>\n<script src="config.js"></script>\n<script src="drive-sync.js"></script>')
 assert "file:'drop-tray.json'" in dt, 'anchor not found: drop-tray Drive store'
@@ -382,7 +404,8 @@ assert not _dupes, 'duplicate function declarations in drop tray (the later one 
 wr('docs/drop-tray.html', dt)
 
 # ---------------------------------------------------------------- launcher
-# docs/index.html is written by hand; every app and game it links to opens in a new tab, so the launcher stays open
+# docs/index.html is written by hand; in a browser tab every app and game it links to opens in a new tab, so the
+# launcher stays open (in the installed app, app-nav.js opens them in the same window instead, so Back works)
 _idx = rd('docs/index.html')
 _links = re.findall(r'<a\b[^>]*\bhref="[^"#]*\.html"[^>]*>', _idx)
 assert len(_links) >= 15, 'launcher: expected the ten apps and five games, found %d page links' % len(_links)
@@ -401,6 +424,19 @@ for _api in ('innerHTML', 'outerHTML', 'insertAdjacentHTML', 'document.write'):
 _decls = re.findall(r'^  function ([A-Za-z_$][\w$]*)\s*\(', _idx, re.M)
 _dupes = sorted({n for n in _decls if _decls.count(n) > 1})
 assert not _dupes, 'duplicate function declarations in the launcher (the later one silently wins): ' + ', '.join(_dupes)
+
+# ---------------------------------------------------------------- the strip (docs/app-nav.js)
+# One list of pages lives in app-nav.js; it must be Home's ten cards, in the same order, with the same names and icons.
+_nav = rd('docs/app-nav.js')
+_nav_pages = re.findall(r"\{ file: '([^']+)', name: '([^']+)', short: '[^']+', icon: '([^']+)' \}", _nav)
+_cards = re.findall(r'<a class="app" href="([^"]+)"[^>]*><div class="ic">([^<]+)</div><b>([^<]+)</b>', _idx)
+assert _nav_pages == [(f, n, i) for f, i, n in _cards], "app-nav.js pages must match Home's cards (file, order, name, icon):\n  strip: %s\n  Home:  %s" % (_nav_pages, [(f, n, i) for f, i, n in _cards])
+for _api in ('innerHTML', 'outerHTML', 'insertAdjacentHTML', 'document.write'):
+    assert _api not in _nav, 'app-nav.js must build the strip with createElement/textContent, never ' + _api
+for _f in [f for f, _, _ in _nav_pages] + ['index.html']:
+    _pg = rd('docs/' + _f)
+    assert _pg.count(NAV) == 1, 'docs/%s must load app-nav.js exactly once (found %d)' % (_f, _pg.count(NAV))
+    assert re.search(r'<body[^>]*>\n' + re.escape(NAV), _pg), 'docs/%s must load app-nav.js right after <body>' % _f
 
 # ---------------------------------------------------------------- starter data
 docs = []
