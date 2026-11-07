@@ -30,6 +30,10 @@ _idx = open(os.path.join(DOCS, 'index.html'), encoding='utf-8').read()
 APPS = re.findall(r'<a class="app" href="([^"]+\.html)"', _idx)
 ICONS = re.findall(r'<a class="app" href="[^"]+\.html"[^>]*><div class="ic">([^<]+)</div>', _idx)
 PAGES = ['index.html'] + APPS
+# most used first, by when each app last saved something to Drive (checked 7 Nov 2026); Shoebox keeps no file of
+# its own, so it sits after the four with changes in the last week
+ORDER = ['asana-rounds.html', 'drop-tray.html', 'strongroom.html', 'hack-shelf.html', 'shoebox.html',
+         'tally-board.html', 'spine-bell.html', 'dumbbell-dojo.html', 'keycap-atlas.html', 'event-log.html']
 INSTALLED = 'window.APPNAV_TEST_INSTALLED=true;'
 
 # the fake Google Drive (and Google's sign-in stub) from the Drop Tray checker
@@ -209,6 +213,9 @@ def layout_flow(browser, base):
                                 var t=a.querySelector('.appnav-t');return {l:r.left,r:r.right,name:!!t&&getComputedStyle(t).display!=='none'}}""")
                             check(cur['l'] >= 0 and cur['r'] <= w + 0.5, 'on a phone the current app is scrolled into view (%s..%s)' % (round(cur['l']), round(cur['r'])))
                             check(cur['name'], 'on a phone the current app still shows its name')
+                            if page == 'index.html':
+                                seen = ev(p, """()=>[...document.querySelectorAll('nav.appnav .appnav-list a.appnav-item')].slice(0,3).map(a=>{var r=a.getBoundingClientRect();return [a.getAttribute('href'),r.left>=0&&r.right<=innerWidth]})""")
+                                check(all(v for _, v in seen), 'on a phone, Home shows the three most used apps without scrolling the strip (%s)' % seen)
                         if SHOTS:
                             p.screenshot(path=os.path.join(SHOTS, 'nav-%s-%s-%d.png' % (page.replace('.html', ''), scheme, w)))
                         sk = ev(p, STICKY, 600)
@@ -380,7 +387,21 @@ def installed_flow(browser, base):
                 sw = ev(p, '()=>document.documentElement.scrollWidth')
                 check(sw <= w, 'with the Back arrow the page still fits %d px (%d)' % (w, sw))
 
-            for name, fn in (('Home, an app, Back', same_window), ('app to app and Back', app_to_app)):
+            def back_asks():
+                s.open('index.html')
+                p.locator('#apps a.app[href="asana-rounds.html"]').click()
+                p.wait_for_url('**/asana-rounds.html')
+                p.locator('#tGo').click()
+                p.wait_for_function("document.querySelector('#timer').dataset.state==='run'")
+                p.locator('nav.appnav .appnav-back').click()
+                p.locator('dialog.appnav-dlg').wait_for(state='visible', timeout=3000)
+                d = ev(p, DIALOG)
+                check(d['buttons'] == ['Stay', 'Leave anyway'], 'installed, Back asks too, with no new tab (that would leave the app) (%s)' % d['buttons'])
+                p.locator('dialog.appnav-dlg button', has_text='Leave anyway').click()
+                back_to(p, '/')
+                check(True, 'Leave anyway goes back')
+
+            for name, fn in (('Home, an app, Back', same_window), ('app to app and Back', app_to_app), ('Back with a timer running', back_asks)):
                 run_section('installed %dpx: %s' % (w, name), fn)
             SECTION[0] = 'installed %dpx' % w
             for e in s.errors:
@@ -388,6 +409,96 @@ def installed_flow(browser, base):
             check(not s.blocked, 'no request to an unexpected host: %s' % s.blocked[:3])
         finally:
             s.close()
+
+
+# ------------------------------------------------------------------ a running timer: ask before leaving
+DIALOG = r"""()=>{var d=document.querySelector('dialog.appnav-dlg');if(!d||!d.open)return {open:false};
+  function rgb(c){var m=c.match(/[\d.]+/g).map(Number);if(/^color\(srgb/.test(c))m=m.map((v,i)=>i<3?v*255:v);return m;}
+  function lum(c){var a=rgb(c).slice(0,3).map(v=>{v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4)});return 0.2126*a[0]+0.7152*a[1]+0.0722*a[2];}
+  function bg(el){while(el){var b=getComputedStyle(el).backgroundColor,m=rgb(b);if(m.length<4||m[3]>0.5)return b;el=el.parentElement;}return 'rgb(255,255,255)';}
+  var worst=99;d.querySelectorAll('h2,p,button').forEach(e=>{if(!e.getClientRects().length)return;var L1=lum(getComputedStyle(e).color),L2=lum(bg(e));worst=Math.min(worst,(Math.max(L1,L2)+0.05)/(Math.min(L1,L2)+0.05));});
+  var r=d.getBoundingClientRect(),btns=[...d.querySelectorAll('button')].filter(b=>b.getClientRects().length);
+  return {open:true,text:d.innerText,focus:document.activeElement&&document.activeElement.textContent,
+    buttons:btns.map(b=>b.textContent),tap:Math.min(...btns.map(b=>{var q=b.getBoundingClientRect();return Math.min(q.width,q.height)})),
+    inside:r.left>=0&&r.top>=0&&r.right<=innerWidth&&r.bottom<=innerHeight,contrast:Math.round(worst*100)/100};}"""
+
+
+def asana_state(p):
+    return ev(p, "()=>document.querySelector('#timer').dataset.state")
+
+
+def guard_flow(browser, base):
+    for scheme in ('light', 'dark'):
+        for w, h in ((390, 844), (1280, 800)):
+            s = Session(browser, base, viewport=(w, h), scheme=scheme)
+            p = s.page
+            try:
+                def asana():
+                    s.open('asana-rounds.html')
+                    p.locator('#tGo').click()
+                    p.wait_for_function("document.querySelector('#timer').dataset.state==='run'")
+                    p.locator('nav.appnav a.appnav-item[href="drop-tray.html"]').click()
+                    p.locator('dialog.appnav-dlg').wait_for(state='visible', timeout=3000)
+                    d = ev(p, DIALOG)
+                    check(p.url.endswith('/asana-rounds.html'), 'with the hold timer running, the strip asks instead of leaving (%s)' % p.url)
+                    check('lost' in d['text'] and 'ticks are saved' in d['text'], 'it says the countdown is lost and the ticks are not (%r)' % d['text'])
+                    check(d['buttons'] == ['Stay', 'Open in a new tab', 'Leave anyway'], 'in a browser tab: Stay, Open in a new tab, Leave anyway (%s)' % d['buttons'])
+                    check(d['focus'] == 'Stay', 'Stay is the button already chosen, so Enter keeps the timer (%r)' % d['focus'])
+                    check(d['inside'], 'the question fits on screen at %d px' % w)
+                    check(d['tap'] >= 40, 'its buttons are at least 40 px to tap (%s)' % d['tap'])
+                    check(d['contrast'] >= 4.5, 'its text contrast is at least 4.5:1 in %s (%s)' % (scheme, d['contrast']))
+                    p.keyboard.press('Escape')
+                    check(not ev(p, DIALOG)['open'] and asana_state(p) == 'run', 'Esc closes it and the timer keeps running')
+                    p.locator('nav.appnav a.appnav-item[href="drop-tray.html"]').click()
+                    p.locator('dialog.appnav-dlg button', has_text='Stay').click()
+                    check(not ev(p, DIALOG)['open'] and asana_state(p) == 'run' and p.url.endswith('/asana-rounds.html'), 'Stay closes it, stays here, and the timer keeps running')
+                    p.locator('nav.appnav a.appnav-item[href="drop-tray.html"]').click()
+                    with s.ctx.expect_page() as newp:
+                        p.locator('dialog.appnav-dlg button', has_text='Open in a new tab').click()
+                    np_ = newp.value
+                    s.watch(np_)
+                    np_.wait_for_load_state()
+                    check(np_.url.endswith('/drop-tray.html'), 'Open in a new tab opens the app beside this one (%s)' % np_.url)
+                    check(not ev(p, DIALOG)['open'] and asana_state(p) == 'run' and p.url.endswith('/asana-rounds.html'), '... and this tab keeps its timer running')
+                    np_.close()
+                    with s.ctx.expect_page() as newp:
+                        p.locator('nav.appnav a.appnav-item[href="hack-shelf.html"]').click(modifiers=['Control'])
+                    newp.value.close()
+                    check(not ev(p, DIALOG)['open'], 'Ctrl+click opens a new tab without asking (this tab stays)')
+                    p.locator('nav.appnav a.appnav-item[href="drop-tray.html"]').click()
+                    p.locator('dialog.appnav-dlg button', has_text='Leave anyway').click()
+                    p.wait_for_url('**/drop-tray.html')
+                    check(True, 'Leave anyway goes')
+                    s.open('asana-rounds.html')
+                    check(asana_state(p) == 'idle', 'back in Asana Rounds the countdown is gone, as the question said (%s)' % asana_state(p))
+                    p.locator('nav.appnav a.appnav-item[href="drop-tray.html"]').click()
+                    p.wait_for_url('**/drop-tray.html')
+                    check(True, 'with no timer running, the strip goes without asking')
+
+                def spine():
+                    s.open('spine-bell.html')
+                    p.locator('#primaryBtn').click()
+                    p.wait_for_function("/^\\d+:\\d\\d · /.test(document.title)")
+                    p.locator('nav.appnav a.appnav-item[href="./"]').click()
+                    p.locator('dialog.appnav-dlg').wait_for(state='visible', timeout=3000)
+                    d = ev(p, DIALOG)
+                    check('cannot ring' in d['text'] and 'keeps counting' in d['text'], 'Spine Bell says the bell cannot ring away from it but the time keeps counting (%r)' % d['text'])
+                    check(d['inside'] and d['contrast'] >= 4.5, 'it fits and reads at %d px in %s (%s)' % (w, scheme, d['contrast']))
+                    p.locator('dialog.appnav-dlg button', has_text='Leave anyway').click()
+                    p.wait_for_url(s.base)
+                    s.open('spine-bell.html')
+                    t = ev(p, '()=>document.title')
+                    check(re.match(r'^\d+:\d\d · ', t) is not None, 'back in Spine Bell the block is still counting down, as the question said (%r)' % t)
+                    p.locator('#resetBtn').click()
+
+                for name, fn in (('Asana Rounds hold timer', asana), ('Spine Bell work block', spine)):
+                    run_section('ask before leaving %s %dpx: %s' % (scheme, w, name), fn)
+                SECTION[0] = 'ask before leaving %s %dpx' % (scheme, w)
+                for e in s.errors:
+                    check(False, 'browser error: ' + e)
+                check(not s.blocked, 'no request to an unexpected host: %s' % s.blocked[:3])
+            finally:
+                s.close()
 
 
 # ------------------------------------------------------------------ a change made just before switching reaches Drive
@@ -434,6 +545,8 @@ def main():
     if SHOTS:
         os.makedirs(SHOTS, exist_ok=True)
     check(len(APPS) == 10, 'Home lists ten app cards (%d)' % len(APPS))
+    SECTION[0] = 'order'
+    check(APPS == ORDER, 'Home and the strip list the apps most used first\n      want: %s\n      got:  %s' % (ORDER, APPS))
     httpd, base = serve(DOCS)
     try:
         with sync_playwright() as pw:
@@ -446,6 +559,8 @@ def main():
             bf = pw.chromium.launch(channel='chrome', headless=not HEADED, ignore_default_args=['--disable-back-forward-cache'])
             installed_flow(bf, base)
             bf.close()
+            print('== ask before leaving a running timer')
+            guard_flow(browser, base)
             save_flow(browser, base)
             browser.close()
     finally:

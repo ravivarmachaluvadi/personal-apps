@@ -308,6 +308,7 @@ sb = rep(sb, "Add this page to your home screen for one-tap access.</p>",
          "Add this page to your home screen for one-tap access. Counters and the diary are saved to <code>Personal Apps/spine-bell.json</code> in your Google Drive and follow you to every device you sign in on.</p>")
 for stale in ['initSync', 'setSync(', 'pushDay', 'DB.doc', 'firstSnap']:
     assert stale not in sb, 'stale reference in spine bell: ' + stale
+assert 'window.APPNAV_GUARD=' in sb, 'spine bell must ask the strip to check before leaving a running countdown'
 wr('docs/spine-bell.html', sb)
 
 # ---------------------------------------------------------------- Event Log
@@ -355,6 +356,7 @@ ar = rep(ar, '<title>Asana Rounds</title>',
 assert "file:'asana-rounds.json'" in ar, 'anchor not found: asana-rounds Drive store'
 assert "cacheKey:'asanarounds.doc'" in ar, 'anchor not found: asana-rounds cache key'
 assert 'merge:mergeDocs' in ar, 'asana rounds must open its store with its own cell-by-cell merge'
+assert 'window.APPNAV_GUARD=' in ar, 'asana rounds must ask the strip to check before leaving a running hold timer'
 for _api in ('innerHTML', 'outerHTML', 'insertAdjacentHTML', 'document.write'):
     assert _api not in ar, 'asana rounds must build DOM with h(), never ' + _api
 _decls = re.findall(r'^  function ([A-Za-z_$][\w$]*)\s*\(', ar, re.M)

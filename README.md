@@ -116,7 +116,10 @@ links are exactly the planned ones, the manifest and its icons, the service work
 ## Moving between apps: the strip, Home and Back
 
 Every page (Home and the ten apps) starts with a strip: **Home**, then the ten apps in Home's order, then
-**Games** (Home's Games section). It is `docs/app-nav.js`, one shared file, loaded right after `<body>` (the build
+**Games** (Home's Games section). Home and the strip list the apps most used first, going by when each last saved
+something to Drive (checked 7 Nov 2026): Asana Rounds, Drop Tray, Strongroom, Hack Shelf, then Shoebox (it keeps
+no file of its own, so it cannot be dated), Tally Board, Spine Bell, Dumbbell Dojo, Keycap Atlas, Event Log. On a
+phone the first few are on screen without scrolling the strip. It is `docs/app-nav.js`, one shared file, loaded right after `<body>` (the build
 adds the tag to every app page; Home has it by hand), so it is in place before the page's own content and nothing
 jumps. It stays stuck to the top while you scroll.
 
@@ -134,10 +137,21 @@ after the usual 1.5 s pause, then navigates. Signed out there is nothing to send
 phone's own Back gesture cannot wait: a change made in the last moment before it stays on the device and goes up
 the next time that app opens, as when a tab is closed.
 
-**Worth knowing.** Leaving Spine Bell or Asana Rounds mid-countdown in the installed app stops the sound until
-you come back (the time stays right); in a browser tab, Ctrl+click keeps the timer in its own tab. Leaving
-Strongroom locks the vault. An upload still running in Drop Tray or Shoebox is cut off if you switch away. The
-games keep their full screen and have no strip.
+**Asking before leaving a running timer.** A page may define `window.APPNAV_GUARD`, a function that returns a
+sentence while leaving would cost something, or nothing. When it returns one, the strip and the Back arrow first
+show **Leave this page?** with that sentence and three buttons: **Stay** (already chosen, so Enter, Esc or a tap
+outside keep you there), **Open in a new tab** (browser tab only; in the installed app a new tab would drop you
+out of it) and **Leave anyway**. Ctrl+click never asks, because it keeps the page open. Two pages use it:
+
+| Page | Asks while | What it says leaving costs |
+|---|---|---|
+| Spine Bell | a work block, break or timer is running (not paused) | Nothing can ring while you are away. The run is saved, so the time keeps counting, and on return a block that ended says *Timer ended while this page was closed* (it does not ring then) |
+| Asana Rounds | the hold timer is running or paused | The countdown is lost: it lives only in the page, so on return the timer starts over. The ticks are saved and are not lost |
+
+The phone's own Back gesture does not ask; only the strip and the Back arrow do.
+
+**Worth knowing.** Leaving Strongroom locks the vault. An upload still running in Drop Tray or Shoebox is cut off
+if you switch away. The games keep their full screen and have no strip.
 
 **One list.** The ten apps (file, name, icon) live in `app-nav.js`'s `PAGES`; the build refuses to ship it if it
 differs from Home's cards in file, order, name or icon, so adding an app means adding it in both places.
@@ -159,6 +173,10 @@ appearing and working. Chrome cannot fake `display-mode: standalone` (CDP ignore
 Those installed-app checks run with Chrome's back/forward cache switched on (Playwright turns it off by default):
 on a phone, Back brings a page back from that cache exactly as it was left, and an early version of the strip
 stopped responding after that. The checker confirms the page really came from the cache before testing it.
+Before leaving a running timer, in both themes at both widths: Asana Rounds and Spine Bell ask instead of leaving;
+the question fits, reads at 4.5:1 and has Stay chosen; Esc, Stay and Open in a new tab keep the timer running;
+Ctrl+click does not ask; Leave anyway goes; and what each says is checked against what really happens on return
+(Asana's countdown gone, Spine Bell's block still counting). Installed, Back asks too, with no new-tab button.
 Finally, with the fake Google Drive from `check-drop-tray.py`, a change made just before tapping Home must be in
 Drive before Home opens. `NAV_SHOTS=<folder>` saves a screenshot of every page.
 
@@ -467,6 +485,9 @@ The now card has a countdown for the asana on screen. **Each asana keeps its own
 
 A locked phone or a page in the background cannot ring: phone browsers pause the page. The time stays right and
 the chime plays when you come back. (Dumbbell Dojo's notifications and Android Clock hand-off are not used here.)
+Leaving the page is different: the hold timer is kept only in the open page, so going to another app loses it.
+The strip at the top therefore asks first while it runs or is paused (`window.APPNAV_GUARD`; see
+[Moving between apps](#moving-between-apps-the-strip-home-and-back)).
 
 ### Data shape
 

@@ -434,6 +434,10 @@ footer strong{color:var(--danger)}
   /* ---------- helpers ---------- */
   function fmt(ms){var s=Math.max(0,Math.ceil(ms/1000));var m=Math.floor(s/60);s=s%60;return (m<10?'0':'')+m+':'+(s<10?'0':'')+s;}
   function isRunning(){return (R.mode==='work'||R.mode==='break'||R.mode==='timer')&&!R.paused;}
+  /* the strip at the top (app-nav.js) asks before leaving while this is set: away from this page nothing can ring.
+     The run is saved, so the time keeps counting, and on return a block that ended says so (boot, below). */
+  window.APPNAV_GUARD=function(){if(!isRunning())return '';var what=R.mode==='work'?'Your work block':R.mode==='break'?'Your break':'Your timer';
+    return what+' is running. On another page Spine Bell cannot ring. The time keeps counting, and when you come back it tells you if it has ended.';};
   function fmtDur(ms){var m=Math.round(ms/60000);if(m<1)return Math.max(1,Math.round(ms/1000))+' s';var h=Math.floor(m/60);return h?h+' h'+(m%60?' '+(m%60)+' min':''):m+' min';}
   function clockAt(ms){var d=new Date(Date.now()+ms);return pad(d.getHours())+':'+pad(d.getMinutes());}
   function timerMs(){var u=S.timerUntil;if(/^\d{2}:\d{2}$/.test(u)){var n=new Date(),t=new Date(n.getFullYear(),n.getMonth(),n.getDate(),+u.slice(0,2),+u.slice(3,5),0,0);if(t<=n)t.setDate(t.getDate()+1);return t-n;}return Math.max(1,Math.min(720,+S.timerMin||15))*60000;}

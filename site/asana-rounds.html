@@ -601,6 +601,10 @@ input[type=text],input[type=number],select{font:15px Lexend,system-ui,sans-serif
     setPoseSec(c.id,sec);
     if(was==='run')startTimer();else resetTimer();
   }
+  /* the strip at the top (app-nav.js) asks before leaving while this is set: the hold timer lives only in this page,
+     so leaving loses it (the ticks are in the Drive store and are not) */
+  window.APPNAV_GUARD=function(){if(T.state!=='run'&&T.state!=='paused')return '';
+    return 'The hold timer for '+T.name+' is '+(T.state==='run'?'running':'paused')+'. If you leave this page the countdown is lost; your ticks are saved.';};
   function onTimerGo(){VIEW=viewPart();ensureAudio();stopRing();if(T.state==='run')pauseTimer();else if(T.state==='paused')resumeTimer();else startTimer();}
   function openCustom(){
     var row=$('#tCustom'),open=row.hidden,c=curCell(),sec=c?c.sec:T.sec;
