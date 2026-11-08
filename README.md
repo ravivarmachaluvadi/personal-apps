@@ -1,9 +1,9 @@
 # Personal Apps
 
-Ten single-file web apps that keep everything in **your own Google Drive**, not in any app's database. Nine
+Eleven single-file web apps that keep everything in **your own Google Drive**, not in any app's database. Ten
 of them store their data as one JSON file each (Drop Tray also keeps the pictures and files you send through it,
-as ordinary files beside its JSON file); the tenth, **Shoebox**, is a calmer way to look after the photos
-and PDFs already in your Drive. Open them from a laptop or a phone, sign in with Google once per device, and every device sees the
+and Sign Desk the signed copies you choose to keep, as ordinary files beside its JSON file); the eleventh,
+**Shoebox**, is a calmer way to look after the photos and PDFs already in your Drive. Open them from a laptop or a phone, sign in with Google once per device, and every device sees the
 same data. The **Continue with Google** button sits in the header of every page; until you tap it on a device,
 that device keeps its data only in its own browser (the header then says *changes waiting*).
 
@@ -19,12 +19,13 @@ that device keeps its data only in its own browser (the header then says *change
 | Asana Rounds | `docs/asana-rounds.html` | `asana-rounds.json` — the routine, and each day's morning and evening ticks |
 | Shoebox | `docs/shoebox.html` | none — it works on your Drive's own files and folders ([details](#shoebox-your-photos-and-papers-in-drive)) |
 | Drop Tray | `docs/drop-tray.html` | `drop-tray.json` — text you sent between devices; pictures and files in `Drop Tray/` ([details](#drop-tray-one-clipboard-for-all-your-devices)) |
+| Sign Desk | `docs/sign-desk.html` | `sign-desk.json` — your signature and initials; signed copies you keep in `Sign Desk/` ([details](#sign-desk-sign-a-pdf-or-a-photo-anywhere)) |
 
-`docs/index.html` is the **Home** page: today's to-dos (`home.json`), then a launcher for all ten apps, the
+`docs/index.html` is the **Home** page: today's to-dos (`home.json`), then a launcher for all eleven apps, the
 Learning Hub, career links, the tools that run only on this laptop, and the games. In a browser tab every link
 opens in a new tab, so Home stays open (the build checks every link). It can be installed on a phone as an app;
 see [Home](#home-todays-to-dos-and-every-link). Every page, Home included, has a strip across the top with Home and
-all ten apps; see [Moving between apps](#moving-between-apps-the-strip-home-and-back). `docs/drive-sync.js` is the shared storage layer; `docs/config.js`
+all eleven apps; see [Moving between apps](#moving-between-apps-the-strip-home-and-back). `docs/drive-sync.js` is the shared storage layer; `docs/config.js`
 holds the one setting you must fill in (the Google OAuth client ID).
 
 ## How the storage works
@@ -71,7 +72,7 @@ On a phone: open the site, sign in, and use *Install app* (see [Home](#home-toda
 | Section | What it holds |
 |---|---|
 | Today | The to-do list: add (with an optional due date), tick, untick, delete with *Undo*, and *Paste a list* (one to-do per line; `-`, `*`, `1.` and `[ ]` bullets are dropped) |
-| Apps | The ten app cards; on a phone (560 px or narrower) two columns, icon and name only |
+| Apps | The eleven app cards; on a phone (560 px or narrower) two columns, icon and name only |
 | Learning | The Learning Hub on GitHub Pages and its seven tools; these open on the Coforge laptop too |
 | Career | Portfolio, the Java practice website (Code Viewer's website copy on the Learning Hub) and the `java-interview-practice` repo |
 | On this laptop | Code Viewer (`127.0.0.1:8025`), Java Concurrency Learning Tool (`127.0.0.1:8028`), Home Hub (`localhost:8765`); each starts from its Desktop icon and works only while running |
@@ -115,10 +116,10 @@ links are exactly the planned ones, the manifest and its icons, the service work
 
 ## Moving between apps: the strip, Home and Back
 
-Every page (Home and the ten apps) starts with a strip: **Home**, then the ten apps in Home's order, then
+Every page (Home and the eleven apps) starts with a strip: **Home**, then the eleven apps in Home's order, then
 **Games** (Home's Games section). Home and the strip list the apps most used first, going by when each last saved
 something to Drive (checked 7 Nov 2026): Asana Rounds, Drop Tray, Strongroom, Hack Shelf, then Shoebox (it keeps
-no file of its own, so it cannot be dated), Tally Board, Spine Bell, Dumbbell Dojo, Keycap Atlas, Event Log. On a
+no file of its own, so it cannot be dated), Tally Board, Spine Bell, Dumbbell Dojo, Keycap Atlas, Event Log, and Sign Desk (new on 8 Nov 2026). On a
 phone the first few are on screen without scrolling the strip. It is `docs/app-nav.js`, one shared file, loaded right after `<body>` (the build
 adds the tag to every app page; Home has it by hand), so it is in place before the page's own content and nothing
 jumps. It stays stuck to the top while you scroll.
@@ -153,7 +154,7 @@ The phone's own Back gesture does not ask; only the strip and the Back arrow do.
 **Worth knowing.** Leaving Strongroom locks the vault. An upload still running in Drop Tray or Shoebox is cut off
 if you switch away. The games keep their full screen and have no strip.
 
-**One list.** The ten apps (file, name, icon) live in `app-nav.js`'s `PAGES`; the build refuses to ship it if it
+**One list.** The eleven apps (file, name, icon) live in `app-nav.js`'s `PAGES`; the build refuses to ship it if it
 differs from Home's cards in file, order, name or icon, so adding an app means adding it in both places.
 
 **Fitting into every page.** Every class the strip uses starts with `appnav-`, because pages have their own
@@ -163,7 +164,7 @@ after the page has parsed, because the older pages set that padding below the st
 height as `--appnav-h` on `<html>`, and the pages' own sticky panels (Keycap Atlas, Strongroom and Shoebox rails,
 Hack Shelf's topic list and toolbar) sit at `calc(var(--appnav-h,0px) + …)` so they stop below it.
 
-**Testing.** `python tools/check-nav.py` (about 15 seconds, headless Chrome) opens all eleven pages at 390 and
+**Testing.** `python tools/check-nav.py` (about 15 seconds, headless Chrome) opens all twelve pages at 390 and
 1280 px in light and dark: one strip, first in `<body>`, edge to edge, the same boxes and fonts as on Home (any
 page CSS that leaks in shows up), Home's order and icons, the current page marked, no sideways page scroll,
 36 px tap targets, 4.5:1 contrast, names at 1280 px, the current app in view at 390 px, and nothing of the page
@@ -660,6 +661,43 @@ contrast.
 drop arrives while the page is closed, the phone's Share menu sending to Drop Tray, colouring code, encryption,
 sending a whole folder.
 
+## Sign Desk: sign a PDF or a photo anywhere
+
+For signing when you are away from home, or the laptop is off. At home, Home Hub signs the same way (and also
+signs Word files, which a browser cannot open). Sign Desk *is* Home Hub's signer: `docs/sign.js` is Home Hub's
+`web/sign.js`, unchanged, so the two look and work alike.
+
+| Step | What happens |
+|---|---|
+| Open | **Choose a PDF or photo to sign**, drag it onto the page, or copy it and press Ctrl+V. A Word file is not opened: the page says to save it as PDF in Word, or to sign it with Home Hub at home |
+| Sign | **Signature**, **Initials**, **Text** (today's date, in handwriting or typed), **Tick ✓** (a tick or a cross in a form's box), **Pen**, and **Every page** for a selected piece. Blue or black ink |
+| Save | On a laptop the signed copy downloads at once (`name (signed).pdf`); on a phone the page offers **Share…** (where the browser can share files) and **Download**. The switch *Also copy to Google Drive › Personal Apps › Sign Desk* keeps a copy there too; it is on until you turn it off, per device |
+
+**Your signature and initials** are drawn the first time you press Signature or Initials, and kept in
+`Personal Apps/sign-desk.json` in your Drive, so every device you sign in on has them; the page shows both under
+*Your signature and initials*. Signed in, the signer waits for its first look at Drive (at most 5 s) before
+offering an empty pad, so a new device never replaces your saved signature with a quick scribble. Signed out,
+the page says to continue with Google first. Documents themselves are never stored, except the signed copies you
+keep.
+
+**Not the same signature as Home Hub's yet.** Home Hub keeps its own on the laptop; drawing it once in each app is
+needed for now. Making the two share one is the next step.
+
+**Libraries.** PDF.js 6.3.289 and pdf-lib 1.17.1 from cdnjs, the Caveat 5.3.0 font from jsDelivr: the same
+versions Home Hub serves from its own folder.
+
+**It is a picture of your signature**, as when you sign on paper and scan it. It is not an Aadhaar eSign or a DSC
+signature, which some government forms require.
+
+**Testing.** `python tools/check-sign-desk.py` drives the built page in headless Chrome as a laptop and a phone on
+the fake Google Drive from `check-drop-tray.py`, then the source page with no Drive. PDF.js, pdf-lib and the font
+are answered from Home Hub's copies beside this repo (no internet needed); if Home Hub is not there they come from
+the CDNs and the checker says so. It covers: `docs/sign.js` being Home Hub's; signed out, then in; Word and other
+files explained, not opened; signature, initials on every page and ticks on a plain page, a page turned 90 degrees
+and a page with a crop box, each landing inside its box in the downloaded PDF and nowhere outside it; the copy in
+Drive (the same bytes); the phone getting the laptop's signature, Share and Download, the switch off and
+remembered; paste and drag; 390 and 1280 px in both themes with 4.5:1 contrast.
+
 ## Sign-in details worth knowing
 
 - The Google token lasts one hour. After that the pages show *Continue with Google* again; one tap, no consent
@@ -682,7 +720,7 @@ the old `Documents/FromClaude/FromClaude/Personal` folder and are linked from th
 
 ## Repository layout
 
-- `docs/` — the site. `tools/build-site.py` regenerates the ten pages from the sources below (and adds the
+- `docs/` — the site. `tools/build-site.py` regenerates the eleven pages from the sources below (and adds the
   strip's script to each); run it after editing any source. It leaves `docs/data/keycap-atlas.json` alone unless the gitignored `seed/export/` folder
   is present. `docs/sw.js` is the notification service worker (not built, edit in place).
 - `keycap-atlas.html`, `strongroom.html` — page sources (artifact-style fragments; the build adds the storage layer
@@ -709,11 +747,16 @@ the old `Documents/FromClaude/FromClaude/Personal` folder and are linked from th
   duplicate function are refused) and, like Shoebox, refused if it ever sends `DELETE` or empties the Trash.
   The build also asserts its 8-second poll and its 60-day tombstones.
 - `tools/check-drop-tray.py` — Drop Tray's checker (see *Testing* in the Drop Tray section).
+- `site/sign-desk.html` — page source for Sign Desk, built like Drop Tray. It loads `../docs/sign.js`, which the
+  build points at `sign.js`.
+- `docs/sign.js` — Home Hub's signer (`home-hub/web/sign.js`), copied unchanged; not built. The build and
+  `tools/check-sign-desk.py` refuse it if it differs from Home Hub's copy beside this repo.
+- `tools/check-sign-desk.py` — Sign Desk's checker (see *Testing* in the Sign Desk section).
 - `docs/index.html` — Home, hand-written in place. The build checks that every link opens in a new tab, that the
   manifest and its icons exist, that `sw.js` is registered and the `home.json` store is wired, and refuses every
   markup-string API and a duplicate function.
 - `docs/app-nav.js` — the strip at the top of every page (not built, edit in place). The build adds its script tag
-  right after `<body>` on the ten app pages and checks that every page loads it exactly once, that its app list
+  right after `<body>` on the eleven app pages and checks that every page loads it exactly once, that its app list
   matches Home's cards and that it uses no markup-string API.
 - `tools/check-nav.py` — the strip's checker (see *Testing* in Moving between apps).
 - `docs/manifest.webmanifest`, `docs/icons/` — what makes the site installable; `tools/make-icons.py` redraws

@@ -1,4 +1,4 @@
-/* app-nav.js — the strip across the top of every Personal Apps page: Home, the ten apps, then Games.
+/* app-nav.js — the strip across the top of every Personal Apps page: Home, the eleven apps, then Games.
  *
  * tools/build-site.py puts <script src="app-nav.js"></script> right after each app page's <body>, and Home has
  * it by hand, so the strip is in place before the page's own content is parsed and nothing jumps on load.
@@ -39,7 +39,8 @@
     { file: 'spine-bell.html', name: 'Spine Bell', short: 'Spine Bell', icon: '🔔' },
     { file: 'dumbbell-dojo.html', name: 'Dumbbell Dojo', short: 'Dojo', icon: '🏋️' },
     { file: 'keycap-atlas.html', name: 'Keycap Atlas', short: 'Keycap', icon: '⌨️' },
-    { file: 'event-log.html', name: 'Event Log', short: 'Event Log', icon: '🗓️' }
+    { file: 'event-log.html', name: 'Event Log', short: 'Event Log', icon: '🗓️' },
+    { file: 'sign-desk.html', name: 'Sign Desk', short: 'Sign', icon: '✍️' }
   ];
   var NS = 'http://www.w3.org/2000/svg';
   var ICON = { home: 'M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z', back: 'M15 5l-7 7 7 7' };
@@ -52,6 +53,8 @@
     catch (e) { return false; }
   })();
 
+  /* items are padded 7 px a side (9 px until Sign Desk made eleven apps): at 1280 px every name then fits, with
+     about 35 px to spare in Chrome on Windows; when they do not fit, the strip shows icons only (appnav-compact) */
   var CSS = '.appnav{display:block;position:sticky;top:0;z-index:15;margin:0;padding:0;background:var(--surface,#fff);color:var(--text,#1c2129);' +
       'border-bottom:1px solid var(--line,#d4d9e1);font:600 13.5px/1.2 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;letter-spacing:0;' +
       '-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;text-align:left}' +
@@ -61,7 +64,7 @@
     '.appnav-list::-webkit-scrollbar{display:none}' +
     '.appnav-list.appnav-more{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent)}' +
     '.appnav a.appnav-item,.appnav button.appnav-back{display:inline-flex;align-items:center;justify-content:center;gap:6px;flex:none;box-sizing:border-box;' +
-      'min-width:38px;height:38px;margin:0;padding:0 9px;border:0;border-radius:9px;background:transparent;color:inherit;font:inherit;' +
+      'min-width:38px;height:38px;margin:0;padding:0 7px;border:0;border-radius:9px;background:transparent;color:inherit;font:inherit;' +
       'text-decoration:none;white-space:nowrap;cursor:pointer;box-shadow:none}' +
     '.appnav a.appnav-item:hover,.appnav button.appnav-back:hover{background:var(--surface-2,#f2f4f7);text-decoration:none}' +
     '.appnav a.appnav-item[aria-current="page"]{background:var(--surface-2,#f2f4f7);box-shadow:inset 0 -3px 0 var(--accent,#e0562b)}' +

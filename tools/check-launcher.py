@@ -35,7 +35,7 @@ EXTERNAL = {
     'http://localhost:8765/',
 }
 APPS = ['keycap-atlas.html', 'strongroom.html', 'dumbbell-dojo.html', 'tally-board.html', 'spine-bell.html',
-        'event-log.html', 'hack-shelf.html', 'asana-rounds.html', 'shoebox.html', 'drop-tray.html']
+        'event-log.html', 'hack-shelf.html', 'asana-rounds.html', 'shoebox.html', 'drop-tray.html', 'sign-desk.html']
 GAMES = ['river-rapids/river-rapids.html', 'sky-rings/sky-rings.html', 'sound-safari/sound-safari.html',
          'vroom-valley/vroom-valley.html', 'word-racer/word-racer.html']
 

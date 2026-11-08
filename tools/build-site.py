@@ -14,9 +14,11 @@
       (its own full-Drive sign-in; only config.js is injected, and any DELETE request is refused)
   site/drop-tray.html                 ->  docs/drop-tray.html
       (Drive-native like Hack Shelf, plus files beside the JSON; no DELETE request either)
+  site/sign-desk.html                 ->  docs/sign-desk.html
+      (Drive-native like Drop Tray; its signer docs/sign.js is Home Hub's web/sign.js, unchanged)
   seed/export/keycap/shortcuts/*.json ->  docs/data/keycap-atlas.json (starter set)
 
-Every page also gets the strip across the top (docs/app-nav.js: Home, the ten apps, Games), loaded right after
+Every page also gets the strip across the top (docs/app-nav.js: Home, the eleven apps, Games), loaded right after
 <body> so it is in place before the page's own content.
 
 Every replacement asserts that its anchor text exists, so a drifted source fails loudly.
@@ -405,12 +407,42 @@ _dupes = sorted({n for n in _decls if _decls.count(n) > 1})
 assert not _dupes, 'duplicate function declarations in drop tray (the later one silently wins): ' + ', '.join(_dupes)
 wr('docs/drop-tray.html', dt)
 
+# ---------------------------------------------------------------- Sign Desk
+# Signing a PDF or a photo anywhere. The signer is Home Hub's web/sign.js, kept here unchanged as docs/sign.js
+# (not built: copy it across when Home Hub's changes); the source loads it as ../docs/sign.js so it opens
+# straight from the filesystem. Built like Drop Tray: the page shows names you chose, so every markup-string
+# API is refused, and it keeps signed copies in Drive, so no DELETE request and no Empty Trash.
+sd = rd('site/sign-desk.html')
+sd = with_nav(sd, '<body>\n<main id="app">')
+sd = rep(sd, '<title>Sign Desk</title>',
+         '<title>Sign Desk</title>\n<script src="config.js"></script>\n<script src="drive-sync.js"></script>')
+sd = rep(sd, '<script src="../docs/sign.js"></script>', '<script src="sign.js"></script>')
+assert "file:'sign-desk.json'" in sd, 'anchor not found: sign-desk Drive store'
+assert "cacheKey:'signdesk.doc'" in sd, 'anchor not found: sign-desk cache key'
+assert 'HubSign.setup(' in sd and "keys:'signdesk.'" in sd, 'sign desk must set the signer up with its own store and keys'
+assert not re.search(r"""['"]DELETE['"]""", sd), 'sign desk must never send DELETE'
+assert 'emptyTrash' not in sd, 'sign desk must never empty Drive\'s Trash'
+_sj = rd('docs/sign.js')
+for _api in ('innerHTML', 'outerHTML', 'insertAdjacentHTML', 'document.write'):
+    assert _api not in sd, 'sign desk must build DOM with h(), never ' + _api
+    assert _api not in _sj, 'docs/sign.js must build DOM with createElement, never ' + _api
+assert 'window.HubSign={open:open,isOpen:isOpen,setup:setup};' in _sj, 'docs/sign.js is not a signer HubSign.setup can set up'
+_hh = os.path.join(os.path.dirname(ROOT), 'home-hub', 'web', 'sign.js')
+if os.path.isfile(_hh):
+    assert open(_hh, encoding='utf-8').read() == _sj, 'docs/sign.js differs from Home Hub\'s web/sign.js: copy it across'
+else:
+    print('SKIPPED: docs/sign.js was not compared with Home Hub\'s (../home-hub is not beside this repo)')
+_decls = re.findall(r'^  function ([A-Za-z_$][\w$]*)\s*\(', sd, re.M)
+_dupes = sorted({n for n in _decls if _decls.count(n) > 1})
+assert not _dupes, 'duplicate function declarations in sign desk (the later one silently wins): ' + ', '.join(_dupes)
+wr('docs/sign-desk.html', sd)
+
 # ---------------------------------------------------------------- launcher
 # docs/index.html is written by hand; in a browser tab every app and game it links to opens in a new tab, so the
 # launcher stays open (in the installed app, app-nav.js opens them in the same window instead, so Back works)
 _idx = rd('docs/index.html')
 _links = re.findall(r'<a\b[^>]*\bhref="[^"#]*\.html"[^>]*>', _idx)
-assert len(_links) >= 15, 'launcher: expected the ten apps and five games, found %d page links' % len(_links)
+assert len(_links) >= 16, 'launcher: expected the eleven apps and five games, found %d page links' % len(_links)
 _all_links = [a for a in re.findall(r'<a\b[^>]*\bhref="[^"]*"[^>]*>', _idx) if not re.search(r'href="#', a)]
 _same_tab = [a for a in _all_links if 'target="_blank"' not in a or 'rel="noopener"' not in a]
 assert not _same_tab, 'launcher links must open in a new tab (target="_blank" rel="noopener"): ' + ', '.join(re.search(r'href="([^"]*)"', a).group(1) for a in _same_tab)
@@ -428,7 +460,7 @@ _dupes = sorted({n for n in _decls if _decls.count(n) > 1})
 assert not _dupes, 'duplicate function declarations in the launcher (the later one silently wins): ' + ', '.join(_dupes)
 
 # ---------------------------------------------------------------- the strip (docs/app-nav.js)
-# One list of pages lives in app-nav.js; it must be Home's ten cards, in the same order, with the same names and icons.
+# One list of pages lives in app-nav.js; it must be Home's eleven cards, in the same order, with the same names and icons.
 _nav = rd('docs/app-nav.js')
 _nav_pages = re.findall(r"\{ file: '([^']+)', name: '([^']+)', short: '[^']+', icon: '([^']+)' \}", _nav)
 _cards = re.findall(r'<a class="app" href="([^"]+)"[^>]*><div class="ic">([^<]+)</div><b>([^<]+)</b>', _idx)
@@ -451,6 +483,6 @@ docs.sort(key=lambda d: d.get('order', 0))
 if docs:
     with open(os.path.join(DOCS, 'data', 'keycap-atlas.json'), 'w', encoding='utf-8') as f:
         json.dump({'format': 'keycap-atlas', 'v': 1, 'shortcuts': docs}, f, ensure_ascii=False)
-    print('built docs/: keycap-atlas, strongroom, dumbbell-dojo, tally-board, spine-bell, event-log, hack-shelf, asana-rounds, shoebox, drop-tray, data/keycap-atlas.json (%d shortcuts)' % len(docs))
+    print('built docs/: keycap-atlas, strongroom, dumbbell-dojo, tally-board, spine-bell, event-log, hack-shelf, asana-rounds, shoebox, drop-tray, sign-desk, data/keycap-atlas.json (%d shortcuts)' % len(docs))
 else:
-    print('built docs/: keycap-atlas, strongroom, dumbbell-dojo, tally-board, spine-bell, event-log, hack-shelf, asana-rounds, shoebox, drop-tray (seed/export absent, data/keycap-atlas.json kept as is)')
+    print('built docs/: keycap-atlas, strongroom, dumbbell-dojo, tally-board, spine-bell, event-log, hack-shelf, asana-rounds, shoebox, drop-tray, sign-desk (seed/export absent, data/keycap-atlas.json kept as is)')

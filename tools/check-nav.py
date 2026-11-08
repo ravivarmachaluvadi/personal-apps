@@ -1,4 +1,4 @@
-"""Strip checker: the row of Home, the ten apps and Games across the top of every page (docs/app-nav.js).
+"""Strip checker: the row of Home, the eleven apps and Games across the top of every page (docs/app-nav.js).
 
   python tools/check-nav.py            # docs/ as built
   python tools/check-nav.py --headed   # watch it
@@ -33,7 +33,8 @@ PAGES = ['index.html'] + APPS
 # most used first, by when each app last saved something to Drive (checked 7 Nov 2026); Shoebox keeps no file of
 # its own, so it sits after the four with changes in the last week
 ORDER = ['asana-rounds.html', 'drop-tray.html', 'strongroom.html', 'hack-shelf.html', 'shoebox.html',
-         'tally-board.html', 'spine-bell.html', 'dumbbell-dojo.html', 'keycap-atlas.html', 'event-log.html']
+         'tally-board.html', 'spine-bell.html', 'dumbbell-dojo.html', 'keycap-atlas.html', 'event-log.html',
+         'sign-desk.html']   # Sign Desk, new on 8 Nov 2026, last until it has been used
 INSTALLED = 'window.APPNAV_TEST_INSTALLED=true;'
 
 # the fake Google Drive (and Google's sign-in stub) from the Drop Tray checker
@@ -190,7 +191,7 @@ def layout_flow(browser, base):
                         else:
                             diff = {k: (v, home_look.get(k)) for k, v in look['parts'].items() if v != home_look.get(k)}
                             check(not diff, 'the strip looks exactly as on Home (the page\'s own CSS leaks in: %s)' % diff)
-                        check(st['hrefs'] == hrefs_expected(page), 'Home, the ten apps in Home\'s order, then Games\n      got: %s' % st['hrefs'])
+                        check(st['hrefs'] == hrefs_expected(page), 'Home, the eleven apps in Home\'s order, then Games\n      got: %s' % st['hrefs'])
                         want = './' if page == 'index.html' else page
                         check(st['current'] == [want], 'only this page is marked current (%s)' % st['current'])
                         check(all(st['labels']), 'every item has a name for screen readers and the icon-only view')
@@ -544,7 +545,7 @@ def save_flow(browser, base):
 def main():
     if SHOTS:
         os.makedirs(SHOTS, exist_ok=True)
-    check(len(APPS) == 10, 'Home lists ten app cards (%d)' % len(APPS))
+    check(len(APPS) == 11, 'Home lists eleven app cards (%d)' % len(APPS))
     SECTION[0] = 'order'
     check(APPS == ORDER, 'Home and the strip list the apps most used first\n      want: %s\n      got:  %s' % (ORDER, APPS))
     httpd, base = serve(DOCS)
