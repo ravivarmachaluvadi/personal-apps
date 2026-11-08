@@ -1,0 +1,84 @@
+{
+ "v": 1,
+ "app": "sign-desk",
+ "items": {
+  "pmhdfc0001": {
+   "id": "pmhdfc0001",
+   "kind": "sig",
+   "name": "HDFC",
+   "png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAACCAIAAAD0PzoJAAAADklEQVR4nGPQwAAMmEIAawYFoQ3xIZ4AAAAASUVORK5CYII=",
+   "aspect": 3,
+   "made": 1762590000000,
+   "updatedAt": 1762590000000
+  },
+  "pmini00002": {
+   "id": "pmini00002",
+   "kind": "ini",
+   "name": "My initials",
+   "png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAIAAAASFvFNAAAADklEQVR4nGPQgAEGOAsAHDQC0bRP6F8AAAAASUVORK5CYII=",
+   "aspect": 1.5,
+   "made": 1762590000001,
+   "updatedAt": 1762590000001
+  },
+  "pmgone0003": {
+   "id": "pmgone0003",
+   "kind": "sig",
+   "deleted": true,
+   "updatedAt": 1762590000002
+  },
+  "signature": {
+   "id": "signature",
+   "kind": "pic",
+   "png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAACCAIAAADwyuo0AAAADklEQVR4nGOQQwIMyBwAJKoC0eF9KVEAAAAASUVORK5CYII=",
+   "aspect": 2,
+   "updatedAt": 1762500000000
+  },
+  "pmtpl00004": {
+   "id": "pmtpl00004",
+   "kind": "tpl",
+   "name": "Bank form",
+   "pages": [
+    [
+     612,
+     792
+    ]
+   ],
+   "made": 1762590000004,
+   "updatedAt": 1762590000004,
+   "marks": [
+    {
+     "page": 0,
+     "fx": 0.5,
+     "fy": 0.8,
+     "ink": "blue",
+     "t": "sig",
+     "name": "HDFC",
+     "pic": "pmhdfc0001",
+     "fw": 0.3,
+     "dated": true
+    },
+    {
+     "page": 0,
+     "fx": 0.1,
+     "fy": 0.3,
+     "ink": "blue",
+     "t": "tick",
+     "kind": "check",
+     "fs": 0.0163
+    }
+   ]
+  },
+  "pmtplgone5": {
+   "id": "pmtplgone5",
+   "kind": "tpl",
+   "deleted": true,
+   "updatedAt": 1762590000005
+  },
+  "settings": {
+   "id": "settings",
+   "kind": "settings",
+   "keepDays": 30,
+   "updatedAt": 1762590000006
+  }
+ }
+}

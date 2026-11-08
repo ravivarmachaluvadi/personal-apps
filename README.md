@@ -687,7 +687,7 @@ quick scribble. Signed out, the page says to continue with Google first.
 **Form templates.** Place everything on a form you sign often, then **Templates › Save as template** and name it.
 Opening a document with the same pages (number and sizes) offers it, on any device you sign in on: **Use it**
 places each piece where it was, with today's date. Templates are items of `sign-desk.json` (kind `tpl`), so they
-follow you like the signatures; they are not shared with Home Hub's yet.
+follow you like the signatures, and Home Hub has them too.
 
 **Signed copies in Google Drive.** The page lists the copies kept in `Personal Apps/Sign Desk/`, newest first, with
 **Download**, **Share…** (where the browser can share files) and **Delete**. Delete asks first (Cancel is chosen),
@@ -696,8 +696,12 @@ Google keeps it 30 days. **Clear signed copies after** 7, 30 or 90 days (or Neve
 to the Trash whenever a device looks at the list; the setting is shared by your devices. Documents themselves are
 never stored, except the signed copies you keep.
 
-**Not the same signatures as Home Hub's yet.** Home Hub keeps its own on the laptop; drawing them once in each app
-is needed for now. Making the two share one list is the next step.
+**The same as Home Hub's.** Home Hub (at home) shares this very file: Google Drive for desktop keeps
+`sign-desk.json` on the laptop, and each time Home Hub's signer opens it reads the file, keeps the newer of each
+item (deletions too) and writes its own changes into it, editing it in place (so Drive keeps it as the file this page
+may open). A signature, initials or template made in either app is in the other once Google Drive has synced.
+`tools/sign-desk-items.example.json` is the shape both keep to; Home Hub has the same file in its tests, and the
+checker compares the two.
 
 **Libraries.** PDF.js 6.3.289 and pdf-lib 1.17.1 from cdnjs, the Caveat 5.3.0 font from jsDelivr: the same
 versions Home Hub serves from its own folder.

@@ -226,6 +226,27 @@ def drive_copies(fake):
 
 
 # ------------------------------------------------------------------ the signer is Home Hub's
+# Home Hub shares sign-desk.json: it reads and writes these same items in the copy Google Drive keeps on the laptop.
+# The shape is this example; Home Hub's tests hold Home Hub to the same file.
+SHARED = os.path.join(ROOT, 'tools', 'sign-desk-items.example.json')
+
+
+def shape(it):
+    """Which kind of item, and which fields it has."""
+    return ('deleted' if it.get('deleted') else it.get('kind'), tuple(sorted(it)))
+
+
+def same_shape_file():
+    def one():
+        ours = open(SHARED, 'rb').read()
+        theirs = os.path.join(HOME_HUB, 'tests', 'fixtures', 'sign-desk-items.example.json')
+        if not os.path.isfile(theirs):
+            SKIPS.append('the shared shape was not compared with Home Hub\'s: ../home-hub is not beside this repo')
+            return
+        check(ours == open(theirs, 'rb').read(), 'tools/sign-desk-items.example.json is Home Hub\'s tests/fixtures copy, unchanged')
+    run_section('the shape shared with Home Hub', one)
+
+
 def same_signer():
     def one():
         ours = os.path.join(ROOT, 'docs', 'sign.js')
@@ -534,6 +555,19 @@ def laptop_and_phone(browser, base):
             data = open(dl.value.path(), 'rb').read()
             check(data[:5] == b'%PDF-' and not PdfReader(io.BytesIO(data)).is_encrypted, 'its signed copy downloads, a PDF with no password (%s)' % dl.value.suggested_filename)
         run_section('form templates across devices, and a PDF with a password', templates_and_protected)
+
+        def writes_the_shared_shape():
+            want = {}
+            for it in json.load(open(SHARED, encoding='utf-8'))['items'].values():
+                if it.get('kind') != 'pic':   # the one from before names: Sign Desk no longer writes it
+                    want.setdefault(shape(it)[0], set()).add(shape(it)[1])
+            got = {}
+            for it in ((fake.doc() or {}).get('items') or {}).values():
+                got.setdefault(shape(it)[0], set()).add(shape(it)[1])
+            check({'sig', 'ini', 'tpl', 'deleted', 'settings'} <= set(got), 'this run wrote every kind of item (%s)' % sorted(got))
+            for kind, shapes in sorted(got.items()):
+                check(shapes <= want.get(kind, set()), '%s items have the shared shape: %s, the example has %s' % (kind, sorted(shapes), sorted(want.get(kind, set()))))
+        run_section('what Sign Desk writes has the shape shared with Home Hub', writes_the_shared_shape)
         A.report()
         if B:
             B.report()
@@ -618,6 +652,36 @@ def source_page(browser):
         httpd.shutdown()
 
 
+def reads_the_shared_shape(browser, base):
+    """A sign-desk.json as Home Hub writes it (the example) reads as it should: names, initials, the one from before
+    names, a deletion, the clear-after setting and a template."""
+    fake = dt.FakeDrive()
+    folder = fake.add('Personal Apps', dt.FOLDER, fake.root)
+    fake.add('sign-desk.json', 'application/json', folder, open(SHARED, 'rb').read())
+    A = Desk(browser, base, fake)
+    try:
+        def one():
+            A.open()
+            A.sign_in()
+            rows = lambda kind: A.page.eval_on_selector_all('#mine .pic[data-kind="%s"] .pname' % kind, 'els=>els.map(e=>e.textContent)')
+            check(wait_until(lambda: sorted(rows('sig')) == ['HDFC', 'My signature'], 8), 'the signatures by name, the one from before names as My signature (%s)' % rows('sig'))
+            check(rows('ini') == ['My initials'], 'the initials (%s)' % rows('ini'))
+            check(A.page.input_value('#keepSel') == '30', 'the clear-after setting (%s)' % A.page.input_value('#keepSel'))
+            A.pick('bank.pdf', make_pdf([{'media': (0, 0, 612, 792), 'content': b'0.9 g 0 0 1 1 re f'}]), 'application/pdf')
+            A.signer_ready(1)
+            check(wait_until(lambda: A.visible('#sTplOffer') and 'Bank form' in A.page.locator('#sTplOffer').text_content(), 8), 'the template is offered')
+            A.page.click('#sTplOffer [data-tpl]')
+            check(wait_until(lambda: A.marks() == 2, 5), 'and places its signature and tick (%d)' % A.marks())
+            alt = A.page.get_attribute('#signer .smark.ssig img', 'alt') or ''
+            check(alt.startswith('Your signature: HDFC') and alt.endswith('with the date'), 'HDFC, with the date, as the template says (%r)' % alt)
+            A.page.click('#sCancel')
+            A.page.click('#sAskDiscard')
+        run_section('reads the shape shared with Home Hub', one)
+        A.report()
+    finally:
+        A.close()
+
+
 def main():
     docs = os.path.join(ROOT, 'docs')
     if not os.path.exists(os.path.join(docs, dt.PAGE)):
@@ -627,10 +691,11 @@ def main():
         SKIPS.append('Home Hub is not beside this repo, so PDF.js, pdf-lib and the font came from the internet')
     print('== the signer')
     same_signer()
+    same_shape_file()
     httpd, base = dt.serve(docs)
     with sync_playwright() as pw:
         browser = pw.chromium.launch(channel='chrome', headless=not HEADED)
-        for label, flow in (('a laptop and a phone', laptop_and_phone), ('layout', layout)):
+        for label, flow in (('a laptop and a phone', laptop_and_phone), ('shared with Home Hub', reads_the_shared_shape), ('layout', layout)):
             print('==', label)
             flow(browser, base)
         print('== site/')
