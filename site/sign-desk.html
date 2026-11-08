@@ -248,7 +248,21 @@ input[type=text],select{font:15px var(--sans);background:var(--surface);color:va
         :{id:it.id,kind:it.kind,name:it.name,png:it.png,aspect:it.aspect,made:it.made||0,updatedAt:Date.now()};});
       renderMine();
       return Promise.resolve();
-    }};
+    },
+    /* form templates: items of kind 'tpl' in the same file ({id, name, pages, marks, made}), offered by the signer
+       when a document with the same pages opens; a deleted one is kept as a deletion */
+    templates:{
+      list:function(){return firstLook().then(function(){
+        return Object.keys(STORE.doc.items).map(function(k){return STORE.doc.items[k];}).filter(function(t){return t&&t.kind==='tpl';})
+          .map(function(t){return t.deleted?{id:t.id,deleted:true}:{id:t.id,name:String(t.name||''),pages:t.pages,marks:t.marks,made:+t.made||0};})
+          .filter(function(t){return t.deleted||(Array.isArray(t.pages)&&Array.isArray(t.marks)&&t.name);});
+      });},
+      put:function(t){
+        if(!t||typeof t.id!=='string')return Promise.reject(new Error('a template'));
+        STORE.mutate(function(d){d.items[t.id]=t.deleted?{id:t.id,kind:'tpl',deleted:true,updatedAt:Date.now()}
+          :{id:t.id,kind:'tpl',name:t.name,pages:t.pages,marks:t.marks,made:t.made||0,updatedAt:Date.now()};});
+        return Promise.resolve();
+      }}};
   HubSign.setup({pdfjs:CDN+'pdf.js/6.3.289/',pdflib:CDN+'pdf-lib/1.17.1/pdf-lib.min.js',
     hand:'https://cdn.jsdelivr.net/npm/@fontsource/caveat@5.3.0/files/caveat-latin-400-normal.woff2',
     keys:'signdesk.',keeper:HAS_DRIVE?'your Google Drive':'this browser',store:SIG_STORE});

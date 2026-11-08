@@ -669,8 +669,8 @@ signs Word files, which a browser cannot open). Sign Desk *is* Home Hub's signer
 
 | Step | What happens |
 |---|---|
-| Open | **Choose a PDF or photo to sign**, drag it onto the page, or copy it and press Ctrl+V. A Word file is not opened: the page says to save it as PDF in Word, or to sign it with Home Hub at home |
-| Sign | **Signature**, **Initials**, **Text** (today's date, in handwriting or typed), **Tick ✓** (a tick or a cross in a form's box), **Pen**, and **Every page** for a selected piece. Blue or black ink; **Fine**, **Medium** or **Bold** (per device), and a signature's line is as thick whatever size you wrote it in the box |
+| Open | **Choose a PDF or photo to sign**, drag it onto the page, or copy it and press Ctrl+V. A Word file is not opened: the page says to save it as PDF in Word, or to sign it with Home Hub at home. A PDF with a password asks for it (kept nowhere); a protected PDF's signed copy is made of pictures of its pages, with no password |
+| Sign | **Signature**, **Initials**, **Text** (today's date, in handwriting or typed), **Tick ✓** (a tick or a cross in a form's box), **Pen**, and **Every page** for a selected piece, **with date** (today's date under the signature, in handwriting), and **Templates** (below). Blue or black ink; **Fine**, **Medium** or **Bold** (per device), and a signature's line is as thick whatever size you wrote it in the box |
 | Save | On a laptop the signed copy downloads at once (`name (signed).pdf`); on a phone the page offers **Share…** (where the browser can share files) and **Download**. The switch *Also copy to Google Drive › Personal Apps › Sign Desk* keeps a copy there too; it is on until you turn it off, per device |
 
 **Your signatures and initials, by name.** The first is drawn when you first press Signature (or Initials) and is
@@ -683,6 +683,11 @@ deleted one is kept there as a deletion, so a device still holding a copy drops 
 initials saved before names read as *My signature* and *My initials*. Signed in, the signer waits for its first
 look at Drive (at most 5 s) before offering an empty pad, so a new device never replaces a saved signature with a
 quick scribble. Signed out, the page says to continue with Google first.
+
+**Form templates.** Place everything on a form you sign often, then **Templates › Save as template** and name it.
+Opening a document with the same pages (number and sizes) offers it, on any device you sign in on: **Use it**
+places each piece where it was, with today's date. Templates are items of `sign-desk.json` (kind `tpl`), so they
+follow you like the signatures; they are not shared with Home Hub's yet.
 
 **Signed copies in Google Drive.** The page lists the copies kept in `Personal Apps/Sign Desk/`, newest first, with
 **Download**, **Share…** (where the browser can share files) and **Delete**. Delete asks first (Cancel is chosen),
@@ -708,7 +713,8 @@ files explained, not opened; signature, initials on every page and ticks on a pl
 and a page with a crop box, each landing inside its box in the downloaded PDF and nowhere outside it; the copy in
 Drive (the same bytes); the phone getting the laptop's signature, Share and Download, the switch off and
 remembered; paste and drag; several signatures by name, renamed and deleted on the page, the phone following;
-the signed-copies list, Download, Delete with Cancel and Undo, and the clear-after setting (a 10-day-old copy
+a template saved on the laptop offered to the phone and placed there; a PDF with a password opened and signed,
+its copy without a password; the signed-copies list, Download, Delete with Cancel and Undo, and the clear-after setting (a 10-day-old copy
 trashed at 7 days, a 2-day-old one kept, nothing touched at Never); 390 and 1280 px in both themes with 4.5:1
 contrast.
 

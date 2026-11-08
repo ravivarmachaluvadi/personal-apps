@@ -10,8 +10,10 @@
        pdfjs/pdflib/hand   where PDF.js (a folder), pdf-lib and the Caveat handwriting font come from
        keys                the prefix of this device's own choices in localStorage ('hub.' here)
        keeper              where the signatures are kept, in words ('the laptop' here)
-       store               {list() -> [item], put(item)}: an item is {id, kind 'sig'|'ini', name, png, aspect, made}
-                           or, once deleted, {id, kind, deleted: true}. Home Hub's is /api/signatures
+       store               {list() -> [item], put(item), templates: {list(), put(t)}}: an item is {id, kind 'sig'|'ini',
+                           name, png, aspect, made} or, once deleted, {id, kind, deleted: true}; a template is {id,
+                           name, pages: [[w, h]...], marks: [...], made} or {id, deleted: true}. Home Hub's are
+                           /api/signatures and /api/templates
    The same file is Personal Apps' docs/sign.js (Sign Desk): keep the two identical; its checker compares them.
 
    Signatures and initials have names (HDFC, SBI, ...), as many of each as you like, and are kept by the store (on the
@@ -26,6 +28,11 @@
    PNG per marked page that pdf-lib lays over the original page, so the page's own text stays as sharp as it was;
    a photo is redrawn with the marks in it, in its own format.
 
+   A protected PDF (one that needs a password, or may not be changed) is opened with its password, which is never
+   kept, and its signed copy is made of pictures of its pages, without a password: no library here can write into
+   an encrypted PDF. A form template keeps where a form's pieces went, as shares of each page, and is offered when a
+   document with the same pages opens.
+
    The remembered signature is kept colourless (dark grey) and tinted to the ink when it is placed. It is drawn in
    the box, or taken from a photo of it on paper: the paper is measured block by block, so a shadow stays paper. */
 (function(){
@@ -34,7 +41,7 @@
   /* Home Hub's settings; another page changes them with HubSign.setup before the first open */
   var CFG={pdfjs:'/static/vendor/pdfjs-6.3.289/',pdflib:'/static/vendor/pdf-lib-1.17.1/pdf-lib.min.js',
            hand:'/static/vendor/caveat-5.3.0/caveat-latin-400-normal.woff2',keys:'hub.',keeper:'the laptop',store:null};
-  var PICS_KEY,CHOSEN_KEY,TEXTS_KEY,FINGER_KEY,INK_KEY,STYLE_KEY,TICK_KEY,SIZE_KEY;
+  var PICS_KEY,CHOSEN_KEY,DATE_KEY,TEXTS_KEY,FINGER_KEY,INK_KEY,STYLE_KEY,TICK_KEY,SIZE_KEY;
   /* how thick the ink is. pen: the pen's line on a PDF, in points; sig: a drawn signature's (or initials') line once
      placed at its usual size on an A4-wide page, in points, whatever size it was written in the box. A Pencil's
      pressure still makes each line between half and one and a half times that. */
@@ -49,7 +56,7 @@
          text:function(){return 'Write your initials in the box with the Pencil, a finger or the mouse, or use a photo of them on plain paper. They are kept on '+CFG.keeper+', so all your devices use them.';}}};
   function applyKeys(){
     var p=CFG.keys;
-    PICS_KEY=p+'pics';CHOSEN_KEY=p+'chosen';TEXTS_KEY=p+'signTexts';FINGER_KEY=p+'fingerDraw';INK_KEY=p+'ink';STYLE_KEY=p+'textStyle';TICK_KEY=p+'tick';SIZE_KEY=p+'size';
+    PICS_KEY=p+'pics';CHOSEN_KEY=p+'chosen';DATE_KEY=p+'withDate';TEXTS_KEY=p+'signTexts';FINGER_KEY=p+'fingerDraw';INK_KEY=p+'ink';STYLE_KEY=p+'textStyle';TICK_KEY=p+'tick';SIZE_KEY=p+'size';
   }
   applyKeys();
   /* a tick and a cross, drawn as lines in a 1 × 1 square (no font has them in every place they are drawn) */
@@ -63,7 +70,8 @@
   var MAX_PX=16000000;     /* iPad Safari will not make a canvas much bigger than 16.7 million pixels */
   var PAGE_PX=6000000;     /* one page drawn on screen, at most */
   var ZOOMS=[1,1.5,2,3];
-  var LOCKED='This PDF is locked against changes (or needs a password), so it cannot be signed here. On the iPad or iPhone, open it from the Files app and use Markup instead.';
+  var RASTER_NOTE='This PDF is protected, so its signed copy is made of pictures of its pages: the text cannot be selected, and the copy has no password.';
+  var RASTER_DPI=200;   /* how sharp those pictures are */
 
   /* ---------- helpers (as in index.html) ---------- */
   function $(s){return document.querySelector(s);}
@@ -135,6 +143,9 @@
     "#sigPad,.sbar{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}",
     ".sbar input,#sigPad input{-webkit-user-select:text;user-select:text}",
     ".schoices{display:inline-flex;flex-wrap:wrap;gap:4px}",
+    "#sNote{margin:0;font-size:13.5px;color:var(--text);background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:6px 10px}",
+    "#sPw,#sTplName{flex:1 1 160px;min-width:0;min-height:32px;font-size:15px}",
+    ".stpls{display:inline-flex;flex-wrap:wrap;gap:4px 6px;align-items:center}",
     ".sname{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-size:14px}",
     "#sigName{flex:1 1 160px;min-width:0;min-height:34px;font-size:15px}",
     "#sigRenameInput{flex:1 1 140px;min-width:0;min-height:32px;font-size:15px}",
@@ -184,6 +195,7 @@
           h('button',{class:'btn sm','data-tool':'tick',type:'button','aria-pressed':'false',text:'Tick ✓'}),
           h('button',{class:'btn sm',id:'sUndo',type:'button',disabled:true,text:'Undo'}),
           h('button',{class:'btn sm',id:'sEvery',type:'button',hidden:true,text:'Every page'}),
+          h('button',{class:'btn sm',id:'sTplPick',type:'button',hidden:true,'aria-expanded':'false',text:'Templates'}),
           h('span',{class:'sgrow'}),
           h('button',{class:'btn sm',id:'sZoomOut',type:'button','aria-label':'Zoom out',text:'−'}),
           h('button',{class:'btn sm',id:'sZoomIn',type:'button','aria-label':'Zoom in',text:'+'})]),
@@ -209,7 +221,8 @@
           h('span',{class:'sgrow'}),
           h('button',{class:'btn sm quiet',id:'sigRename',type:'button',text:'Rename'}),
           h('button',{class:'btn sm quiet',id:'sigRedo',type:'button',text:'Draw again'}),
-          h('button',{class:'btn sm quiet danger',id:'sigDel',type:'button',text:'Delete'})]),
+          h('button',{class:'btn sm quiet danger',id:'sigDel',type:'button',text:'Delete'}),
+          h('label',{class:'tog',id:'sigDateTog'},[h('input',{type:'checkbox',id:'sigWithDate'}),h('span',{text:'with date'})])]),
         h('div',{class:'srow',id:'sigRenameRow',hidden:true},[
           h('label',{for:'sigRenameInput',text:'New name'}),
           h('input',{type:'text',id:'sigRenameInput',maxlength:'40',autocomplete:'off'}),
@@ -219,6 +232,22 @@
           h('span',{id:'sigDelText'}),
           h('button',{class:'btn sm',id:'sigDelKeep',type:'button',text:'Keep'}),
           h('button',{class:'btn sm danger solid',id:'sigDelYes',type:'button',text:'Delete'})]),
+        h('form',{class:'srow',id:'sPwRow',hidden:true},[
+          h('label',{for:'sPw',text:'Password'}),
+          h('input',{type:'password',id:'sPw',autocomplete:'off'}),
+          h('button',{class:'btn sm primary',id:'sPwOpen',type:'submit',text:'Open'})]),
+        h('div',{class:'srow',id:'sTplOffer',hidden:true}),
+        h('div',{class:'srow',id:'sTplList',hidden:true}),
+        h('div',{class:'srow',id:'sTplRow',hidden:true},[
+          h('label',{for:'sTplName',text:'Template name'}),
+          h('input',{type:'text',id:'sTplName',maxlength:'60',autocomplete:'off'}),
+          h('button',{class:'btn sm primary',id:'sTplOk',type:'button',text:'Save template'}),
+          h('button',{class:'btn sm',id:'sTplCancel',type:'button',text:'Cancel'})]),
+        h('div',{class:'srow',id:'sTplDelAsk',hidden:true,role:'alertdialog','aria-labelledby':'sTplDelText'},[
+          h('span',{id:'sTplDelText'}),
+          h('button',{class:'btn sm',id:'sTplDelKeep',type:'button',text:'Keep'}),
+          h('button',{class:'btn sm danger solid',id:'sTplDelYes',type:'button',text:'Delete'})]),
+        h('p',{id:'sNote',hidden:true}),
         h('p',{id:'sMsg',role:'status'})]),
       h('div',{id:'sPages'}),
       h('div',{id:'sAsk',hidden:true,role:'alertdialog','aria-labelledby':'sAskText'},[
@@ -289,32 +318,46 @@
     document.documentElement.classList.add('signing');
     setState('loading');msg('Opening '+f.name+'…');paintTools();counts();
     $('#sCancel').focus();
+    $('#sPwRow').hidden=true;$('#sNote').hidden=true;$('#sTplOffer').hidden=true;$('#sTplList').hidden=true;$('#sTplRow').hidden=true;$('#sTplDelAsk').hidden=true;
+    S.tpls=[];S.tplLoad=tplStore()?Promise.resolve().then(function(){return tplStore().list();}).then(function(l){
+      if(S===me)S.tpls=(l||[]).filter(function(t){return t&&!t.deleted&&Array.isArray(t.pages)&&Array.isArray(t.marks);});
+    },function(){}):Promise.resolve();
     fetch(S.o.url,{credentials:'same-origin'}).then(function(r){if(!r.ok)throw new Error('the hub answered '+r.status);return r.arrayBuffer();}).then(function(buf){
       if(S!==me)return;
       S.bytes=new Uint8Array(buf);
       return kind==='pdf'?openPdf(me):openImage(me);
-    }).then(function(){
-      if(S!==me)return;
-      setState('ready');
-      layout();
-      setTool('pen');
-    },function(e){
-      if(S!==me)return;
-      if(e&&e.locked){setState('locked');msg(LOCKED);}
-      else{setState('error');msg('This file could not be opened for signing'+(e&&e.message?': '+e.message:'.'));}
-      paintTools();counts();
-    });
+    }).then(function(){opened(me);},function(e){failed(me,e);});
   }
-  function openPdf(me){
+  function opened(me){
+    if(S!==me)return;
+    setState('ready');
+    layout();
+    setTool('pen');
+    $('#sNote').textContent=RASTER_NOTE;$('#sNote').hidden=!me.raster;
+    me.tplLoad.then(function(){if(S===me&&S.state==='ready')offerTemplates();});
+  }
+  function failed(me,e){
+    if(S!==me)return;
+    if(e&&e.password){
+      setState('password');
+      $('#sPwRow').hidden=false;
+      msg(e.wrong?'That password is not right. Try again.':'This PDF has a password. Type it to open the PDF; the password is not kept anywhere.');
+      var i=$('#sPw');i.value='';i.focus();
+    }else{setState('error');msg('This file could not be opened for signing'+(e&&e.message?': '+e.message:'.'));}
+    paintTools();counts();
+  }
+  /* pdf-lib cannot read an encrypted PDF (even one that opens without a password): such a PDF is still shown, by
+     PDF.js, and its signed copy is made of pictures of its pages (raster) */
+  function openPdf(me,password){
     return Promise.all([loadPdfjs(),loadPdfLib()]).then(function(r){
       var m=r[0],lib=r[1];
-      /* pdf-lib refuses an encrypted PDF (even one that opens without a password), so the check comes first */
-      return lib.PDFDocument.load(me.bytes.slice(0),{updateMetadata:false}).then(null,function(e){
-        if(/encrypt/i.test(String(e&&(e.name+' '+e.message))))throw {locked:true};
+      return lib.PDFDocument.load(me.bytes.slice(0),{updateMetadata:false}).then(function(){me.raster=false;},function(e){
+        if(/encrypt/i.test(String(e&&(e.name+' '+e.message)))){me.raster=true;return;}
         throw e;
       }).then(function(){
-        return m.getDocument({data:me.bytes.slice(0),isEvalSupported:false}).promise.then(null,function(e){
-          if(e&&e.name==='PasswordException')throw {locked:true};
+        var o={data:me.bytes.slice(0),isEvalSupported:false};if(password!=null)o.password=password;
+        return m.getDocument(o).promise.then(null,function(e){
+          if(e&&e.name==='PasswordException')throw {password:true,wrong:password!=null};
           throw e;
         });
       });
@@ -447,7 +490,7 @@
     P.marks.forEach(function(m,idx){
       if(m.t==='ink')return;
       var kids=[],cls=m.t==='img'?(m.who==='ini'?'ssig sini':'ssig'):m.t==='tick'?'stick':'stext';
-      if(m.t==='img')kids.push(h('img',{src:m.src,alt:PICS[m.who==='ini'?'ini':'sig'].alt+(m.name?': '+m.name:''),draggable:'false'}));
+      if(m.t==='img')kids.push(h('img',{src:m.src,alt:PICS[m.who==='ini'?'ini':'sig'].alt+(m.name?': '+m.name:'')+(m.dated?', with the date':''),draggable:'false'}));
       if(m.t==='tick')kids.push(tickSvg(m));
       var el=h('div',{class:'smark '+cls+(S.sel===m?' sel':''),'data-k':String(idx)},kids);
       if(m.t==='tick')el.dataset.kind=m.kind;
@@ -571,6 +614,8 @@
     var pic=S&&PICS[S.tool]?S.tool:'',any=!!pic&&has(pic);
     $('#sSigOpts').hidden=!ready||!any;
     if(!ready||!any){$('#sigDelAsk').hidden=true;$('#sigRenameRow').hidden=true;}
+    $('#sigDateTog').hidden=pic!=='sig';$('#sigWithDate').checked=withDate();
+    $('#sTplPick').hidden=!ready||!tplStore();
     if(any){
       var ch=$('#sigChoices'),cur=current(pic);clear(ch);
       picsOf(pic).forEach(function(it){ch.appendChild(h('button',{class:'btn sm','data-pic':it.id,type:'button','aria-pressed':it===cur?'true':'false',text:it.name}));});
@@ -740,12 +785,31 @@
     else if((g.kind==='move'||g.kind==='resize')&&g.moved){Object.assign(g.m,g.orig);S.undo.pop();renderMarks(g.P);}
   }
   function deselect(){if(S.sel){S.sel=null;Array.prototype.forEach.call(UI.querySelectorAll('.smark.sel'),function(x){x.classList.remove('sel');});paintSel();}}
+  /* the signature with today's date written under it, in the handwriting: one picture, so the two move and resize as
+     one. Kept colourless like the signature, and tinted when placed. */
+  var DATED={};
+  function datedPic(src,text){
+    var key=text+' '+src;
+    if(DATED[key])return Promise.resolve(DATED[key]);
+    return Promise.all([sigImage(src),loadHand()]).then(function(r){
+      var i=r[0],W=i.naturalWidth,H=i.naturalHeight,fs=Math.max(12,Math.round(W*0.09));
+      var c=document.createElement('canvas'),x=c.getContext('2d');
+      x.font=fs+'px '+HAND;
+      var tw=Math.ceil(x.measureText(text).width),gap=Math.round(fs*0.2),cw=Math.max(W,tw+4),ch=H+gap+Math.round(fs*1.3);
+      c.width=cw;c.height=ch;x=c.getContext('2d');
+      x.drawImage(i,Math.round((cw-W)/2),0);
+      x.font=fs+'px '+HAND;x.fillStyle=INKS.black;x.textBaseline='top';x.textAlign='center';
+      x.fillText(text,cw/2,H+gap);
+      return (DATED[key]={src:c.toDataURL('image/png'),aspect:cw/ch});
+    });
+  }
+  function withDate(){return lsGet(DATE_KEY,'')==='1';}
   function placeSig(P,p,which){
-    var me=S,sig=current(which),color=INKS[S.ink];
-    tint(sig.png,color).then(function(src){
+    var me=S,sig=current(which),color=INKS[S.ink],dated=which==='sig'&&withDate();
+    (dated?datedPic(sig.png,today()):Promise.resolve({src:sig.png,aspect:sig.aspect})).then(function(d){return tint(d.src,color).then(function(src){return {d:d,src:src};});}).then(function(r){
       if(S!==me)return;
-      var w=Math.min(P.w,P.h)*PICS[which].width,hh=w/sig.aspect;
-      var m={t:'img',who:which,name:sig.name,src:src,base:sig.png,color:color,x:p[0]-w/2,y:p[1]-hh/2,w:w,h:hh};
+      var src=r.src,w=Math.min(P.w,P.h)*PICS[which].width,hh=w/r.d.aspect;
+      var m={t:'img',who:which,name:sig.name,picId:sig.id,dated:dated||undefined,src:src,base:r.d.src,color:color,x:p[0]-w/2,y:p[1]-hh/2,w:w,h:hh};
       snap();P.marks.push(m);S.sel=m;renderMarks(P);counts();
       setTool('pen');
       msg('Placed “'+sig.name+'”. Drag to move, the round corner resizes, × removes.'+(S.kind==='pdf'&&S.pages.length>1?' Every page puts '+(which==='ini'?'them':'it')+' on every page.':''));
@@ -1009,7 +1073,32 @@
     var taken={};(S.o.existing||[]).forEach(function(x){taken[String(x).toLowerCase()]=1;});
     for(;;n++){var cand=stem+(n===1?' (signed)':' (signed '+n+')')+ext;if(!taken[cand.toLowerCase()])return cand;}
   }
+  /* a protected PDF: a new PDF made of pictures of its pages, each drawn by PDF.js with the marks on it */
+  function buildRaster(){
+    return loadPdfLib().then(function(lib){
+      return lib.PDFDocument.create().then(function(out){
+        var chain=Promise.resolve();
+        S.pages.forEach(function(P){
+          chain=chain.then(function(){
+            var k=Math.min(RASTER_DPI/72,Math.sqrt(MAX_PX/(P.w*P.h))),vp=P.pg.getViewport({scale:k});
+            var c=document.createElement('canvas');c.width=Math.floor(vp.width);c.height=Math.floor(vp.height);
+            var x=c.getContext('2d');x.fillStyle='#FFFFFF';x.fillRect(0,0,c.width,c.height);
+            return P.pg.render({canvas:c,viewport:vp}).promise.then(function(){
+              x.setTransform(c.width/P.w,0,0,c.height/P.h,0,0);
+              return paintMarks(x,P);
+            }).then(function(){return canvasBytes(c,'image/jpeg',0.92);}).then(function(j){return out.embedJpg(j.bytes);}).then(function(img){
+              out.addPage([P.w,P.h]).drawImage(img,{x:0,y:0,width:P.w,height:P.h});
+            });
+          });
+        });
+        return chain.then(function(){return out.save();}).then(function(bytes){
+          return new File([bytes],signedName(S.f.name,'.pdf'),{type:'application/pdf'});
+        });
+      });
+    });
+  }
   function buildPdf(){
+    if(S.raster)return buildRaster();
     return loadPdfLib().then(function(lib){
       return lib.PDFDocument.load(S.bytes.slice(0),{updateMetadata:false}).then(function(doc){
         var pages=doc.getPages(),chain=Promise.resolve();
@@ -1062,6 +1151,114 @@
       if(S!==me)return;
       S.saving=false;counts();msg('The signed copy could not be made'+(e&&e.message?': '+e.message:'.'));
     });
+  }
+
+  /* ---------- form templates: where the pieces went, as shares of each page, offered when the same pages open ---------- */
+  var HUB_TPL={
+    list:function(){return hubApi('GET','/api/templates').then(function(j){return j&&j.items||[];});},
+    put:function(t){return hubApi('POST','/api/templates',t);}};
+  function tplStore(){return CFG.store?CFG.store.templates||null:HUB_TPL;}
+  function share(v){return Math.round(Math.max(0,Math.min(1.5,v))*10000)/10000;}
+  function samePages(t){
+    return t.pages.length===S.pages.length&&t.pages.every(function(pg,i){return Math.abs(pg[0]-S.pages[i].w)<=2&&Math.abs(pg[1]-S.pages[i].h)<=2;});
+  }
+  /* this document's pieces as a template; pen strokes are left out */
+  function templateOf(name){
+    var marks=[],left=0;
+    S.pages.forEach(function(P,i){P.marks.forEach(function(m){
+      var b={page:i,fx:share(m.x/P.w),fy:share(m.y/P.h),ink:m.color===INKS.black?'black':'blue'};
+      if(m.t==='img'){b.t=m.who==='ini'?'ini':'sig';b.name=String(m.name||'').slice(0,40);if(m.picId)b.pic=m.picId;b.fw=share(m.w/P.w);if(m.dated)b.dated=true;}
+      else if(m.t==='text'){
+        b.t='text';b.font=m.font==='hand'?'hand':'type';b.fs=share(m.size/P.w);
+        var d=m.text===today()?'dmy':m.text===todayWords()?'words':'';
+        if(d){b.date=d;b.text='';}else b.text=String(m.text).slice(0,120);
+      }
+      else if(m.t==='tick'){b.t='tick';b.kind=m.kind==='cross'?'cross':'check';b.fs=share(m.size/P.w);}
+      else{left++;return;}
+      marks.push(b);
+    });});
+    return {t:{name:name,pages:S.pages.map(function(P){return [Math.round(P.w*10)/10,Math.round(P.h*10)/10];}),marks:marks},left:left};
+  }
+  function pieces(){return S.pages.reduce(function(n,P){return n+P.marks.filter(function(m){return m.t!=='ink';}).length;},0);}
+  function renderTplList(){
+    var row=$('#sTplList');clear(row);
+    var list=h('span',{class:'stpls'});
+    if(!S.tpls.length)list.appendChild(h('span',{text:'No templates yet.'}));
+    S.tpls.forEach(function(t){
+      list.appendChild(h('button',{class:'btn sm','data-tpl':t.id,type:'button',text:'Use “'+t.name+'”'}));
+      list.appendChild(h('button',{class:'btn sm quiet danger','data-tpldel':t.id,type:'button','aria-label':'Delete the template '+t.name,text:'Delete'}));
+    });
+    row.appendChild(list);
+    row.appendChild(h('span',{class:'sgrow'}));
+    row.appendChild(h('button',{class:'btn sm primary',id:'sTplSave',type:'button',disabled:!pieces(),text:'Save as template'}));
+  }
+  function offerTemplates(){
+    var fit=S.tpls.filter(samePages);
+    var row=$('#sTplOffer');clear(row);row.hidden=!fit.length;
+    if(!fit.length)return;
+    row.appendChild(h('span',{text:fit.length===1?'This looks like the form “'+fit[0].name+'”.':'This looks like a form you have a template for.'}));
+    fit.forEach(function(t){row.appendChild(h('button',{class:'btn sm primary','data-tpl':t.id,type:'button',text:fit.length===1?'Use it':'Use “'+t.name+'”'}));});
+    row.appendChild(h('button',{class:'btn sm',id:'sTplNo',type:'button',text:'Not now'}));
+  }
+  function findPic(b){
+    var it=b.pic&&LOCAL[b.pic];
+    if(it&&!it.deleted&&it.kind===b.t)return it;
+    return picsOf(b.t).filter(function(x){return x.name===b.name;})[0]||null;
+  }
+  function applyTemplate(t){
+    var me=S,missing={},jobs=[],placed=0,other=!samePages(t);
+    snap();
+    t.marks.forEach(function(b){
+      var P=S.pages[b.page];if(!P)return;
+      var x=b.fx*P.w,y=b.fy*P.h,color=INKS[b.ink]||INKS[S.ink];
+      if(b.t==='sig'||b.t==='ini'){
+        var pic=findPic(b);
+        if(!pic){missing[b.name||PICS[b.t].name]=1;return;}
+        var dated=!!(b.dated&&b.t==='sig');
+        jobs.push((dated?datedPic(pic.png,today()):Promise.resolve({src:pic.png,aspect:pic.aspect})).then(function(d){
+          return tint(d.src,color).then(function(src){
+            var w=b.fw*P.w;
+            P.marks.push({t:'img',who:b.t,name:pic.name,picId:pic.id,dated:dated||undefined,src:src,base:d.src,color:color,x:x,y:y,w:w,h:w/d.aspect});placed++;
+          });
+        }));
+      }else if(b.t==='text'){
+        var text=b.date==='dmy'?today():b.date==='words'?todayWords():b.text;if(!text)return;
+        jobs.push((b.font==='hand'?loadHand():Promise.resolve()).then(function(){
+          P.marks.push({t:'text',text:text,size:b.fs*P.w,color:color,font:b.font==='hand'?'hand':'type',x:x,y:y});placed++;
+        }));
+      }else if(b.t==='tick'){P.marks.push({t:'tick',kind:b.kind==='cross'?'cross':'check',size:b.fs*P.w,color:color,x:x,y:y});placed++;}
+    });
+    return Promise.all(jobs).then(function(){
+      if(S!==me)return;
+      S.sel=null;S.pages.forEach(renderMarks);counts();
+      S.tplUsed=t;$('#sTplOffer').hidden=true;$('#sTplList').hidden=true;$('#sTplPick').setAttribute('aria-expanded','false');
+      var gone=Object.keys(missing);
+      msg('Placed '+placed+' piece'+(placed===1?'':'s')+' from “'+t.name+'”, with today’s date: check them, then Save.'+
+        (gone.length?' Not found on this device, so left out: '+gone.join(', ')+'.':'')+(other?' This document’s pages differ from the template’s, so check each piece.':''));
+    },function(){if(S===me)msg('The template could not be placed. Try again.');});
+  }
+  function saveTemplate(){
+    var name=($('#sTplName').value||'').trim().slice(0,60);
+    if(!name){msg('Give the template a name, such as the form’s.');$('#sTplName').focus();return;}
+    var r=templateOf(name),same=S.tpls.filter(function(t){return t.name.toLowerCase()===name.toLowerCase();})[0],me=S;
+    var t=Object.assign({id:same?same.id:newId(),made:same&&same.made||Date.now()},r.t);
+    $('#sTplRow').hidden=true;
+    Promise.resolve().then(function(){return tplStore().put(t);}).then(function(){
+      if(S!==me)return;
+      S.tpls=S.tpls.filter(function(x){return x.id!==t.id;}).concat([t]);S.tplUsed=t;
+      msg((same?'Updated':'Saved')+' the template “'+name+'”: '+t.marks.length+' piece'+(t.marks.length===1?'':'s')+
+        (r.left?' (pen strokes are not kept)':'')+'. When a document with the same pages opens, it is offered.');
+    },function(){if(S===me)msg('The template could not be saved just now. Try again.');});
+  }
+  function deleteTemplate(id){
+    var t=S.tpls.filter(function(x){return x.id===id;})[0];if(!t)return;
+    var me=S;
+    $('#sTplDelAsk').hidden=true;
+    Promise.resolve().then(function(){return tplStore().put({id:id,deleted:true});}).then(function(){
+      if(S!==me)return;
+      S.tpls=S.tpls.filter(function(x){return x.id!==id;});renderTplList();offerTemplates();
+      msg('The template “'+t.name+'” is deleted, on every device.');
+    },function(){if(S===me)msg('The template could not be deleted just now. Try again.');});
   }
 
   /* ---------- Cancel ---------- */
@@ -1131,6 +1328,43 @@
     $('#sAskKeep').addEventListener('click',function(){$('#sAsk').hidden=true;$('#sCancel').focus();});
     $('#sAskDiscard').addEventListener('click',function(){$('#sAsk').hidden=true;close();});
     function kindNow(){return S&&S.tool==='ini'?'ini':'sig';}
+    $('#sigWithDate').addEventListener('change',function(){lsSet(DATE_KEY,this.checked?'1':null);if(S)msg(this.checked?'Your signature is placed with today’s date under it.':hint());});
+    $('#sPwRow').addEventListener('submit',function(e){
+      e.preventDefault();
+      if(!S||S.state!=='password')return;
+      var me=S,pw=$('#sPw').value;$('#sPw').value='';
+      if(!pw){$('#sPw').focus();return;}
+      $('#sPwRow').hidden=true;setState('loading');msg('Opening…');paintTools();
+      S.pages=[];
+      openPdf(me,pw).then(function(){opened(me);},function(err){failed(me,err);});
+    });
+    $('#sTplPick').addEventListener('click',function(){
+      if(!S)return;
+      var row=$('#sTplList'),show=row.hidden;
+      $('#sTplRow').hidden=true;$('#sTplDelAsk').hidden=true;
+      if(show)renderTplList();
+      row.hidden=!show;this.setAttribute('aria-expanded',show?'true':'false');
+    });
+    UI.addEventListener('click',function(e){
+      var u=e.target.closest('[data-tpl]'),d=e.target.closest('[data-tpldel]');
+      if(!S)return;
+      if(u){var t=S.tpls.filter(function(x){return x.id===u.dataset.tpl;})[0];if(t)applyTemplate(t);return;}
+      if(d){
+        var td=S.tpls.filter(function(x){return x.id===d.dataset.tpldel;})[0];if(!td)return;
+        $('#sTplDelText').textContent='Delete the template “'+td.name+'”, on every device?';
+        $('#sTplDelYes').dataset.id=td.id;$('#sTplDelAsk').hidden=false;$('#sTplDelKeep').focus();return;
+      }
+      if(e.target.id==='sTplNo'){$('#sTplOffer').hidden=true;msg(hint());}
+      if(e.target.id==='sTplSave'){
+        var i=$('#sTplName');i.value=S.tplUsed?S.tplUsed.name:String(S.f.name||'').replace(/\.[^.]+$/,'');
+        $('#sTplList').hidden=true;$('#sTplPick').setAttribute('aria-expanded','false');$('#sTplRow').hidden=false;i.focus();i.select();
+      }
+    });
+    $('#sTplOk').addEventListener('click',saveTemplate);
+    $('#sTplName').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();saveTemplate();}});
+    $('#sTplCancel').addEventListener('click',function(){$('#sTplRow').hidden=true;});
+    $('#sTplDelKeep').addEventListener('click',function(){$('#sTplDelAsk').hidden=true;});
+    $('#sTplDelYes').addEventListener('click',function(){deleteTemplate(this.dataset.id);});
     $('#sigChoices').addEventListener('click',function(e){
       var b=e.target.closest('[data-pic]');if(!b||!S||!LOCAL[b.dataset.pic])return;
       var k=kindNow();CHOSEN[k]=b.dataset.pic;saveChosen();warmSig();
@@ -1187,6 +1421,9 @@
         e.preventDefault();e.stopPropagation();
         if(!$('#sigPad').hidden)closePad();
         else if(!$('#sigRenameRow').hidden){$('#sigRenameRow').hidden=true;}
+        else if(!$('#sTplRow').hidden){$('#sTplRow').hidden=true;}
+        else if(!$('#sTplDelAsk').hidden){$('#sTplDelAsk').hidden=true;}
+        else if(!$('#sTplList').hidden){$('#sTplList').hidden=true;$('#sTplPick').setAttribute('aria-expanded','false');}
         else if(!$('#sigDelAsk').hidden){$('#sigDelAsk').hidden=true;}
         else if(!$('#sAsk').hidden){$('#sAsk').hidden=true;}
         else cancel();

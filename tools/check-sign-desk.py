@@ -485,6 +485,55 @@ def laptop_and_phone(browser, base):
             nap(1500)
             check(not fake.files[older]['trashed'], 'and left alone')
         run_section('signed copies in Drive: list, download, delete with Undo, clear old ones', copies_list)
+
+        def templates_and_protected():
+            A.pick('form.pdf', FORM_PDF, 'application/pdf')
+            A.signer_ready(3)
+            A.tool('sig')
+            A.stroke('#signer .spage[data-i="1"]', [[0.5, 0.5]], 'mouse')
+            check(wait_until(lambda: A.marks() == 1, 5), 'a signature placed')
+            A.tool('tick')
+            A.stroke('#signer .spage[data-i="3"]', [[0.3, 0.3]], 'mouse')
+            check(wait_until(lambda: A.marks() == 2, 5), 'and a tick')
+            A.page.click('#sTplPick')
+            A.page.click('#sTplSave')
+            A.page.fill('#sTplName', 'Bank form')
+            A.page.keyboard.press('Enter')
+            tpls = lambda: [t for t in ((fake.doc() or {}).get('items') or {}).values() if t and t.get('kind') == 'tpl' and not t.get('deleted')]
+            check(wait_until(lambda: [(t['name'], len(t['marks'])) for t in tpls()] == [('Bank form', 2)], 8),
+                  'Save as template keeps "Bank form" in sign-desk.json (%s)' % [(t.get('name'), len(t.get('marks', []))) for t in tpls()])
+            A.page.click('#sCancel')
+            A.page.click('#sAskDiscard')
+            B.page.reload()
+            B.page.locator('#pickBtn').wait_for(state='visible')
+            B.pick('again.pdf', FORM_PDF, 'application/pdf')
+            B.signer_ready(3)
+            check(wait_until(lambda: B.visible('#sTplOffer') and 'Bank form' in B.page.locator('#sTplOffer').text_content(), 8),
+                  'the phone, opening the same form, is offered "Bank form"')
+            B.page.click('#sTplOffer [data-tpl]')
+            check(wait_until(lambda: B.marks() == 2, 5), 'and one tap places its signature and tick (%d)' % B.marks())
+            B.page.click('#sCancel')
+            B.page.click('#sAskDiscard')
+            from pypdf import PdfReader, PdfWriter
+            w = PdfWriter()
+            for pg in PdfReader(io.BytesIO(make_pdf([{'media': (0, 0, 300, 300), 'content': b'0.5 g 10 10 50 50 re f'}]))).pages:
+                w.add_page(pg)
+            w.encrypt(user_password='pw123', owner_password='owner-only', algorithm='RC4-128')   # RC4 needs no extra package; PDF.js opens AES too
+            b = io.BytesIO()
+            w.write(b)
+            A.pick('statement.pdf', b.getvalue(), 'application/pdf')
+            check(wait_until(lambda: A.state() == 'password', 15), 'a PDF with a password asks for it (%s)' % A.state())
+            A.page.fill('#sPw', 'pw123')
+            A.page.keyboard.press('Enter')
+            check(wait_until(lambda: A.state() == 'ready', 15) and A.visible('#sNote'), 'the right password opens it, with the note about its signed copy')
+            A.tool('sig')
+            A.stroke('#signer .spage[data-i="1"]', [[0.6, 0.5]], 'mouse')
+            check(wait_until(lambda: A.marks() == 1, 5), 'the signature goes on it')
+            with A.page.expect_download(timeout=30000) as dl:
+                A.page.click('#sSave')
+            data = open(dl.value.path(), 'rb').read()
+            check(data[:5] == b'%PDF-' and not PdfReader(io.BytesIO(data)).is_encrypted, 'its signed copy downloads, a PDF with no password (%s)' % dl.value.suggested_filename)
+        run_section('form templates across devices, and a PDF with a password', templates_and_protected)
         A.report()
         if B:
             B.report()
