@@ -32,7 +32,12 @@
   /* Home Hub's settings; another page changes them with HubSign.setup before the first open */
   var CFG={pdfjs:'/static/vendor/pdfjs-6.3.289/',pdflib:'/static/vendor/pdf-lib-1.17.1/pdf-lib.min.js',
            hand:'/static/vendor/caveat-5.3.0/caveat-latin-400-normal.woff2',keys:'hub.',keeper:'the laptop',store:null};
-  var SIG_KEY,INI_KEY,TEXTS_KEY,FINGER_KEY,INK_KEY,STYLE_KEY,TICK_KEY;
+  var SIG_KEY,INI_KEY,TEXTS_KEY,FINGER_KEY,INK_KEY,STYLE_KEY,TICK_KEY,SIZE_KEY;
+  /* how thick the ink is. pen: the pen's line on a PDF, in points; sig: a drawn signature's (or initials') line once
+     placed at its usual size on an A4-wide page, in points, whatever size it was written in the box. A Pencil's
+     pressure still makes each line between half and one and a half times that. */
+  var SIZES={fine:{pen:0.8,sig:1.0,label:'Fine'},medium:{pen:1.2,sig:1.5,label:'Medium'},bold:{pen:1.9,sig:2.2,label:'Bold'}};
+  var A4_SHORT=595;   /* points: the page a placed signature's usual width is reckoned on */
   /* the two remembered pictures: where each is kept on this device, its name in the store, its pad, and how wide a
      tap places it (of the page's shorter side) */
   var PICS={
@@ -42,7 +47,7 @@
          text:function(){return 'Write your initials in the box with the Pencil, a finger or the mouse, or use a photo of them on plain paper. They are kept on '+CFG.keeper+', so all your devices use them.';}}};
   function applyKeys(){
     var p=CFG.keys;
-    SIG_KEY=p+'signature';INI_KEY=p+'initials';TEXTS_KEY=p+'signTexts';FINGER_KEY=p+'fingerDraw';INK_KEY=p+'ink';STYLE_KEY=p+'textStyle';TICK_KEY=p+'tick';
+    SIG_KEY=p+'signature';INI_KEY=p+'initials';TEXTS_KEY=p+'signTexts';FINGER_KEY=p+'fingerDraw';INK_KEY=p+'ink';STYLE_KEY=p+'textStyle';TICK_KEY=p+'tick';SIZE_KEY=p+'size';
     PICS.sig.key=SIG_KEY;PICS.ini.key=INI_KEY;
   }
   applyKeys();
@@ -124,8 +129,10 @@
     ".srow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;min-width:0}",
     ".sgrow{flex:1 1 auto}",
     "#sTitle{font-weight:600;overflow-wrap:anywhere;min-width:0;flex:1 1 160px;font-size:15px}",
-    "#sTools [aria-pressed=\"true\"],.sinks [aria-pressed=\"true\"],.sstyles [aria-pressed=\"true\"],.sticks [aria-pressed=\"true\"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}",
-    ".sinks,.sstyles,.sticks{display:inline-flex;gap:4px}",
+    "#sTools [aria-pressed=\"true\"],.sinks [aria-pressed=\"true\"],.sstyles [aria-pressed=\"true\"],.sticks [aria-pressed=\"true\"],.ssizes [aria-pressed=\"true\"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}",
+    ".sinks,.sstyles,.sticks,.ssizes{display:inline-flex;gap:4px}",
+    "#sigPad,.sbar{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}",
+    ".sbar input{-webkit-user-select:text;user-select:text}",
     ".smark.stick svg{width:100%;height:100%;display:block;overflow:visible;pointer-events:none}",
     "/* a tick is smaller than a fingertip: a wider area to grab it by, and its × and corner kept clear of it */",
     ".smark.stick::before{content:'';position:absolute;inset:-6px}",
@@ -179,6 +186,7 @@
           h('span',{class:'sinks',role:'group','aria-label':'Ink'},[
             h('button',{class:'btn sm','data-ink':'black',type:'button','aria-pressed':'false',text:'Black'}),
             h('button',{class:'btn sm','data-ink':'blue',type:'button','aria-pressed':'false',text:'Blue'})]),
+          sizeButtons(),
           h('label',{class:'tog',id:'sFinger'},[h('input',{type:'checkbox',id:'fingerDraw'}),h('span',{text:'Draw with finger'})])]),
         h('div',{class:'srow',id:'sTextOpts',hidden:true},[
           h('span',{class:'sstyles',role:'group','aria-label':'Text style'},[
@@ -202,6 +210,7 @@
         h('div',{class:'sigbox'},[
           h('h2',{id:'sigTitle',text:'Your signature'}),
           h('p',{id:'sigText',text:PICS.sig.text()}),
+          h('div',{class:'srow',id:'sigSizes'},[sizeButtons()]),
           h('canvas',{id:'sigCanvas'}),
           h('p',{id:'sigMsg',role:'status'}),
           h('div',{class:'srow'},[
@@ -217,6 +226,10 @@
     return el;
   }
 
+  function sizeButtons(){
+    return h('span',{class:'ssizes',role:'group','aria-label':'Thickness'},Object.keys(SIZES).map(function(k){
+      return h('button',{class:'btn sm','data-size':k,type:'button','aria-pressed':'false',text:SIZES[k].label});}));
+  }
   function setState(s){UI.dataset.state=s;if(S)S.state=s;}
   function msg(t){$('#sMsg').textContent=t||'';}
   function total(){return S?S.pages.reduce(function(n,P){return n+P.marks.length;},0):0;}
@@ -240,7 +253,7 @@
     var kind=o.kind==='pdf'||f.kind==='pdf'?'pdf':'image';
     S={f:f,o:o,kind:kind,bytes:null,doc:null,img:null,pages:[],tool:'pen',undo:[],penSeen:false,finger:lsGet(FINGER_KEY,'')==='1',
        zoom:0,ink:INKS[lsGet(INK_KEY,'blue')]?lsGet(INK_KEY,'blue'):'blue',style:lsGet(STYLE_KEY,'hand')==='type'?'type':'hand',
-       tick:lsGet(TICK_KEY,'check')==='cross'?'cross':'check',
+       tick:lsGet(TICK_KEY,'check')==='cross'?'cross':'check',size:SIZES[lsGet(SIZE_KEY,'medium')]?lsGet(SIZE_KEY,'medium'):'medium',
        sel:null,g:null,saving:false,state:'loading',sigs:{sig:loadSig('sig'),ini:loadSig('ini')},synced:false,gen:Math.random()};
     var me=S;
     S.syncing=syncSigs(me);
@@ -504,6 +517,7 @@
     Array.prototype.forEach.call(UI.querySelectorAll('[data-ink]'),function(b){b.setAttribute('aria-pressed',S&&S.ink===b.dataset.ink?'true':'false');});
     Array.prototype.forEach.call(UI.querySelectorAll('[data-style]'),function(b){b.setAttribute('aria-pressed',S&&S.style===b.dataset.style?'true':'false');});
     Array.prototype.forEach.call(UI.querySelectorAll('[data-tick]'),function(b){b.setAttribute('aria-pressed',S&&S.tick===b.dataset.tick?'true':'false');});
+    Array.prototype.forEach.call(UI.querySelectorAll('[data-size]'),function(b){b.setAttribute('aria-pressed',S&&S.size===b.dataset.size?'true':'false');});
     $('#sText').classList.toggle('hand',!!(S&&S.style==='hand'));
     $('#fingerDraw').checked=!!(S&&S.finger);
     $('#sPages').classList.toggle('fingerdraw',!!(S&&S.finger));
@@ -594,7 +608,7 @@
       e.preventDefault();
       deselect();
       var p=pagePoint(P,e);
-      var base=S.kind==='pdf'?1.6:Math.max(2.5,Math.min(P.w,P.h)/150);
+      var base=S.kind==='pdf'?SIZES[S.size].pen:Math.max(2.5,Math.min(P.w,P.h)/150)*SIZES[S.size].pen/1.6;   /* a photo: in step with its size */
       S.g={kind:'ink',P:P,id:e.pointerId,m:{t:'ink',color:INKS[S.ink],width:base,pts:[[p[0],p[1],pressure(e)]]}};
       capture(e);
       var x=inkCtx(P);strokeInk(x,S.g.m);
@@ -738,18 +752,22 @@
       return;
     }
     x.setTransform(k,0,0,k,0,0);
-    PAD.strokes.forEach(function(st){strokeInk(x,{color:padInk(),width:3,pts:st});});
+    PAD.strokes.forEach(function(st){strokeInk(x,{color:padInk(),width:padWidth(),pts:st});});
   }
+  function padWidth(){return 2*SIZES[S?S.size:'medium'].sig;}   /* in the box: 3 px for Medium, as it always was */
   function useSig(){
     var sig=PAD.photo;
     if(!sig){
       var all=[].concat.apply([],PAD.strokes);if(!all.length)return;
       var x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
       all.forEach(function(p){x0=Math.min(x0,p[0]);y0=Math.min(y0,p[1]);x1=Math.max(x1,p[0]);y1=Math.max(y1,p[1]);});
-      var pad=6,K=3,w=Math.max(20,x1-x0+2*pad),hh=Math.max(20,y1-y0+2*pad);
+      /* the line is made as thick, for the signature's width, as the chosen thickness is for its usual placed width,
+         so a signature written small in the box is not placed with a thick line (it is scaled up, line and all) */
+      var lw=SIZES[S.size].sig*Math.max(40,x1-x0)/(PICS[PAD.which].width*A4_SHORT);
+      var pad=Math.max(6,lw),K=3,w=Math.max(20,x1-x0+2*pad),hh=Math.max(20,y1-y0+2*pad);
       var c=document.createElement('canvas');c.width=Math.round(w*K);c.height=Math.round(hh*K);
       var x=c.getContext('2d');x.setTransform(K,0,0,K,(pad-x0)*K,(pad-y0)*K);
-      PAD.strokes.forEach(function(st){strokeInk(x,{color:INKS.black,width:3,pts:st});});   /* kept colourless; tinted when placed */
+      PAD.strokes.forEach(function(st){strokeInk(x,{color:INKS.black,width:lw,pts:st});});   /* kept colourless; tinted when placed */
       sig={src:c.toDataURL('image/png'),aspect:w/hh};
     }
     var which=PAD.which,me=S;
@@ -981,6 +999,11 @@
       if(P){snap();m.kind=S.tick;renderMarks(P);counts();}   /* a selected one turns into the other */
     });
     $('#sEvery').addEventListener('click',function(){if(S&&S.state==='ready')everyPage();});
+    UI.addEventListener('click',function(e){
+      var b=e.target.closest('[data-size]');if(!b||!S||!SIZES[b.dataset.size])return;
+      S.size=b.dataset.size;lsSet(SIZE_KEY,S.size==='medium'?null:S.size);paintTools();
+      if(!$('#sigPad').hidden)padDraw();
+    });
     $('#driveCopy').addEventListener('change',function(){if(S&&S.o.driveCopy&&S.o.driveCopy.set)S.o.driveCopy.set(this.checked);});
     UI.querySelector('.sinks').addEventListener('click',function(e){
       var b=e.target.closest('[data-ink]');if(!b||!S)return;
@@ -1025,8 +1048,13 @@
     });
     pc.addEventListener('pointermove',function(e){
       if(!PAD.g||e.pointerId!==PAD.g.id)return;e.preventDefault();
-      PAD.g.pts.push(padPoint(e).concat([pressure(e)]));padDraw();
+      var evs=e.getCoalescedEvents?e.getCoalescedEvents():[];if(!evs.length)evs=[e];   /* a Pencil sends far more points than frames */
+      evs.forEach(function(ev){PAD.g.pts.push(padPoint(ev).concat([pressure(ev)]));});padDraw();
     });
+    /* iOS: a touch in the box, Pencil or finger, is always drawing. Left to Safari, a Pencil stroke can turn into a
+       scroll (the stroke is cut off), a selection of the words above the box, or Scribble */
+    function padTouch(e){e.preventDefault();}
+    pc.addEventListener('touchstart',padTouch,{passive:false});pc.addEventListener('touchmove',padTouch,{passive:false});
     function padUp(e){if(!PAD.g||e.pointerId!==PAD.g.id)return;PAD.g=null;$('#sigUse').disabled=!PAD.strokes.length;}
     pc.addEventListener('pointerup',padUp);pc.addEventListener('pointercancel',padUp);
     document.addEventListener('keydown',function(e){

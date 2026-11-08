@@ -670,7 +670,7 @@ signs Word files, which a browser cannot open). Sign Desk *is* Home Hub's signer
 | Step | What happens |
 |---|---|
 | Open | **Choose a PDF or photo to sign**, drag it onto the page, or copy it and press Ctrl+V. A Word file is not opened: the page says to save it as PDF in Word, or to sign it with Home Hub at home |
-| Sign | **Signature**, **Initials**, **Text** (today's date, in handwriting or typed), **Tick ✓** (a tick or a cross in a form's box), **Pen**, and **Every page** for a selected piece. Blue or black ink |
+| Sign | **Signature**, **Initials**, **Text** (today's date, in handwriting or typed), **Tick ✓** (a tick or a cross in a form's box), **Pen**, and **Every page** for a selected piece. Blue or black ink; **Fine**, **Medium** or **Bold** (per device), and a signature's line is as thick whatever size you wrote it in the box |
 | Save | On a laptop the signed copy downloads at once (`name (signed).pdf`); on a phone the page offers **Share…** (where the browser can share files) and **Download**. The switch *Also copy to Google Drive › Personal Apps › Sign Desk* keeps a copy there too; it is on until you turn it off, per device |
 
 **Your signature and initials** are drawn the first time you press Signature or Initials, and kept in
