@@ -19,7 +19,7 @@ that device keeps its data only in its own browser (the header then says *change
 | Asana Rounds | `docs/asana-rounds.html` | `asana-rounds.json` — the routine, and each day's morning and evening ticks |
 | Shoebox | `docs/shoebox.html` | none — it works on your Drive's own files and folders ([details](#shoebox-your-photos-and-papers-in-drive)) |
 | Drop Tray | `docs/drop-tray.html` | `drop-tray.json` — text you sent between devices; pictures and files in `Drop Tray/` ([details](#drop-tray-one-clipboard-for-all-your-devices)) |
-| Sign Desk | `docs/sign-desk.html` | `sign-desk.json` — your signature and initials; signed copies you keep in `Sign Desk/` ([details](#sign-desk-sign-a-pdf-or-a-photo-anywhere)) |
+| Sign Desk | `docs/sign-desk.html` | `sign-desk.json` — your named signatures and initials, and the clear-after setting; signed copies you keep in `Sign Desk/` ([details](#sign-desk-sign-a-pdf-or-a-photo-anywhere)) |
 
 `docs/index.html` is the **Home** page: today's to-dos (`home.json`), then a launcher for all eleven apps, the
 Learning Hub, career links, the tools that run only on this laptop, and the games. In a browser tab every link
@@ -673,15 +673,26 @@ signs Word files, which a browser cannot open). Sign Desk *is* Home Hub's signer
 | Sign | **Signature**, **Initials**, **Text** (today's date, in handwriting or typed), **Tick ✓** (a tick or a cross in a form's box), **Pen**, and **Every page** for a selected piece. Blue or black ink; **Fine**, **Medium** or **Bold** (per device), and a signature's line is as thick whatever size you wrote it in the box |
 | Save | On a laptop the signed copy downloads at once (`name (signed).pdf`); on a phone the page offers **Share…** (where the browser can share files) and **Download**. The switch *Also copy to Google Drive › Personal Apps › Sign Desk* keeps a copy there too; it is on until you turn it off, per device |
 
-**Your signature and initials** are drawn the first time you press Signature or Initials, and kept in
-`Personal Apps/sign-desk.json` in your Drive, so every device you sign in on has them; the page shows both under
-*Your signature and initials*. Signed in, the signer waits for its first look at Drive (at most 5 s) before
-offering an empty pad, so a new device never replaces your saved signature with a quick scribble. Signed out,
-the page says to continue with Google first. Documents themselves are never stored, except the signed copies you
-keep.
+**Your signatures and initials, by name.** The first is drawn when you first press Signature (or Initials) and is
+called *My signature* (*My initials*). Keep as many as you need, one for each bank's specimen signature for example:
+in the signer, **+ New signature** draws another and asks its name (*HDFC*, *SBI*); the names are buttons, the one
+used last stays chosen on each device, and **Rename**, **Draw again** and **Delete** work on the chosen one. The page
+lists them all under *Your signatures and initials*, with **Rename** and **Delete** (it asks first; Esc keeps it).
+They are kept in `Personal Apps/sign-desk.json` in your Drive, so every device you sign in on has them, and a
+deleted one is kept there as a deletion, so a device still holding a copy drops it. The single signature and
+initials saved before names read as *My signature* and *My initials*. Signed in, the signer waits for its first
+look at Drive (at most 5 s) before offering an empty pad, so a new device never replaces a saved signature with a
+quick scribble. Signed out, the page says to continue with Google first.
 
-**Not the same signature as Home Hub's yet.** Home Hub keeps its own on the laptop; drawing it once in each app is
-needed for now. Making the two share one is the next step.
+**Signed copies in Google Drive.** The page lists the copies kept in `Personal Apps/Sign Desk/`, newest first, with
+**Download**, **Share…** (where the browser can share files) and **Delete**. Delete asks first (Cancel is chosen),
+then takes the copy off the list with **Undo** for 6 seconds; after that it goes to Google Drive's Trash, where
+Google keeps it 30 days. **Clear signed copies after** 7, 30 or 90 days (or Never, the default) sends older copies
+to the Trash whenever a device looks at the list; the setting is shared by your devices. Documents themselves are
+never stored, except the signed copies you keep.
+
+**Not the same signatures as Home Hub's yet.** Home Hub keeps its own on the laptop; drawing them once in each app
+is needed for now. Making the two share one list is the next step.
 
 **Libraries.** PDF.js 6.3.289 and pdf-lib 1.17.1 from cdnjs, the Caveat 5.3.0 font from jsDelivr: the same
 versions Home Hub serves from its own folder.
@@ -696,7 +707,10 @@ the CDNs and the checker says so. It covers: `docs/sign.js` being Home Hub's; si
 files explained, not opened; signature, initials on every page and ticks on a plain page, a page turned 90 degrees
 and a page with a crop box, each landing inside its box in the downloaded PDF and nowhere outside it; the copy in
 Drive (the same bytes); the phone getting the laptop's signature, Share and Download, the switch off and
-remembered; paste and drag; 390 and 1280 px in both themes with 4.5:1 contrast.
+remembered; paste and drag; several signatures by name, renamed and deleted on the page, the phone following;
+the signed-copies list, Download, Delete with Cancel and Undo, and the clear-after setting (a 10-day-old copy
+trashed at 7 days, a 2-day-old one kept, nothing touched at Never); 390 and 1280 px in both themes with 4.5:1
+contrast.
 
 ## Sign-in details worth knowing
 

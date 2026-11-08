@@ -208,10 +208,16 @@ class Desk(dt.Session):
         return self.page.locator(sel).first.is_visible()
 
 
-def pic(fake, which):
-    d = fake.doc() or {}
-    it = (d.get('items') or {}).get(which)
-    return it if it and not it.get('deleted') and it.get('png') else None
+def pics(fake, kind):
+    """The live signatures ('sig') or initials ('ini') in sign-desk.json, oldest first."""
+    d = (fake.doc() or {}).get('items') or {}
+    live = [it for it in d.values() if it and it.get('kind') == kind and not it.get('deleted') and it.get('png')]
+    return sorted(live, key=lambda it: it.get('made') or 0)
+
+
+def pic(fake, kind):
+    got = pics(fake, kind)
+    return got[-1] if got else None
 
 
 def drive_copies(fake):
@@ -247,7 +253,7 @@ def laptop_and_phone(browser, base):
             A.open()
             check(A.visible('#authNote') and 'Continue with Google' in A.page.locator('#authNote').text_content(),
                   'signed out, the page says to continue with Google so the signature comes from Drive (%r)' % A.page.locator('#authNote').text_content())
-            check('Not drawn yet' in A.page.locator('#sigPrev').text_content(), 'no signature yet (%r)' % A.page.locator('#sigPrev').text_content())
+            check('None yet' in A.page.locator('#mine').text_content(), 'no signatures yet (%r)' % A.page.locator('#mine').text_content())
             A.sign_in()
             check(wait_until(lambda: not A.visible('#authNote'), 3), 'signed in, the note goes')
         run_section('signed out, then in', signed_out)
@@ -273,8 +279,9 @@ def laptop_and_phone(browser, base):
             check('Google Drive' in A.page.locator('#sigText').text_content(), 'and says it is kept in Google Drive (%r)' % A.page.locator('#sigText').text_content())
             A.stroke('#sigCanvas', [[0.1, 0.55], [0.5, 0.4], [0.9, 0.55]], 'mouse')
             A.page.click('#sigUse')
-            check(wait_until(lambda: pic(fake, 'signature') is not None, 8), 'the signature is saved to sign-desk.json in Drive')
-            check(wait_until(lambda: A.page.locator('#sigPrev img').count() == 1, 3), 'and shown under Your signature')
+            check(wait_until(lambda: pic(fake, 'sig') is not None, 8), 'the signature is saved to sign-desk.json in Drive')
+            check((pic(fake, 'sig') or {}).get('name') == 'My signature', 'as "My signature", the name the first one gets')
+            check(wait_until(lambda: A.page.locator('#mine .pic[data-kind="sig"] img').count() == 1, 3), 'and shown under Your signatures')
             A.stroke('#signer .spage[data-i="1"]', [[0.6, 0.45]], 'mouse')
             check(wait_until(lambda: A.marks() == 1, 3), 'one click places it')
             st['sig'] = mark_box(A, 1, 'ssig')
@@ -282,7 +289,7 @@ def laptop_and_phone(browser, base):
             check(wait_until(lambda: A.visible('#sigPad'), 3), 'Initials: the pad opens for them')
             A.stroke('#sigCanvas', [[0.3, 0.3], [0.4, 0.7], [0.5, 0.3]], 'mouse')
             A.page.click('#sigUse')
-            check(wait_until(lambda: pic(fake, 'initials') is not None, 8), 'the initials are saved to Drive too')
+            check(wait_until(lambda: pic(fake, 'ini') is not None, 8), 'the initials are saved to Drive too')
             A.stroke('#signer .spage[data-i="1"]', [[0.85, 0.92]], 'mouse')
             check(wait_until(lambda: A.marks() == 2, 3), 'placed')
             A.page.click('#sEvery')
@@ -336,7 +343,7 @@ def laptop_and_phone(browser, base):
             B = Desk(browser, base, fake, viewport=(390, 844), ua=IPHONE_UA, touch=True)
             B.open()
             B.sign_in()
-            check(wait_until(lambda: B.page.locator('#sigPrev img').count() == 1 and B.page.locator('#iniPrev img').count() == 1, 8),
+            check(wait_until(lambda: B.page.locator('#mine .pic[data-kind="sig"] img').count() == 1 and B.page.locator('#mine .pic[data-kind="ini"] img').count() == 1, 8),
                   'the phone shows the signature and initials drawn on the laptop')
             B.pick('photo.jpg', jpeg(640, 480, (255, 255, 255)), 'image/jpeg')
             B.page.locator('#signer').wait_for(state='visible')
@@ -346,8 +353,9 @@ def laptop_and_phone(browser, base):
             check(not B.visible('#sigPad'), "the laptop's signature is ready on the phone: no pad")
             B.stroke('#signer .spage[data-i="1"]', [[0.5, 0.5]], 'touch')
             check(wait_until(lambda: B.marks() == 1, 3), 'one tap places it (%d)' % B.marks())
-            want = (pic(fake, 'signature') or {}).get('png')
-            check(B.ls('signdesk.signature') == want, 'and the phone keeps a copy of the same one')
+            want = (pic(fake, 'sig') or {}).get('png')
+            check(want and B.page.evaluate("(w)=>Object.values(JSON.parse(localStorage.getItem('signdesk.pics')||'{}')).some(x=>x.png===w)", want),
+                  'and the phone keeps a copy of the same one')
             B.page.click('#driveCopy')   # off on this phone: no copy in Drive
             B.page.click('#sSave')
             check(wait_until(lambda: B.visible('#result'), 10), 'on a phone, Save shows the signed copy to share or download')
@@ -386,6 +394,97 @@ def laptop_and_phone(browser, base):
             check(wait_until(lambda: A.state() == 'ready' and 'dragged.pdf' in A.page.locator('#sTitle').text_content(), 15), 'and dropping it opens it')
             A.page.click('#sCancel')
         run_section('paste and drag', other_ways_in)
+
+        def names_on_the_page():
+            A.pick('form.pdf', FORM_PDF, 'application/pdf')
+            A.signer_ready(1)
+            A.tool('sig')
+            for name in ('HDFC', 'SBI'):
+                A.page.click('#sigNew')
+                A.stroke('#sigCanvas', [[0.1, 0.5], [0.9, 0.45]], 'mouse')
+                A.page.fill('#sigName', name)
+                A.page.click('#sigUse')
+                check(wait_until(lambda: any(x.get('name') == name for x in pics(fake, 'sig')), 8), '"%s" is saved to Drive' % name)
+            A.page.click('#sCancel')
+            rows = lambda s: s.page.eval_on_selector_all('#mine .pic[data-kind="sig"] .pname', 'els=>els.map(e=>e.textContent)')
+            check(wait_until(lambda: rows(A) == ['My signature', 'HDFC', 'SBI'], 3), 'the page lists the signatures by name (%s)' % rows(A))
+            sbi = '#mine .pic[data-kind="sig"]:has(.pname:text-is("SBI"))'
+            A.page.click(sbi + ' [data-act="rename"]')
+            check(A.page.input_value(sbi + ' [data-role="name"]') == 'SBI', 'Rename starts from the name it has')
+            A.page.fill(sbi + ' [data-role="name"]', 'SBI Bank')
+            A.page.keyboard.press('Enter')
+            check(wait_until(lambda: any(x.get('name') == 'SBI Bank' for x in pics(fake, 'sig')), 8), 'Enter renames it in Drive')
+            check(wait_until(lambda: 'SBI Bank' in rows(A), 3), 'and on the page')
+            hdfc = '#mine .pic[data-kind="sig"]:has(.pname:text-is("HDFC"))'
+            A.page.click(hdfc + ' [data-act="del"]')
+            check(A.page.evaluate("document.activeElement&&document.activeElement.dataset.act") == 'cancel', 'Delete asks first, with Cancel chosen')
+            A.page.keyboard.press('Escape')
+            check('HDFC' in rows(A) and not A.visible(hdfc + ' .pask'), 'Esc keeps it')
+            A.page.click(hdfc + ' [data-act="del"]')
+            A.page.click(hdfc + ' [data-act="yes"]')
+            check(wait_until(lambda: not any(x.get('name') == 'HDFC' for x in pics(fake, 'sig')), 8), 'Delete removes it from Drive, for every device')
+            check('HDFC' not in rows(A), 'and from the page')
+            B.page.reload()
+            B.page.locator('#pickBtn').wait_for(state='visible')
+            check(wait_until(lambda: rows(B) == ['My signature', 'SBI Bank'], 10), 'the phone lists the same, renamed and without the deleted one (%s)' % rows(B))
+            B.pick('photo.jpg', jpeg(640, 480, (255, 255, 255)), 'image/jpeg')
+            B.signer_ready(1)
+            B.tool('sig')
+            chips = lambda: sorted(B.page.eval_on_selector_all('#sigChoices [data-pic]', 'els=>els.map(e=>e.textContent)'))
+            check(wait_until(lambda: chips() == ['My signature', 'SBI Bank'], 5), 'and its signer offers just those (%s)' % chips())
+            check(not B.page.evaluate("Object.values(JSON.parse(localStorage.getItem('signdesk.pics')||'{}')).some(x=>x.name==='HDFC')"),
+                  'the phone kept no copy of the deleted one')
+            B.page.click('#sCancel')
+        run_section('several signatures by name: rename and delete on the page', names_on_the_page)
+
+        def copies_list():
+            A.page.reload()
+            A.page.locator('#pickBtn').wait_for(state='visible')
+            names = lambda: A.page.eval_on_selector_all('#copies .copy .cname', 'els=>els.map(e=>e.textContent)')
+            check(wait_until(lambda: names() == ['form (signed).pdf'], 8), 'the signed copy kept in Drive is listed (%s)' % names())
+            f = drive_copies(fake)[0] if drive_copies(fake) else None
+            row = '#copies .copy:has(.cname:text-is("form (signed).pdf"))'
+            with A.page.expect_download() as dl:
+                A.page.click(row + ' [data-act="dl"]')
+            check(f and open(dl.value.path(), 'rb').read() == f['content'], 'Download from the list gives the same file')
+            A.page.click(row + ' [data-act="del"]')
+            check(A.page.evaluate("document.activeElement&&document.activeElement.dataset.act") == 'keep', 'Delete asks first, with Cancel chosen')
+            A.page.click(row + ' [data-act="keep"]')
+            check(names() == ['form (signed).pdf'], 'Cancel keeps it')
+            A.page.click(row + ' [data-act="del"]')
+            A.page.click(row + ' [data-act="yes"]')
+            check(names() == [] and 'Undo' in A.toast(), 'Delete takes it off the list, with Undo (%r)' % A.toast())
+            A.page.click('#toastAct')
+            check(names() == ['form (signed).pdf'], 'Undo puts it back')
+            nap(7000)
+            check(f and not fake.files[f['id']]['trashed'], 'and it never went to the Trash')
+            A.page.click(row + ' [data-act="del"]')
+            A.page.click(row + ' [data-act="yes"]')
+            check(f and wait_until(lambda: fake.files[f['id']]['trashed'], 12), 'once Undo has passed, it goes to Google Drive’s Trash')
+            check(names() == [], 'and stays off the list')
+            folder = fake.folder(SUB)
+            now = __import__('time').time()
+            old = fake.add('old (signed).pdf', 'application/pdf', folder, b'%PDF-1.4 old', at=now - 10 * 86400)
+            recent = fake.add('recent (signed).pdf', 'application/pdf', folder, b'%PDF-1.4 recent', at=now - 2 * 86400)
+            A.page.reload()
+            A.page.locator('#pickBtn').wait_for(state='visible')
+            check(wait_until(lambda: sorted(names()) == ['old (signed).pdf', 'recent (signed).pdf'], 8), 'copies saved elsewhere show up (%s)' % names())
+            check(A.page.input_value('#keepSel') == '0', 'nothing is cleared until you choose to')
+            A.page.select_option('#keepSel', '7')
+            check(wait_until(lambda: fake.files[old]['trashed'], 8), 'Clear after 7 days sends the 10-day-old copy to the Trash')
+            check(not fake.files[recent]['trashed'], 'and keeps the 2-day-old one')
+            check(wait_until(lambda: names() == ['recent (signed).pdf'], 3) and 'older than 7 days' in A.toast(), 'the page says so (%r)' % A.toast())
+            st_ = ((fake.doc() or {}).get('items') or {}).get('settings') or {}
+            check(wait_until(lambda: (((fake.doc() or {}).get('items') or {}).get('settings') or {}).get('keepDays') == 7, 8),
+                  'the setting is kept in Drive, for every device (%s)' % st_)
+            A.page.select_option('#keepSel', '0')
+            older = fake.add('older (signed).pdf', 'application/pdf', folder, b'%PDF-1.4 older', at=now - 40 * 86400)
+            A.page.reload()
+            A.page.locator('#pickBtn').wait_for(state='visible')
+            check(wait_until(lambda: 'older (signed).pdf' in names(), 8), 'set back to Never, an old copy is listed')
+            nap(1500)
+            check(not fake.files[older]['trashed'], 'and left alone')
+        run_section('signed copies in Drive: list, download, delete with Undo, clear old ones', copies_list)
         A.report()
         if B:
             B.report()
@@ -414,7 +513,7 @@ def layout(browser, base):
                     s.open()
                     check(p.evaluate('document.documentElement.scrollWidth') <= w, 'signed out, the page fits %d px' % w)
                     s.sign_in()
-                    page_text = p.evaluate(HEX_OF, '.lead,.hint,.sect,#foot,#sigPrev,#iniPrev,.btn,h1')
+                    page_text = p.evaluate(HEX_OF, '.lead,.hint,.sect,.sect2,#foot,#mine .pname,#mine .none,#copiesNote,#keepRow label,.btn,h1')
                     check(len(page_text) >= 6, 'the page\'s text was measured (%d)' % len(page_text))
                     for cls, fg, bg in page_text:
                         check(ratio(fg, bg) >= 4.5, '%s is %.2f:1 in %s at %d px' % (cls, ratio(fg, bg), scheme, w))
@@ -462,7 +561,7 @@ def source_page(browser):
             check(open(dl.value.path(), 'rb').read()[:5] == b'%PDF-', 'and the signed PDF downloads')
             s.page.reload()
             s.page.locator('#pickBtn').wait_for(state='visible')
-            check(wait_until(lambda: s.page.locator('#sigPrev img').count() == 1, 3), 'the signature is still there after a reload, in this browser')
+            check(wait_until(lambda: s.page.locator('#mine .pic img').count() == 1, 3), 'the signature is still there after a reload, in this browser')
         run_section('site/: the source page, no Drive', one)
         s.report()
     finally:

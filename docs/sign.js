@@ -9,14 +9,16 @@
    HubSign.setup({pdfjs, pdflib, hand, keys, keeper, store})   once, before open, on a page other than Home Hub's:
        pdfjs/pdflib/hand   where PDF.js (a folder), pdf-lib and the Caveat handwriting font come from
        keys                the prefix of this device's own choices in localStorage ('hub.' here)
-       keeper              where the signature is kept, in words ('the laptop' here)
-       store               {get() -> {signature, initials}, put(name, png, aspect)}, each {png, aspect} or null;
-                           Home Hub's is /api/signature
+       keeper              where the signatures are kept, in words ('the laptop' here)
+       store               {list() -> [item], put(item)}: an item is {id, kind 'sig'|'ini', name, png, aspect, made}
+                           or, once deleted, {id, kind, deleted: true}. Home Hub's is /api/signatures
    The same file is Personal Apps' docs/sign.js (Sign Desk): keep the two identical; its checker compares them.
 
-   The signature and the initials are kept by the store (on the laptop here), so every device signs with the same
-   ones. Each device keeps a copy too, so a tap places them at once and they still work if the store does not answer;
-   one drawn while it did not answer is marked pending and goes up the next time the signer opens.
+   Signatures and initials have names (HDFC, SBI, ...), as many of each as you like, and are kept by the store (on the
+   laptop here), so every device signs with the same ones. Each device keeps a copy too, so a tap places one at once
+   and they still work if the store does not answer; one drawn, renamed or deleted while it did not answer is marked
+   pending and goes up the next time the signer opens. A deletion stays in the store as a deletion, so a device still
+   holding a copy drops it; one the store never had (a signature from before they were kept there) is sent up.
 
    Marks are kept in "page units", the page as it is shown: PDF points with the page's own rotation applied
    (PDF.js's viewport at scale 1), or a photo's pixels. On screen they are drawn on a canvas over each page
@@ -32,23 +34,22 @@
   /* Home Hub's settings; another page changes them with HubSign.setup before the first open */
   var CFG={pdfjs:'/static/vendor/pdfjs-6.3.289/',pdflib:'/static/vendor/pdf-lib-1.17.1/pdf-lib.min.js',
            hand:'/static/vendor/caveat-5.3.0/caveat-latin-400-normal.woff2',keys:'hub.',keeper:'the laptop',store:null};
-  var SIG_KEY,INI_KEY,TEXTS_KEY,FINGER_KEY,INK_KEY,STYLE_KEY,TICK_KEY,SIZE_KEY;
+  var PICS_KEY,CHOSEN_KEY,TEXTS_KEY,FINGER_KEY,INK_KEY,STYLE_KEY,TICK_KEY,SIZE_KEY;
   /* how thick the ink is. pen: the pen's line on a PDF, in points; sig: a drawn signature's (or initials') line once
      placed at its usual size on an A4-wide page, in points, whatever size it was written in the box. A Pencil's
      pressure still makes each line between half and one and a half times that. */
   var SIZES={fine:{pen:0.8,sig:1.0,label:'Fine'},medium:{pen:1.2,sig:1.5,label:'Medium'},bold:{pen:1.9,sig:2.2,label:'Bold'}};
   var A4_SHORT=595;   /* points: the page a placed signature's usual width is reckoned on */
-  /* the two remembered pictures: where each is kept on this device, its name in the store, its pad, and how wide a
+  /* the two kinds of remembered picture: what each is called, its pad, the name the first one gets, and how wide a
      tap places it (of the page's shorter side) */
   var PICS={
-    sig:{name:'signature',title:'Your signature',width:0.36,alt:'Your signature',
+    sig:{name:'signature',title:'Your signature',width:0.36,alt:'Your signature',first:'My signature',
          text:function(){return 'Sign in the box with the Pencil, a finger or the mouse, or use a photo of your signature on plain paper. It is kept on '+CFG.keeper+', so all your devices use it.';}},
-    ini:{name:'initials',title:'Your initials',width:0.12,alt:'Your initials',
+    ini:{name:'initials',title:'Your initials',width:0.12,alt:'Your initials',first:'My initials',
          text:function(){return 'Write your initials in the box with the Pencil, a finger or the mouse, or use a photo of them on plain paper. They are kept on '+CFG.keeper+', so all your devices use them.';}}};
   function applyKeys(){
     var p=CFG.keys;
-    SIG_KEY=p+'signature';INI_KEY=p+'initials';TEXTS_KEY=p+'signTexts';FINGER_KEY=p+'fingerDraw';INK_KEY=p+'ink';STYLE_KEY=p+'textStyle';TICK_KEY=p+'tick';SIZE_KEY=p+'size';
-    PICS.sig.key=SIG_KEY;PICS.ini.key=INI_KEY;
+    PICS_KEY=p+'pics';CHOSEN_KEY=p+'chosen';TEXTS_KEY=p+'signTexts';FINGER_KEY=p+'fingerDraw';INK_KEY=p+'ink';STYLE_KEY=p+'textStyle';TICK_KEY=p+'tick';SIZE_KEY=p+'size';
   }
   applyKeys();
   /* a tick and a cross, drawn as lines in a 1 × 1 square (no font has them in every place they are drawn) */
@@ -129,10 +130,14 @@
     ".srow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;min-width:0}",
     ".sgrow{flex:1 1 auto}",
     "#sTitle{font-weight:600;overflow-wrap:anywhere;min-width:0;flex:1 1 160px;font-size:15px}",
-    "#sTools [aria-pressed=\"true\"],.sinks [aria-pressed=\"true\"],.sstyles [aria-pressed=\"true\"],.sticks [aria-pressed=\"true\"],.ssizes [aria-pressed=\"true\"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}",
+    "#sTools [aria-pressed=\"true\"],.sinks [aria-pressed=\"true\"],.sstyles [aria-pressed=\"true\"],.sticks [aria-pressed=\"true\"],.ssizes [aria-pressed=\"true\"],.schoices [aria-pressed=\"true\"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}",
     ".sinks,.sstyles,.sticks,.ssizes{display:inline-flex;gap:4px}",
     "#sigPad,.sbar{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}",
-    ".sbar input{-webkit-user-select:text;user-select:text}",
+    ".sbar input,#sigPad input{-webkit-user-select:text;user-select:text}",
+    ".schoices{display:inline-flex;flex-wrap:wrap;gap:4px}",
+    ".sname{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-size:14px}",
+    "#sigName{flex:1 1 160px;min-width:0;min-height:34px;font-size:15px}",
+    "#sigRenameInput{flex:1 1 140px;min-width:0;min-height:32px;font-size:15px}",
     ".smark.stick svg{width:100%;height:100%;display:block;overflow:visible;pointer-events:none}",
     "/* a tick is smaller than a fingertip: a wider area to grab it by, and its × and corner kept clear of it */",
     ".smark.stick::before{content:'';position:absolute;inset:-6px}",
@@ -199,7 +204,21 @@
             h('button',{class:'btn sm','data-tick':'check',type:'button','aria-pressed':'false',text:'✓ Tick'}),
             h('button',{class:'btn sm','data-tick':'cross',type:'button','aria-pressed':'false',text:'✗ Cross'})])]),
         h('div',{class:'srow',id:'sSigOpts',hidden:true},[
-          h('button',{class:'btn sm quiet',id:'sigRedo',type:'button',text:'Draw a new signature'})]),
+          h('span',{class:'schoices',id:'sigChoices',role:'group','aria-label':'Which one'}),
+          h('button',{class:'btn sm quiet',id:'sigNew',type:'button',text:'+ New signature'}),
+          h('span',{class:'sgrow'}),
+          h('button',{class:'btn sm quiet',id:'sigRename',type:'button',text:'Rename'}),
+          h('button',{class:'btn sm quiet',id:'sigRedo',type:'button',text:'Draw again'}),
+          h('button',{class:'btn sm quiet danger',id:'sigDel',type:'button',text:'Delete'})]),
+        h('div',{class:'srow',id:'sigRenameRow',hidden:true},[
+          h('label',{for:'sigRenameInput',text:'New name'}),
+          h('input',{type:'text',id:'sigRenameInput',maxlength:'40',autocomplete:'off'}),
+          h('button',{class:'btn sm primary',id:'sigRenameSave',type:'button',text:'Save'}),
+          h('button',{class:'btn sm',id:'sigRenameCancel',type:'button',text:'Cancel'})]),
+        h('div',{class:'srow',id:'sigDelAsk',hidden:true,role:'alertdialog','aria-labelledby':'sigDelText'},[
+          h('span',{id:'sigDelText'}),
+          h('button',{class:'btn sm',id:'sigDelKeep',type:'button',text:'Keep'}),
+          h('button',{class:'btn sm danger solid',id:'sigDelYes',type:'button',text:'Delete'})]),
         h('p',{id:'sMsg',role:'status'})]),
       h('div',{id:'sPages'}),
       h('div',{id:'sAsk',hidden:true,role:'alertdialog','aria-labelledby':'sAskText'},[
@@ -210,6 +229,7 @@
         h('div',{class:'sigbox'},[
           h('h2',{id:'sigTitle',text:'Your signature'}),
           h('p',{id:'sigText',text:PICS.sig.text()}),
+          h('label',{class:'sname'},[h('span',{text:'Name'}),h('input',{type:'text',id:'sigName',maxlength:'40',autocomplete:'off',placeholder:'such as HDFC or SBI'})]),
           h('div',{class:'srow',id:'sigSizes'},[sizeButtons()]),
           h('canvas',{id:'sigCanvas'}),
           h('p',{id:'sigMsg',role:'status'}),
@@ -254,9 +274,10 @@
     S={f:f,o:o,kind:kind,bytes:null,doc:null,img:null,pages:[],tool:'pen',undo:[],penSeen:false,finger:lsGet(FINGER_KEY,'')==='1',
        zoom:0,ink:INKS[lsGet(INK_KEY,'blue')]?lsGet(INK_KEY,'blue'):'blue',style:lsGet(STYLE_KEY,'hand')==='type'?'type':'hand',
        tick:lsGet(TICK_KEY,'check')==='cross'?'cross':'check',size:SIZES[lsGet(SIZE_KEY,'medium')]?lsGet(SIZE_KEY,'medium'):'medium',
-       sel:null,g:null,saving:false,state:'loading',sigs:{sig:loadSig('sig'),ini:loadSig('ini')},synced:false,gen:Math.random()};
+       sel:null,g:null,saving:false,state:'loading',synced:false,gen:Math.random()};
     var me=S;
-    S.syncing=syncSigs(me);
+    LOCAL=loadPics();CHOSEN=loadChosen();fixChosen();
+    S.syncing=syncPics(me);
     warmSig();
     $('#sTitle').textContent='Sign '+(o.title||f.name);
     $('#sDrive').hidden=!o.driveCopy;
@@ -426,7 +447,7 @@
     P.marks.forEach(function(m,idx){
       if(m.t==='ink')return;
       var kids=[],cls=m.t==='img'?(m.who==='ini'?'ssig sini':'ssig'):m.t==='tick'?'stick':'stext';
-      if(m.t==='img')kids.push(h('img',{src:m.src,alt:PICS[m.who==='ini'?'ini':'sig'].alt,draggable:'false'}));
+      if(m.t==='img')kids.push(h('img',{src:m.src,alt:PICS[m.who==='ini'?'ini':'sig'].alt+(m.name?': '+m.name:''),draggable:'false'}));
       if(m.t==='tick')kids.push(tickSvg(m));
       var el=h('div',{class:'smark '+cls+(S.sel===m?' sel':''),'data-k':String(idx)},kids);
       if(m.t==='tick')el.dataset.kind=m.kind;
@@ -438,38 +459,74 @@
     });
   }
 
-  /* ---------- the signature and the initials: kept by the store for every device, with a copy on this one ---------- */
-  function loadSig(which){
-    var k=PICS[which].key,src=lsGet(k,''),a=+lsGet(k+'.aspect','0');
-    return /^data:image\/png;base64,/.test(src)&&a>0?{src:src,aspect:a}:null;
+  /* ---------- the signatures and initials: kept by the store for every device, with a copy on this one ----------
+     LOCAL is this device's copy, {id: item}; an item waiting to reach the store has pending: true, and a deletion
+     waiting to reach it stays as {id, kind, deleted, pending} until it has. CHOSEN is the one of each kind a tap places:
+     the last one used, per device. */
+  var LOCAL={},CHOSEN={};
+  function loadPics(){
+    var L={};
+    try{var o=JSON.parse(lsGet(PICS_KEY,'{}'));if(o&&typeof o==='object'&&!Array.isArray(o))L=o;}catch(e){}
+    Object.keys(L).forEach(function(id){var it=L[id];if(!it||it.id!==id||!PICS[it.kind]||(!it.deleted&&!(it.png&&+it.aspect>0&&it.name)))delete L[id];});
+    /* from before names: one of each, under its own key; they become My signature and My initials */
+    [['sig','signature'],['ini','initials']].forEach(function(x){
+      var k=CFG.keys+x[1],src=lsGet(k,''),a=+lsGet(k+'.aspect','0'),pend=lsGet(k+'.pending','')==='1';
+      if(/^data:image\/png;base64,/.test(src)&&a>0&&!L[x[1]])L[x[1]]={id:x[1],kind:x[0],name:PICS[x[0]].first,png:src,aspect:a,made:0,pending:pend||undefined};
+      if(src){lsSet(k,null);lsSet(k+'.aspect',null);lsSet(k+'.pending',null);}
+    });
+    return L;
   }
-  function keepSig(which,sig){var k=PICS[which].key;return lsSet(k,sig?sig.src:null)&&lsSet(k+'.aspect',sig?String(sig.aspect):null);}
+  function savePics(){return lsSet(PICS_KEY,JSON.stringify(LOCAL));}
+  function loadChosen(){try{var o=JSON.parse(lsGet(CHOSEN_KEY,'{}'));return o&&typeof o==='object'?o:{};}catch(e){return {};}}
+  function saveChosen(){lsSet(CHOSEN_KEY,JSON.stringify(CHOSEN));}
+  function picsOf(kind){
+    return Object.keys(LOCAL).map(function(id){return LOCAL[id];}).filter(function(it){return it.kind===kind&&!it.deleted;})
+      .sort(function(a,b){return (a.made||0)-(b.made||0)||String(a.name).localeCompare(String(b.name));});
+  }
+  function has(kind){return picsOf(kind).length>0;}
+  function current(kind){var it=LOCAL[CHOSEN[kind]];return it&&it.kind===kind&&!it.deleted?it:picsOf(kind).slice(-1)[0]||null;}
+  function fixChosen(){['sig','ini'].forEach(function(k){var c=current(k);CHOSEN[k]=c?c.id:null;});saveChosen();}
+  function newId(){return 'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+  /* a name not already taken by another of the same kind: HDFC, HDFC 2, ... */
+  function freeName(kind,name,id){
+    var taken={};picsOf(kind).forEach(function(it){if(it.id!==id)taken[String(it.name).toLowerCase()]=1;});
+    if(!taken[name.toLowerCase()])return name;
+    for(var n=2;;n++){var c=name+' '+n;if(!taken[c.toLowerCase()])return c;}
+  }
   var HUB_STORE={
-    get:function(){return hubApi('GET','/api/signature');},
-    put:function(name,png,aspect){return hubApi('POST','/api/signature',{which:name,png:png,aspect:aspect});}};
+    list:function(){return hubApi('GET','/api/signatures').then(function(j){return j&&j.items||[];});},
+    put:function(item){return hubApi('POST','/api/signatures',item);}};
   function store(){return CFG.store||HUB_STORE;}
-  function pushSig(which,sig){
-    var k=PICS[which].key+'.pending';
-    lsSet(k,'1');   /* until the store has it */
-    return Promise.resolve().then(function(){return store().put(PICS[which].name,sig.src,sig.aspect);})
-      .then(function(){lsSet(k,null);return true;},function(){return false;});
+  /* send one item (or its deletion) to the store; pending until it has it */
+  function pushPic(id){
+    var it=LOCAL[id];if(!it)return Promise.resolve(true);
+    it.pending=true;savePics();
+    var body=it.deleted?{id:id,kind:it.kind,deleted:true}:{id:id,kind:it.kind,name:it.name,png:it.png,aspect:it.aspect,made:it.made||0};
+    return Promise.resolve().then(function(){return store().put(body);}).then(function(){
+      var now=LOCAL[id];
+      if(now===it){if(it.deleted)delete LOCAL[id];else delete it.pending;savePics();}
+      return true;
+    },function(){return false;});
   }
-  /* What the store has wins, except over one drawn here that has not reached it yet (pending), or when the store has
-     none at all: then this device's goes up, so a signature drawn before they were shared is not lost. */
-  function syncSigs(me){
-    return Promise.resolve().then(function(){return store().get();}).then(function(j){
-      ['sig','ini'].forEach(function(which){
-        var hub=j&&j[PICS[which].name],mine=loadSig(which),pending=lsGet(PICS[which].key+'.pending','')==='1';
-        if(mine&&(pending||!hub||!hub.png)){pushSig(which,mine);return;}
-        if(hub&&hub.png&&+hub.aspect>0&&(!mine||mine.src!==hub.png)){
-          var s={src:hub.png,aspect:+hub.aspect};
-          keepSig(which,s);
-          if(S===me)S.sigs[which]=s;
-        }
+  /* What the store has wins, except over this device's own change that has not reached it yet (pending). A deletion
+     there takes this device's copy away. One the store never had at all (from before) goes up. */
+  function syncPics(me){
+    return Promise.resolve().then(function(){return store().list();}).then(function(list){
+      var seen={};
+      (list||[]).forEach(function(r){
+        if(!r||typeof r.id!=='string'||!PICS[r.kind])return;
+        seen[r.id]=1;
+        var mine=LOCAL[r.id];
+        if(mine&&mine.pending)return;
+        if(r.deleted){delete LOCAL[r.id];return;}
+        if(typeof r.png==='string'&&/^data:image\/png;base64,/.test(r.png)&&+r.aspect>0&&typeof r.name==='string'&&r.name)
+          LOCAL[r.id]={id:r.id,kind:r.kind,name:r.name,png:r.png,aspect:+r.aspect,made:+r.made||0};
       });
+      savePics();
+      return Promise.all(Object.keys(LOCAL).filter(function(id){return LOCAL[id].pending||!seen[id];}).map(pushPic));
     },function(){}).then(function(){
       if(S!==me)return;
-      S.synced=true;warmSig();paintTools();
+      S.synced=true;fixChosen();warmSig();paintTools();
     });
   }
   var SIG_IMG={};
@@ -491,7 +548,7 @@
   }
   function warmSig(){   /* so a tap places it at once */
     if(!S)return;
-    ['sig','ini'].forEach(function(w){if(S.sigs[w])tint(S.sigs[w].src,INKS[S.ink]).then(null,function(){});});
+    ['sig','ini'].forEach(function(w){var c=current(w);if(c)tint(c.png,INKS[S.ink]).then(null,function(){});});
   }
   function recolor(m,color){
     if(m.t==='ink'||m.color===color)return;
@@ -511,9 +568,17 @@
     $('#sFinger').hidden=!ready||S.tool!=='pen';
     $('#sTextOpts').hidden=!ready||S.tool!=='text';
     $('#sTickOpts').hidden=!ready||S.tool!=='tick';
-    var pic=S&&PICS[S.tool]?S.tool:'';
-    $('#sSigOpts').hidden=!ready||!pic||!S.sigs[pic];
-    $('#sigRedo').textContent=pic==='ini'?'Draw new initials':'Draw a new signature';
+    var pic=S&&PICS[S.tool]?S.tool:'',any=!!pic&&has(pic);
+    $('#sSigOpts').hidden=!ready||!any;
+    if(!ready||!any){$('#sigDelAsk').hidden=true;$('#sigRenameRow').hidden=true;}
+    if(any){
+      var ch=$('#sigChoices'),cur=current(pic);clear(ch);
+      picsOf(pic).forEach(function(it){ch.appendChild(h('button',{class:'btn sm','data-pic':it.id,type:'button','aria-pressed':it===cur?'true':'false',text:it.name}));});
+      $('#sigNew').textContent='+ New '+PICS[pic].name;
+      $('#sigRename').setAttribute('aria-label','Rename '+cur.name);
+      $('#sigRedo').setAttribute('aria-label','Draw '+cur.name+' again');
+      $('#sigDel').setAttribute('aria-label','Delete '+cur.name);
+    }
     Array.prototype.forEach.call(UI.querySelectorAll('[data-ink]'),function(b){b.setAttribute('aria-pressed',S&&S.ink===b.dataset.ink?'true':'false');});
     Array.prototype.forEach.call(UI.querySelectorAll('[data-style]'),function(b){b.setAttribute('aria-pressed',S&&S.style===b.dataset.style?'true':'false');});
     Array.prototype.forEach.call(UI.querySelectorAll('[data-tick]'),function(b){b.setAttribute('aria-pressed',S&&S.tick===b.dataset.tick?'true':'false');});
@@ -525,12 +590,12 @@
   function setTool(t){
     S.tool=t;
     var asking=false;
-    if(PICS[t]&&!S.sigs[t]){
+    if(PICS[t]&&!has(t)){
       /* none on this device: the store may have one, so ask it first (it answers long before a page is drawn) */
       var me=S;
       if(!S.synced){
         asking=true;
-        S.syncing.then(function(){if(S===me&&S.tool===t){if(!S.sigs[t])openPad(t);paintTools();msg(hint());}});
+        S.syncing.then(function(){if(S===me&&S.tool===t){if(!has(t))openPad(t);paintTools();msg(hint());}});
       }else openPad(t);
     }
     if(t==='text'){
@@ -542,8 +607,12 @@
     msg(asking?'Getting your '+PICS[t].name+' from '+CFG.keeper+'…':hint());
   }
   function hint(){
-    if(S.tool==='sig')return S.sigs.sig?'Tap where your signature goes. Drag it to move it; the round corner makes it bigger or smaller.':'Draw your signature first.';
-    if(S.tool==='ini')return S.sigs.ini?'Tap where your initials go. Every page then puts them in the same place on every page.':'Write your initials first.';
+    if(PICS[S.tool]){
+      var c=current(S.tool),many=picsOf(S.tool).length>1;
+      if(!c)return S.tool==='ini'?'Write your initials first.':'Draw your signature first.';
+      return 'Tap where “'+c.name+'” goes'+(many?' (or choose another name first)':'')+'. '+
+        (S.tool==='ini'?'Every page then puts them in the same place on every page.':'Drag it to move it; the round corner makes it bigger or smaller.');
+    }
     if(S.tool==='text')return 'Tap where the text goes.';
     if(S.tool==='tick')return 'Tap the middle of a box to put a '+(S.tick==='cross'?'cross':'tick')+' in it. Tap as many boxes as you need.';
     if(S.penSeen)return 'Write with the Pencil. A finger scrolls the page.';
@@ -659,7 +728,7 @@
       e.preventDefault();counts();
     }else if(g.kind==='tap'){
       var p=pagePoint(g.P,e);
-      if(PICS[S.tool]&&S.sigs[S.tool])placeSig(g.P,p,S.tool);
+      if(PICS[S.tool]&&has(S.tool))placeSig(g.P,p,S.tool);
       else if(S.tool==='text')placeText(g.P,p);
       else if(S.tool==='tick')placeTick(g.P,p);
     }
@@ -672,15 +741,15 @@
   }
   function deselect(){if(S.sel){S.sel=null;Array.prototype.forEach.call(UI.querySelectorAll('.smark.sel'),function(x){x.classList.remove('sel');});paintSel();}}
   function placeSig(P,p,which){
-    var me=S,sig=S.sigs[which],color=INKS[S.ink];
-    tint(sig.src,color).then(function(src){
+    var me=S,sig=current(which),color=INKS[S.ink];
+    tint(sig.png,color).then(function(src){
       if(S!==me)return;
       var w=Math.min(P.w,P.h)*PICS[which].width,hh=w/sig.aspect;
-      var m={t:'img',who:which,src:src,base:sig.src,color:color,x:p[0]-w/2,y:p[1]-hh/2,w:w,h:hh};
+      var m={t:'img',who:which,name:sig.name,src:src,base:sig.png,color:color,x:p[0]-w/2,y:p[1]-hh/2,w:w,h:hh};
       snap();P.marks.push(m);S.sel=m;renderMarks(P);counts();
       setTool('pen');
-      msg('Placed. Drag to move, the round corner resizes, × removes.'+(S.kind==='pdf'&&S.pages.length>1?' Every page puts '+(which==='ini'?'them':'it')+' on every page.':''));
-    },function(){if(S===me)msg('Your '+PICS[which].name+' could not be drawn. Choose '+(which==='ini'?'Draw new initials':'Draw a new signature')+'.');});
+      msg('Placed “'+sig.name+'”. Drag to move, the round corner resizes, × removes.'+(S.kind==='pdf'&&S.pages.length>1?' Every page puts '+(which==='ini'?'them':'it')+' on every page.':''));
+    },function(){if(S===me)msg('“'+sig.name+'” could not be drawn. Choose Draw again.');});
   }
   /* a tick or cross, centred where the box was tapped and sized for a form's box (10 pt on a PDF). The tool stays in
      hand, because a form has boxes to tick in a row, and the new one is not selected: choosing Cross for the next box
@@ -724,11 +793,39 @@
     });
   }
 
+  /* Delete: from the store (so from every device, which drop their copies when their signer next opens) and from this
+     device. Pieces already placed on the open document stay: they are part of it now. */
+  function deletePicture(id){
+    var it=LOCAL[id];if(!it||it.deleted)return;
+    var me=S,kind=it.kind,name=it.name;
+    LOCAL[id]={id:id,kind:kind,deleted:true,pending:true};savePics();fixChosen();
+    $('#sigDelAsk').hidden=true;
+    setTool(has(kind)?kind:'pen');
+    pushPic(id).then(function(ok){
+      if(S!==me)return;
+      msg(ok?'“'+name+'” is deleted from '+CFG.keeper+' and from every device. Anything already placed on this document stays.'
+            :'“'+name+'” is deleted from this device; '+CFG.keeper+' did not answer, so it goes from there the next time the signer opens.');
+    });
+  }
+  function renamePicture(id,name){
+    var it=LOCAL[id];if(!it||it.deleted)return;
+    name=String(name||'').trim().slice(0,40);
+    if(!name){msg('Give it a name, such as HDFC or SBI.');$('#sigRenameInput').focus();return;}
+    it.name=freeName(it.kind,name,id);savePics();
+    $('#sigRenameRow').hidden=true;paintTools();
+    var me=S;
+    pushPic(id).then(function(ok){if(S===me)msg(ok?'Renamed to “'+it.name+'”, on every device.':'Renamed here; '+CFG.keeper+' did not answer, so your other devices get the new name next time.');});
+  }
+
   /* ---------- the signature pad ---------- */
-  var PAD={strokes:[],g:null,photo:null,job:null,which:'sig'};   /* photo: a signature taken from a photo, waiting for Use */
-  function openPad(which){
+  var PAD={strokes:[],g:null,photo:null,job:null,which:'sig',id:null};   /* photo: a signature taken from a photo, waiting for Use */
+  /* a new one (id null), or the one with that id drawn again under the same name */
+  function openPad(which,id){
     PAD.which=which==='ini'?'ini':'sig';
-    $('#sigTitle').textContent=PICS[PAD.which].title;
+    PAD.id=id&&LOCAL[id]&&!LOCAL[id].deleted?id:null;
+    $('#sigName').value=PAD.id?LOCAL[PAD.id].name:has(PAD.which)?'':PICS[PAD.which].first;
+    $('#sigRenameRow').hidden=true;$('#sigDelAsk').hidden=true;
+    $('#sigTitle').textContent=PAD.id?'Draw “'+LOCAL[PAD.id].name+'” again':has(PAD.which)?'A new '+PICS[PAD.which].name.replace('initials','set of initials'):PICS[PAD.which].title;
     $('#sigText').textContent=PICS[PAD.which].text();
     $('#sigPad').hidden=false;
     var c=$('#sigCanvas'),r=c.getBoundingClientRect(),k=Math.min(window.devicePixelRatio||1,3);
@@ -736,7 +833,7 @@
     PAD.strokes=[];PAD.photo=null;PAD.job=null;padMsg('');padDraw();$('#sigUse').disabled=true;
     $('#sigCancel').focus();
   }
-  function closePad(){PAD.job=null;$('#sigPad').hidden=true;if(S&&PICS[S.tool]&&!S.sigs[S.tool])setTool('pen');}
+  function closePad(){PAD.job=null;$('#sigPad').hidden=true;if(S&&PICS[S.tool]&&!has(S.tool))setTool('pen');}
   function padMsg(t){$('#sigMsg').textContent=t||'';}
   function padInk(){return INKS[S?S.ink:'blue'];}
   function padPoint(e){var c=$('#sigCanvas'),r=c.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top];}
@@ -770,17 +867,20 @@
       PAD.strokes.forEach(function(st){strokeInk(x,{color:INKS.black,width:lw,pts:st});});   /* kept colourless; tinted when placed */
       sig={src:c.toDataURL('image/png'),aspect:w/hh};
     }
-    var which=PAD.which,me=S;
-    S.sigs[which]=sig;
-    var kept=keepSig(which,sig);
+    var which=PAD.which,me=S,name=($('#sigName').value||'').trim().slice(0,40);
+    if(!name){padMsg('Give it a name, such as HDFC or SBI, so you can tell them apart.');$('#sigName').focus();return;}
+    var id=PAD.id||newId(),old=LOCAL[id];
+    LOCAL[id]={id:id,kind:which,name:freeName(which,name,id),png:sig.src,aspect:sig.aspect,made:old&&old.made||Date.now(),pending:true};
+    var kept=savePics();
+    CHOSEN[which]=id;saveChosen();
     PAD.photo=null;
     $('#sigPad').hidden=true;
     warmSig();
     setTool(which);
-    pushSig(which,sig).then(function(ok){
-      if(!ok&&S===me)msg('It could not be saved to '+CFG.keeper+' just now, so only this device has the new '+PICS[which].name+' for now. Your other devices get it next time the signer opens here.');
+    pushPic(id).then(function(ok){
+      if(!ok&&S===me)msg('It could not be saved to '+CFG.keeper+' just now, so only this device has “'+LOCAL[id].name+'” for now. Your other devices get it next time the signer opens here.');
     });
-    if(!kept)msg('This device has no room to remember your '+PICS[which].name+', so '+CFG.keeper+' keeps it for every device. Tap where it goes.');
+    if(!kept)msg('This device has no room to remember “'+LOCAL[id].name+'”, so '+CFG.keeper+' keeps it for every device. Tap where it goes.');
   }
 
   /* ---------- a signature from a photo of it on paper ----------
@@ -989,7 +1089,7 @@
     UI.querySelector('#sTools').addEventListener('click',function(e){
       var b=e.target.closest('[data-tool]');if(!b||!S||S.state!=='ready')return;
       var t=b.dataset.tool;
-      if(PICS[t]&&S.tool===t&&!S.sigs[t]&&S.synced){openPad(t);return;}
+      if(PICS[t]&&S.tool===t&&!has(t)&&S.synced){openPad(t);return;}
       setTool(t);
     });
     UI.querySelector('.sticks').addEventListener('click',function(e){
@@ -1030,7 +1130,31 @@
     $('#sCancel').addEventListener('click',cancel);
     $('#sAskKeep').addEventListener('click',function(){$('#sAsk').hidden=true;$('#sCancel').focus();});
     $('#sAskDiscard').addEventListener('click',function(){$('#sAsk').hidden=true;close();});
-    $('#sigRedo').addEventListener('click',function(){if(S)openPad(S.tool==='ini'?'ini':'sig');});
+    function kindNow(){return S&&S.tool==='ini'?'ini':'sig';}
+    $('#sigChoices').addEventListener('click',function(e){
+      var b=e.target.closest('[data-pic]');if(!b||!S||!LOCAL[b.dataset.pic])return;
+      var k=kindNow();CHOSEN[k]=b.dataset.pic;saveChosen();warmSig();
+      $('#sigDelAsk').hidden=true;$('#sigRenameRow').hidden=true;
+      paintTools();msg(hint());
+    });
+    $('#sigNew').addEventListener('click',function(){if(S)openPad(kindNow());});
+    $('#sigRedo').addEventListener('click',function(){var c=S&&current(kindNow());if(c)openPad(kindNow(),c.id);});
+    $('#sigRename').addEventListener('click',function(){
+      var c=S&&current(kindNow());if(!c)return;
+      $('#sigDelAsk').hidden=true;$('#sigRenameRow').hidden=false;
+      var i=$('#sigRenameInput');i.value=c.name;i.focus();i.select();
+    });
+    $('#sigRenameSave').addEventListener('click',function(){var c=S&&current(kindNow());if(c)renamePicture(c.id,$('#sigRenameInput').value);});
+    $('#sigRenameCancel').addEventListener('click',function(){$('#sigRenameRow').hidden=true;$('#sigRename').focus();});
+    $('#sigRenameInput').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();$('#sigRenameSave').click();}});
+    $('#sigDel').addEventListener('click',function(){
+      var c=S&&current(kindNow());if(!c)return;
+      $('#sigRenameRow').hidden=true;
+      $('#sigDelText').textContent='Delete “'+c.name+'” from '+CFG.keeper+' and every device?';
+      $('#sigDelAsk').hidden=false;$('#sigDelKeep').focus();
+    });
+    $('#sigDelKeep').addEventListener('click',function(){$('#sigDelAsk').hidden=true;$('#sigDel').focus();});
+    $('#sigDelYes').addEventListener('click',function(){var c=S&&current(kindNow());if(c)deletePicture(c.id);});
     $('#sigCancel').addEventListener('click',closePad);
     $('#sigClear').addEventListener('click',function(){PAD.strokes=[];PAD.photo=null;PAD.job=null;padMsg('');padDraw();$('#sigUse').disabled=true;});
     $('#sigUse').addEventListener('click',useSig);
@@ -1062,6 +1186,8 @@
       if(e.key==='Escape'){
         e.preventDefault();e.stopPropagation();
         if(!$('#sigPad').hidden)closePad();
+        else if(!$('#sigRenameRow').hidden){$('#sigRenameRow').hidden=true;}
+        else if(!$('#sigDelAsk').hidden){$('#sigDelAsk').hidden=true;}
         else if(!$('#sAsk').hidden){$('#sAsk').hidden=true;}
         else cancel();
       }else if((e.key==='z'||e.key==='Z')&&(e.ctrlKey||e.metaKey)&&!e.shiftKey){e.preventDefault();e.stopPropagation();undo();}

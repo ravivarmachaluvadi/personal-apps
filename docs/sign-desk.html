@@ -78,12 +78,26 @@ h1{font-weight:700;font-size:clamp(24px,5vw,32px);letter-spacing:-.02em;margin:0
 #resNote:empty,#driveState:empty{display:none}
 #driveState{margin:8px 0 0}
 
-/* your signature and initials, on paper in both themes */
-.pics{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:12px}
-.pics figure{margin:0;display:grid;gap:6px}
-.pics figcaption{font-size:13.5px;color:var(--muted)}
-.paper{background:#FFFFFF;color:#4E5A69;border:1px solid var(--line);border-radius:12px;min-height:84px;display:grid;place-items:center;padding:8px;font-size:14px}
-.paper img{display:block;max-width:100%;max-height:90px}
+input[type=text],select{font:15px var(--sans);background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:6px 10px;min-height:38px;min-width:0}
+/* your signatures and initials, on paper in both themes */
+.sect2{margin:0 0 6px;font-size:13.5px;font-weight:600;color:var(--muted)}
+.plist{list-style:none;margin:0 0 14px;padding:0;display:grid;gap:10px}
+.pic{display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:8px 12px;align-items:center}
+.paper{background:#FFFFFF;color:#4E5A69;border:1px solid var(--line);border-radius:12px;min-height:64px;display:grid;place-items:center;padding:6px;font-size:14px}
+.paper img{display:block;max-width:100%;max-height:70px}
+.pname{font-weight:600;overflow-wrap:anywhere;margin-bottom:4px}
+.pacts,.cacts{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pask{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;grid-column:1/-1;font-size:14px}
+.pask input{flex:1 1 160px}
+.none{color:var(--muted);font-size:14px;margin:0 0 14px}
+/* signed copies kept in Drive */
+.copies{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.copy{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}
+.copy .cname{font-weight:500;overflow-wrap:anywhere}
+.copy .cmeta{color:var(--muted);font-size:13px;grid-column:1}
+.copy .cacts{grid-column:2;grid-row:1/span 2;justify-content:flex-end}
+#keepRow{margin-top:12px}
+#keepRow label{font-size:14px}
 .foot{color:var(--muted);font-size:13.5px;margin:22px 2px 0}
 .foot code{font:13px var(--mono);overflow-wrap:anywhere}
 
@@ -94,7 +108,9 @@ h1{font-weight:700;font-size:clamp(24px,5vw,32px);letter-spacing:-.02em;margin:0
 #toast span{overflow-wrap:anywhere}
 @media (max-width:480px){
   #app{padding:14px 12px 80px}
-  .pics{grid-template-columns:minmax(0,1fr)}
+  .pic{grid-template-columns:minmax(0,1fr)}
+  .copy{grid-template-columns:minmax(0,1fr)}
+  .copy .cacts{grid-column:1;grid-row:auto;justify-content:flex-start}
 }
 </style>
 </head>
@@ -127,12 +143,24 @@ h1{font-weight:700;font-size:clamp(24px,5vw,32px);letter-spacing:-.02em;margin:0
     <p class="hint" id="driveState"></p>
   </section>
 
-  <h2 class="sect">Your signature and initials</h2>
-  <section class="card pics" aria-label="Your signature and initials">
-    <figure><div class="paper" id="sigPrev"></div><figcaption>Signature</figcaption></figure>
-    <figure><div class="paper" id="iniPrev"></div><figcaption>Initials</figcaption></figure>
+  <h2 class="sect">Your signatures and initials</h2>
+  <section class="card" aria-label="Your signatures and initials">
+    <div id="mine"></div>
+    <p class="hint" style="margin:0">To add one, open a document and press Signature or Initials, then + New. Give each a name, such as HDFC or SBI; while signing, tap a name to choose which one goes on the page.</p>
   </section>
-  <p class="hint" style="margin:8px 2px 0">To draw them, open a document and press Signature or Initials. To draw them again, press that button and then Draw a new signature (or Draw new initials).</p>
+
+  <section id="copiesWrap" hidden>
+    <h2 class="sect">Signed copies in Google Drive</h2>
+    <div class="card" aria-label="Signed copies in Google Drive">
+      <p class="none" id="copiesNote"></p>
+      <ul class="copies" id="copies"></ul>
+      <div class="crow" id="keepRow">
+        <label for="keepSel">Clear signed copies after</label>
+        <select id="keepSel"><option value="0">Never: I delete them</option><option value="7">7 days</option><option value="30">30 days</option><option value="90">90 days</option></select>
+      </div>
+      <p class="hint" style="margin:8px 0 0">Deleting, by hand or by the clear-after setting, moves a copy to Google Drive's Trash, where Google keeps it 30 days. The setting is shared by your devices.</p>
+    </div>
+  </section>
 
   <p class="foot" id="foot"></p>
 </main>
@@ -171,9 +199,12 @@ h1{font-weight:700;font-size:clamp(24px,5vw,32px);letter-spacing:-.02em;margin:0
   function lsGet(k,d){try{var v=localStorage.getItem(k);return v==null?d:v;}catch(e){return d;}}
   function lsSet(k,v){try{if(v==null)localStorage.removeItem(k);else localStorage.setItem(k,v);}catch(e){}}
   function isObj(o){return !!o&&typeof o==='object'&&!Array.isArray(o);}
-  function toast(msg){
-    $('#toastText').textContent=msg;$('#toastAct').hidden=true;$('#toast').hidden=false;
-    clearTimeout(TOAST_T);TOAST_T=setTimeout(function(){$('#toast').hidden=true;},7000);
+  var TOAST_FN=null;
+  function toast(msg,act,fn,ms){
+    $('#toastText').textContent=msg;
+    var b=$('#toastAct');b.hidden=!act;b.textContent=act||'';TOAST_FN=fn||null;
+    $('#toast').hidden=false;
+    clearTimeout(TOAST_T);TOAST_T=setTimeout(function(){$('#toast').hidden=true;TOAST_FN=null;},ms||7000);
   }
 
   /* ---------- the store: the signature and initials, in Drive (or this browser) ---------- */
@@ -186,25 +217,38 @@ h1{font-weight:700;font-size:clamp(24px,5vw,32px);letter-spacing:-.02em;margin:0
   var STORE=(HAS_DRIVE
     ? DriveStore.open({file:'sign-desk.json',cacheKey:'signdesk.doc',
         empty:function(){return {v:1,app:'sign-desk',items:{}};},
-        onChange:function(){if(BOOTED)renderMine();},
+        onChange:function(){if(BOOTED){renderMine();renderCopies();}},
         onStatus:function(){if(BOOTED)renderAuth();}})
     : localFallback());
   function signedIn(){return HAS_DRIVE&&DriveStore.authState().signedIn;}
-  function picOf(name){
-    var it=STORE.doc.items[name];
-    return it&&!it.deleted&&typeof it.png==='string'&&/^data:image\/png;base64,/.test(it.png)&&+it.aspect>0?{png:it.png,aspect:+it.aspect}:null;
+  /* The signatures and initials are items of sign-desk.json: {id, kind 'sig'|'ini', name, png, aspect, made}, or
+     {id, kind, deleted} once deleted (kept, so a device still holding a copy drops it). The two from before names,
+     ids 'signature' and 'initials', read as "My signature" and "My initials". */
+  var LEGACY={signature:['sig','My signature'],initials:['ini','My initials']};
+  function picItem(it){
+    if(!it||typeof it.id!=='string')return null;
+    var kind=it.kind==='sig'||it.kind==='ini'?it.kind:LEGACY[it.id]?LEGACY[it.id][0]:null;
+    if(!kind)return null;
+    if(it.deleted)return {id:it.id,kind:kind,deleted:true,updated:+it.updatedAt||0};
+    if(typeof it.png!=='string'||!/^data:image\/png;base64,/.test(it.png)||!(+it.aspect>0))return null;
+    return {id:it.id,kind:kind,name:String(it.name||(LEGACY[it.id]?LEGACY[it.id][1]:'Signature')),png:it.png,aspect:+it.aspect,made:+it.made||0,updated:+it.updatedAt||0};
   }
-  /* Signed in, the signer waits for the first look at Drive (at most 5 s), so a new device gets the saved signature
-     instead of an empty pad, and a signature drawn there never replaces the saved one by mistake. */
+  function allPics(){return Object.keys(STORE.doc.items).map(function(k){return picItem(STORE.doc.items[k]);}).filter(Boolean);}
+  function livePics(kind){
+    return allPics().filter(function(x){return !x.deleted&&x.kind===kind;}).sort(function(a,b){return a.made-b.made||a.name.localeCompare(b.name);});
+  }
+  /* Signed in, the signer waits for the first look at Drive (at most 5 s), so a new device gets the saved ones instead
+     of an empty pad, and a signature drawn there never replaces a saved one by mistake. */
   function firstLook(){
     if(!signedIn()||STORE.synced)return Promise.resolve();
     return Promise.race([Promise.resolve(STORE.sync()).catch(function(){}),new Promise(function(r){setTimeout(r,5000);})]);
   }
   var SIG_STORE={
-    get:function(){return firstLook().then(function(){return {signature:picOf('signature'),initials:picOf('initials')};});},
-    put:function(name,png,aspect){
-      if(name!=='signature'&&name!=='initials')return Promise.reject(new Error('signature or initials'));
-      STORE.mutate(function(d){d.items[name]=png?{id:name,kind:'pic',png:png,aspect:aspect,updatedAt:Date.now()}:{id:name,deleted:true,updatedAt:Date.now()};});
+    list:function(){return firstLook().then(allPics);},
+    put:function(it){
+      if(!it||typeof it.id!=='string'||(it.kind!=='sig'&&it.kind!=='ini'))return Promise.reject(new Error('a signature or initials'));
+      STORE.mutate(function(d){d.items[it.id]=it.deleted?{id:it.id,kind:it.kind,deleted:true,updatedAt:Date.now()}
+        :{id:it.id,kind:it.kind,name:it.name,png:it.png,aspect:it.aspect,made:it.made||0,updatedAt:Date.now()};});
       renderMine();
       return Promise.resolve();
     }};
@@ -213,12 +257,141 @@ h1{font-weight:700;font-size:clamp(24px,5vw,32px);letter-spacing:-.02em;margin:0
     keys:'signdesk.',keeper:HAS_DRIVE?'your Google Drive':'this browser',store:SIG_STORE});
 
   /* ---------- what is on the page ---------- */
+  var ASKP=null,FOCUS_P=false;   /* {id, what: 'rename'|'del', val}: the question open under one of them */
   function renderMine(){
-    [['signature','#sigPrev','Your signature'],['initials','#iniPrev','Your initials']].forEach(function(x){
-      var el=$(x[1]),p=picOf(x[0]);clear(el);
-      el.appendChild(p?h('img',{src:p.png,alt:x[2]}):h('span',{text:'Not drawn yet'}));
+    var box=$('#mine');clear(box);
+    [['sig','Signatures'],['ini','Initials']].forEach(function(k){
+      var list=livePics(k[0]);
+      box.appendChild(h('h3',{class:'sect2',text:k[1]}));
+      if(!list.length){box.appendChild(h('p',{class:'none',text:'None yet.'}));return;}
+      var ul=h('ul',{class:'plist'});
+      list.forEach(function(x){
+        var li=h('li',{class:'pic','data-id':x.id,'data-kind':x.kind},[
+          h('div',{class:'paper'},[h('img',{src:x.png,alt:(x.kind==='ini'?'Initials: ':'Signature: ')+x.name})]),
+          h('div',{},[h('div',{class:'pname',text:x.name}),h('div',{class:'pacts'},[
+            h('button',{class:'btn sm','data-act':'rename',type:'button',text:'Rename'}),
+            h('button',{class:'btn sm danger','data-act':'del',type:'button',text:'Delete'})])])]);
+        if(ASKP&&ASKP.id===x.id&&ASKP.what==='rename')li.appendChild(h('div',{class:'pask'},[
+          h('input',{type:'text',maxlength:'40',value:ASKP.val,'aria-label':'New name for '+x.name,'data-role':'name'}),
+          h('button',{class:'btn sm primary','data-act':'save',type:'button',text:'Save'}),
+          h('button',{class:'btn sm','data-act':'cancel',type:'button',text:'Cancel'})]));
+        if(ASKP&&ASKP.id===x.id&&ASKP.what==='del')li.appendChild(h('div',{class:'pask',role:'alertdialog'},[
+          h('span',{text:'Delete “'+x.name+'” from every device?'}),
+          h('button',{class:'btn sm','data-act':'cancel',type:'button',text:'Cancel'}),
+          h('button',{class:'btn sm danger solid','data-act':'yes',type:'button',text:'Delete'})]));
+        ul.appendChild(li);
+      });
+      box.appendChild(ul);
+    });
+    if(FOCUS_P){
+      FOCUS_P=false;
+      var i=box.querySelector('[data-role="name"]'),c=box.querySelector('.pask [data-act="cancel"]');
+      if(i){i.focus();i.select();}else if(c)c.focus();
+    }
+  }
+  function renamePic(x,name){
+    name=String(name||'').trim().slice(0,40);
+    if(!name){toast('Give it a name, such as HDFC or SBI.');return;}
+    var taken={},n=name;
+    livePics(x.kind).forEach(function(o){if(o.id!==x.id)taken[o.name.toLowerCase()]=1;});
+    for(var i=2;taken[n.toLowerCase()];i++)n=name+' '+i;
+    ASKP=null;
+    SIG_STORE.put({id:x.id,kind:x.kind,name:n,png:x.png,aspect:x.aspect,made:x.made});
+    toast('Renamed to “'+n+'”, on every device.');
+  }
+
+  /* ---------- the signed copies kept in Drive: Download, Share, Delete (to the Trash, with Undo), and clearing old ones ---------- */
+  var COPIES=null,HIDE={},BLOBS={},ASKC=null,FOCUS_C=false,LISTING=null,LAST_LIST=0,UNDO_MS=6000;
+  function keepDays(){var st=STORE.doc.items.settings,n=st&&!st.deleted?+st.keepDays:0;return [7,30,90].indexOf(n)>=0?n:0;}
+  function when(t){var d=new Date(t);return isNaN(d)?'':d.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})+', '+d.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});}
+  function size(n){n=+n||0;return n<1024?n+' B':n<1048576?Math.round(n/1024)+' KB':(n/1048576).toFixed(1)+' MB';}
+  function canShareFiles(){try{return !!(navigator.canShare&&navigator.share&&navigator.canShare({files:[new File(['x'],'a.pdf',{type:'application/pdf'})]}));}catch(e){return false;}}
+  function renderCopies(){
+    var wrap=$('#copiesWrap');wrap.hidden=!HAS_DRIVE;if(!HAS_DRIVE)return;
+    $('#keepSel').value=String(keepDays());
+    var ul=$('#copies'),note=$('#copiesNote');clear(ul);
+    if(!signedIn()){note.hidden=false;note.textContent='Continue with Google to see the signed copies kept in your Drive.';return;}
+    var list=COPIES?COPIES.filter(function(f){return !HIDE[f.id];}):null,share=canShareFiles();
+    note.hidden=!!(list&&list.length);
+    note.textContent=list===null?'Looking in Google Drive…':'None yet. A signed copy saved with the Google Drive switch on is kept here.';
+    (list||[]).forEach(function(f){
+      var li=h('li',{class:'copy','data-id':f.id},[
+        h('span',{class:'cname',text:f.name}),
+        h('span',{class:'cmeta',text:when(f.createdTime)+' · '+size(f.size)}),
+        h('span',{class:'cacts'},[
+          h('button',{class:'btn sm','data-act':'dl',type:'button',text:'Download'}),
+          share?h('button',{class:'btn sm','data-act':'share',type:'button',text:'Share…'}):null,
+          h('button',{class:'btn sm danger','data-act':'del',type:'button',text:'Delete'})])]);
+      if(ASKC===f.id)li.appendChild(h('div',{class:'pask',role:'alertdialog'},[
+        h('span',{text:'Delete “'+f.name+'”? It goes to Google Drive’s Trash.'}),
+        h('button',{class:'btn sm','data-act':'keep',type:'button',text:'Cancel'}),
+        h('button',{class:'btn sm danger solid','data-act':'yes',type:'button',text:'Delete'})]));
+      ul.appendChild(li);
+    });
+    if(FOCUS_C){FOCUS_C=false;var k=ul.querySelector('[data-act="keep"]');if(k)k.focus();}
+  }
+  function refreshCopies(){
+    if(!HAS_DRIVE||!signedIn()){renderCopies();return Promise.resolve();}
+    if(LISTING)return LISTING;
+    LAST_LIST=Date.now();
+    LISTING=DriveStore.files.folders('Sign Desk').then(function(ids){
+      return Promise.all(ids.map(function(fid){return DriveStore.files.list(fid);}));
+    }).then(function(lists){
+      COPIES=[].concat.apply([],lists).filter(function(f){return f.mimeType!=='application/vnd.google-apps.folder';})
+        .sort(function(a,b){return String(b.createdTime).localeCompare(String(a.createdTime));});
+      renderCopies();sweepOld();
+    },function(){
+      if(!COPIES)COPIES=[];
+      renderCopies();$('#copiesNote').hidden=false;$('#copiesNote').textContent='Google Drive did not answer just now; the list tries again when you come back to the page.';
+    }).then(function(){LISTING=null;});
+    return LISTING;
+  }
+  /* the clear-after setting: copies older than it go to the Trash, whichever device looks first */
+  function sweepOld(){
+    var n=keepDays();if(!n||!COPIES)return;
+    var cut=Date.now()-n*86400000,old=COPIES.filter(function(f){return Date.parse(f.createdTime)<cut&&!HIDE[f.id];});
+    if(!old.length)return;
+    Promise.all(old.map(function(f){return DriveStore.files.trash(f.id).then(function(){return f.id;},function(){return null;});})).then(function(ids){
+      var done=ids.filter(Boolean);if(!done.length)return;
+      COPIES=COPIES.filter(function(f){return done.indexOf(f.id)<0;});renderCopies();
+      toast(done.length+' signed cop'+(done.length===1?'y':'ies')+' older than '+n+' days went to Google Drive’s Trash.');
     });
   }
+  function getBlob(f){
+    if(BLOBS[f.id])return Promise.resolve(BLOBS[f.id]);
+    return DriveStore.files.download(f.id).then(function(b){return (BLOBS[f.id]=b);});
+  }
+  function saveBlob(blob,name){
+    var u=URL.createObjectURL(blob),a=h('a',{href:u,download:name,hidden:true});document.body.appendChild(a);a.click();a.remove();
+    setTimeout(function(){URL.revokeObjectURL(u);},60000);
+  }
+  function shareCopy(f){
+    var had=!!BLOBS[f.id];
+    getBlob(f).then(function(b){
+      return navigator.share({files:[new File([b],f.name,{type:b.type||'application/pdf'})],title:f.name});
+    }).catch(function(e){
+      if(e&&e.name==='AbortError')return;
+      if(!had&&e&&e.name==='NotAllowedError'){toast('Ready: press Share again.');return;}   /* fetching it used up the tap */
+      toast('It could not be shared. Download it instead.');
+    });
+  }
+  function trashNow(id){
+    if(!HIDE[id])return;
+    clearTimeout(HIDE[id].t);
+    DriveStore.files.trash(id).then(function(){
+      delete HIDE[id];COPIES=(COPIES||[]).filter(function(f){return f.id!==id;});renderCopies();
+    },function(){
+      delete HIDE[id];renderCopies();toast('It could not be deleted just now. Try again.');
+    });
+  }
+  function deleteCopy(f){
+    HIDE[f.id]={t:setTimeout(function(){trashNow(f.id);},UNDO_MS)};
+    renderCopies();
+    toast('“'+f.name+'” deleted.','Undo',function(){
+      if(!HIDE[f.id])return;clearTimeout(HIDE[f.id].t);delete HIDE[f.id];renderCopies();
+    },UNDO_MS);
+  }
+
   function renderAuth(){
     var n=$('#authNote');
     if(!HAS_DRIVE){n.hidden=true;return;}
@@ -230,7 +403,7 @@ h1{font-weight:700;font-size:clamp(24px,5vw,32px);letter-spacing:-.02em;margin:0
   function renderFoot(){
     var f=$('#foot');clear(f);
     if(HAS_DRIVE){
-      f.appendChild(document.createTextNode('Your signature and initials are saved to '));
+      f.appendChild(document.createTextNode('Your signatures and initials are saved to '));
       f.appendChild(h('code',{text:'Personal Apps/sign-desk.json'}));
       f.appendChild(document.createTextNode(' in your Google Drive, so every device you sign in on has them. Documents are not stored anywhere, except a signed copy you choose to keep in '));
       f.appendChild(h('code',{text:'Personal Apps/Sign Desk'}));
@@ -286,6 +459,7 @@ h1{font-weight:700;font-size:clamp(24px,5vw,32px);letter-spacing:-.02em;margin:0
     ds.textContent='Copying to Google Drive…';
     DriveStore.files.folder('Sign Desk').then(function(fid){return DriveStore.files.upload(file,{folderId:fid,name:file.name}).promise;}).then(function(){
       if(RES&&RES.file===file)ds.textContent='A copy is in Google Drive › Personal Apps › Sign Desk.';
+      refreshCopies();
     },function(){
       if(RES&&RES.file===file)ds.textContent='The copy for Google Drive could not be made. Download keeps it on this device.';
     });
@@ -313,7 +487,43 @@ h1{font-weight:700;font-size:clamp(24px,5vw,32px);letter-spacing:-.02em;margin:0
     navigator.share({files:[RES.file],title:RES.file.name}).catch(function(e){if(e&&e.name!=='AbortError')toast('It could not be shared. Download it instead.');});
   });
   $('#againBtn').addEventListener('click',function(){hideResult();$('#pickBtn').focus();});
-  $('#toastAct').addEventListener('click',function(){$('#toast').hidden=true;});
+  $('#toastAct').addEventListener('click',function(){var f=TOAST_FN;TOAST_FN=null;$('#toast').hidden=true;if(f)f();});
+  $('#mine').addEventListener('click',function(e){
+    var b=e.target.closest('[data-act]'),li=b&&b.closest('.pic');if(!li)return;
+    var x=livePics(li.dataset.kind).filter(function(o){return o.id===li.dataset.id;})[0];if(!x)return;
+    var a=b.dataset.act;
+    if(a==='rename'){ASKP={id:x.id,what:'rename',val:x.name};FOCUS_P=true;renderMine();}
+    else if(a==='del'){ASKP={id:x.id,what:'del'};FOCUS_P=true;renderMine();}
+    else if(a==='cancel'){ASKP=null;renderMine();}
+    else if(a==='save')renamePic(x,ASKP?ASKP.val:x.name);
+    else if(a==='yes'){ASKP=null;SIG_STORE.put({id:x.id,kind:x.kind,deleted:true});toast('“'+x.name+'” is deleted from every device.');}
+  });
+  $('#mine').addEventListener('input',function(e){if(e.target.dataset.role==='name'&&ASKP)ASKP.val=e.target.value;});
+  $('#mine').addEventListener('keydown',function(e){
+    if(e.key==='Escape'&&ASKP){e.preventDefault();ASKP=null;renderMine();return;}
+    if(e.key==='Enter'&&e.target.dataset.role==='name'){e.preventDefault();var s=e.target.closest('.pask').querySelector('[data-act="save"]');if(s)s.click();}
+  });
+  $('#copies').addEventListener('click',function(e){
+    var b=e.target.closest('[data-act]'),li=b&&b.closest('.copy');if(!li)return;
+    var f=(COPIES||[]).filter(function(o){return o.id===li.dataset.id;})[0];if(!f)return;
+    var a=b.dataset.act;
+    if(a==='dl')getBlob(f).then(function(blob){saveBlob(blob,f.name);},function(){toast('It could not be downloaded just now. Try again.');});
+    else if(a==='share')shareCopy(f);
+    else if(a==='del'){ASKC=f.id;FOCUS_C=true;renderCopies();}
+    else if(a==='keep'){ASKC=null;renderCopies();var d=$('#copies .copy[data-id="'+f.id+'"] [data-act="del"]');if(d)d.focus();}
+    else if(a==='yes'){ASKC=null;deleteCopy(f);}
+  });
+  $('#copies').addEventListener('keydown',function(e){if(e.key==='Escape'&&ASKC){e.preventDefault();ASKC=null;renderCopies();}});
+  $('#keepSel').addEventListener('change',function(){
+    var n=+this.value;if([0,7,30,90].indexOf(n)<0)return;
+    STORE.mutate(function(d){d.items.settings={id:'settings',kind:'settings',keepDays:n,updatedAt:Date.now()};});
+    toast(n?'Signed copies older than '+n+' days go to Google Drive’s Trash, on every device.':'Signed copies stay until you delete them.');
+    sweepOld();
+  });
+  /* coming back to the page shows copies saved on other devices meanwhile */
+  window.addEventListener('focus',function(){if(Date.now()-LAST_LIST>20000)refreshCopies();});
+  /* a copy whose Undo is still running when the page closes goes to the Trash now */
+  window.addEventListener('pagehide',function(){Object.keys(HIDE).forEach(trashNow);});
   /* Ctrl+V with a PDF or a picture on the clipboard opens it */
   document.addEventListener('paste',function(e){
     if(HubSign.isOpen())return;
@@ -340,12 +550,13 @@ h1{font-weight:700;font-size:clamp(24px,5vw,32px);letter-spacing:-.02em;margin:0
   $('#themeBtn').addEventListener('click',function(){var next=shownTheme()==='dark'?'light':'dark';lsSet(THEME_KEY,JSON.stringify(next===deviceTheme()?'auto':next));paintTheme();});
   if(darkQ){if(darkQ.addEventListener)darkQ.addEventListener('change',paintTheme);else if(darkQ.addListener)darkQ.addListener(paintTheme);}
 
-  if(HAS_DRIVE){DriveStore.mountStatus($('#sync'),STORE);DriveStore.onAuth(renderAuth);}
+  if(HAS_DRIVE){DriveStore.mountStatus($('#sync'),STORE);DriveStore.onAuth(function(a){renderAuth();if(a&&a.signedIn)refreshCopies();else renderCopies();});}
   else $('#sync').textContent='Saved in this browser only';
   paintTheme();
   renderMine();
   renderAuth();
   renderFoot();
+  refreshCopies();
   BOOTED=true;
 })();
 </script>
