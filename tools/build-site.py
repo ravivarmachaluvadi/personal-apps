@@ -437,6 +437,21 @@ _dupes = sorted({n for n in _decls if _decls.count(n) > 1})
 assert not _dupes, 'duplicate function declarations in sign desk (the later one silently wins): ' + ', '.join(_dupes)
 wr('docs/sign-desk.html', sd)
 
+# ---------------------------------------------------------------- Steady Pace
+# A page to read, not an app: no Drive, no sign-in, so no config.js or drive-sync.js, and it is linked from Home's
+# Career list rather than from the cards and the strip. The repo is public and the address carries a real name, so
+# it must stay out of search results (tools/check-steady-pace.py also searches it for names).
+sp = rd('site/steady-pace.html')
+sp = with_nav(sp, '<body>\n<main id="app">')
+assert '<meta name="robots" content="noindex">' in sp, 'steady pace must ask search engines not to list it'
+assert 'drive-sync.js' not in sp, 'steady pace stores nothing, so it must not load the Drive code'
+for _api in ('innerHTML', 'outerHTML', 'insertAdjacentHTML', 'document.write'):
+    assert _api not in sp, 'steady pace must build DOM with h(), never ' + _api
+_decls = re.findall(r'^  function ([A-Za-z_$][\w$]*)\s*\(', sp, re.M)
+_dupes = sorted({n for n in _decls if _decls.count(n) > 1})
+assert not _dupes, 'duplicate function declarations in steady pace (the later one silently wins): ' + ', '.join(_dupes)
+wr('docs/steady-pace.html', sp)
+
 # ---------------------------------------------------------------- launcher
 # docs/index.html is written by hand; in a browser tab every app and game it links to opens in a new tab, so the
 # launcher stays open (in the installed app, app-nav.js opens them in the same window instead, so Back works)

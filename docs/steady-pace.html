@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Steady Pace</title>
+<meta name="description" content="What a real engineering day looks like, and what to say when work gets hard.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#E9ECF1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14171C" media="(prefers-color-scheme: dark)">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<script>/* the light/dark choice for this page on this device, applied before first paint */try{var pageTheme=JSON.parse(localStorage.getItem('steadypace.theme'));if(pageTheme==='light'||pageTheme==='dark')document.documentElement.setAttribute('data-theme',pageTheme);}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#E9ECF1;--surface:#FFFFFF;--surface-2:#F2F4F7;--line:#D4D9E1;--text:#1C2129;--muted:#5D6875;--accent:#E0562B;--link:#B5421E;--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171C;--surface:#1C2027;--surface-2:#242932;--line:#323945;--text:#E8EAEE;--muted:#9AA4B1;--accent:#FF7A4D;--link:#FF7A4D;--s1:#3987e5;--s2:#d95926;--s3:#199e70;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14171C;--surface:#1C2027;--surface-2:#242932;--line:#323945;--text:#E8EAEE;--muted:#9AA4B1;--accent:#FF7A4D;--link:#FF7A4D;--s1:#3987e5;--s2:#d95926;--s3:#199e70;color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 "IBM Plex Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+main{max-width:860px;margin:0 auto;padding:28px 16px 60px}
+h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:clamp(30px,6vw,42px);letter-spacing:-.03em;margin:0 0 4px}
+.lead{color:var(--muted);margin:0 0 14px;max-width:60ch}
+.hdr{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.themebtn{width:36px;height:36px;display:inline-grid;place-items:center;padding:0;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--text);cursor:pointer;flex:none}
+.themebtn svg{width:17px;height:17px;display:block}
+.themebtn:hover{border-color:var(--accent)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+a{color:var(--link)}
+section{margin-bottom:14px;scroll-margin-top:64px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 20px}
+.card h2{font-family:"Bricolage Grotesque",sans-serif;font-size:22px;margin:0 0 8px;letter-spacing:-.01em}
+.card h3{font-size:16px;margin:18px 0 6px}
+.card p,.card li{font-size:15px;margin:6px 0}
+.card ol,.card ul{padding-left:20px;margin:6px 0}
+.sub{color:var(--muted)}
+.note{background:var(--surface-2);border-radius:10px;padding:10px 14px;margin-top:12px!important}
+.foot{color:var(--muted);font-size:13.5px!important;margin-top:12px!important}
+
+.jump{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.jump a{display:inline-flex;align-items:center;min-height:36px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--text);text-decoration:none;font-size:14px;font-weight:500}
+.jump a:hover{border-color:var(--accent)}
+
+.hero{border-color:var(--accent)}
+.hero h2{font-size:clamp(25px,5vw,34px);font-weight:800;letter-spacing:-.02em;line-height:1.15;margin-bottom:10px}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0 4px}
+.tile{background:var(--surface-2);border-radius:12px;padding:12px 14px;min-width:0}
+.tile-v{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:clamp(26px,5vw,34px);letter-spacing:-.02em;line-height:1.1}
+.tile-l{font-weight:600;font-size:14.5px;margin-top:4px}
+.tile-s{color:var(--muted);font-size:13.5px}
+
+.viz{position:relative;margin:30px 0 12px}
+#dayBar{display:flex;gap:2px}
+.col{min-width:0}
+.col-l{font-size:13px;line-height:1.3;margin-bottom:5px;overflow-wrap:anywhere}
+.col-l b{display:block;font-weight:600}
+.col-l span{color:var(--muted)}
+.seg{height:26px;cursor:default}
+.col:first-child .seg{border-radius:4px 0 0 4px}
+.col:last-child .seg{border-radius:0 4px 4px 0}
+@media (forced-colors:active){.seg{border:1px solid CanvasText}}
+#vizTip{position:absolute;bottom:calc(100% + 6px);left:0;max-width:min(320px,100%);background:var(--text);color:var(--surface);font-size:13.5px;line-height:1.35;padding:7px 10px;border-radius:8px;pointer-events:none;z-index:5}
+ul.legend{list-style:none;padding:0;margin:10px 0 0;display:grid;gap:8px}
+ul.legend li{display:flex;gap:9px;align-items:flex-start;margin:0}
+.sw{flex:none;width:12px;height:12px;border-radius:3px;margin-top:6px}
+.legend .d{color:var(--muted)}
+
+table.ev{width:100%;border-collapse:collapse;margin-top:10px;font-size:14.5px}
+.ev th{text-align:left;font-size:13px;font-weight:600;color:var(--muted);padding:6px 10px 6px 0;border-bottom:1px solid var(--line)}
+.ev td{padding:9px 10px 9px 0;border-bottom:1px solid var(--line);vertical-align:top}
+.ev tr:last-child td{border-bottom:0}
+.ev .n{white-space:nowrap;font-variant-numeric:tabular-nums}
+.ev .w{color:var(--muted)}
+
+dl.targets{margin:10px 0 0;display:grid;grid-template-columns:130px 1fr;gap:0}
+.targets dt,.targets dd{margin:0;padding:9px 0;border-top:1px solid var(--line);font-size:15px}
+.targets dt{font-weight:600;padding-right:12px}
+.targets dt:first-of-type,.targets dt:first-of-type + dd{border-top:0}
+
+.pairs,.habits{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:10px;margin-top:12px}
+.pair,.habit{background:var(--surface-2);border-radius:12px;padding:12px 14px;min-width:0}
+.thought{color:var(--muted);font-size:14.5px;margin:0 0 6px!important}
+.truth{margin:0!important}
+.habit h3{margin:0 0 4px;font-size:15.5px}
+.habit p{margin:0;font-size:14.5px}
+
+.tools{display:grid;gap:10px;margin:12px 0 4px}
+#phraseSearch{font:inherit;font-size:16px;color:var(--text);background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-height:44px;width:100%}
+.auds{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.audbtn{font:500 14px "IBM Plex Sans",system-ui,sans-serif;min-height:36px;padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--text);cursor:pointer}
+.audbtn:hover{border-color:var(--accent)}
+.audbtn[aria-pressed="true"]{background:var(--text);border-color:var(--text);color:var(--surface)}
+#phraseCount{color:var(--muted);font-size:13.5px;margin-left:auto}
+.group h3{font-family:"Bricolage Grotesque",sans-serif;font-size:19px;margin:24px 0 2px}
+.sit{border-top:1px solid var(--line);padding:14px 0 6px}
+.group .sit:first-of-type{border-top:0}
+.sit-title{font-weight:600;font-size:16.5px;margin:0!important}
+.sit-why{color:var(--muted);font-size:14.5px!important;margin:2px 0 0!important}
+.sit-avoid{color:var(--muted);font-size:13.5px!important;margin:2px 0 0!important}
+.sit-avoid b{font-weight:600}
+.phrases{list-style:none;padding:0!important;margin:8px 0 0!important}
+.phrase{display:flex;gap:10px;align-items:flex-start;background:var(--surface-2);border-radius:10px;padding:10px 12px;margin:0 0 8px!important}
+.phrase-body{flex:1;min-width:0}
+.phrase-text{margin:0;font-size:15.5px;overflow-wrap:anywhere}
+.ph{font-weight:600;border-bottom:1.5px dashed var(--accent)}
+.tags{color:var(--muted);font-size:12.5px;margin-top:4px}
+.copy{flex:none;font:500 13.5px "IBM Plex Sans",system-ui,sans-serif;min-height:40px;min-width:68px;padding:6px 10px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--text);cursor:pointer}
+.copy:hover{border-color:var(--accent)}
+.copy.done{background:var(--text);border-color:var(--text);color:var(--surface)}
+#phraseEmpty{color:var(--muted);padding:14px 0}
+
+@media (max-width:640px){
+  .card{padding:16px}
+  .tiles{grid-template-columns:1fr}
+  table.ev,.ev tbody,.ev tr,.ev td{display:block;width:100%}
+  .ev thead{display:none}
+  .ev tr{border-bottom:1px solid var(--line);padding:9px 0}
+  .ev tr:last-child{border-bottom:0}
+  .ev td{border:0;padding:1px 0}
+  .ev td[data-label]::before{content:attr(data-label) ": ";color:var(--muted);font-size:13.5px}
+  .ev td:first-child{font-weight:600}
+  dl.targets{grid-template-columns:1fr}
+  .targets dt{padding-bottom:0}
+  .targets dd{border-top:0;padding-top:2px}
+}
+</style>
+</head>
+<body>
+<script src="app-nav.js"></script>
+<main id="app">
+  <div class="hdr"><h1>Steady Pace</h1><button class="themebtn" id="themeBtn" type="button" aria-label="Switch theme"></button></div>
+  <p class="lead">What a real engineering day looks like, and what to say when work gets hard.</p>
+
+  <nav class="jump" aria-label="On this page">
+    <a href="#truth">The numbers</a>
+    <a href="#day">A normal day</a>
+    <a href="#targets">Your targets</a>
+    <a href="#guilt">Guilt check</a>
+    <a href="#say">What to say</a>
+    <a href="#protect">Protect yourself</a>
+    <a href="#toomuch">Hard weeks</a>
+    <a href="#sources">Sources</a>
+  </nav>
+
+  <section id="truth" class="card hero">
+    <h2>A good day is 2&ndash;3 hours of deep focus.</h2>
+    <p>Not eight. That is what studies of real engineers keep finding. If you have been feeling that you do too little, you may be comparing yourself with a day nobody actually has.</p>
+    <div class="tiles">
+      <div class="tile"><div class="tile-v">52 min</div><div class="tile-l">Actual coding, typical day</div><div class="tile-s">Median across 250,000+ developers</div></div>
+      <div class="tile"><div class="tile-v">2&ndash;3 hrs</div><div class="tile-l">Deep focus, per workday</div><div class="tile-s">From a Retool survey and Meta's data</div></div>
+      <div class="tile"><div class="tile-v">~2.2 hrs</div><div class="tile-l">Meetings, per workday</div><div class="tile-s">Average across about 80,000 developers</div></div>
+    </div>
+    <p class="note">You are paid for judgment, care and getting the right thing built. Hours at the keyboard were never the measure.</p>
+  </section>
+
+  <section id="day" class="card">
+    <h2>A normal 8-hour day</h2>
+    <div class="viz" id="dayViz">
+      <div id="vizTip" role="status" hidden></div>
+      <div id="dayBar"></div>
+    </div>
+    <ul class="legend" id="dayLegend"></ul>
+    <p class="note">None of the third block is slacking. Reviews, questions, reading and waiting for builds are how software gets made.</p>
+  </section>
+
+  <section id="evidence" class="card">
+    <h2>The evidence</h2>
+    <p class="sub">Each number comes with its limits, so you can trust it for exactly what it is. "Per workday" is the weekly figure divided by 5.</p>
+    <table class="ev">
+      <thead><tr><th>What was measured</th><th>Per week</th><th>Per workday</th><th>Worth knowing</th></tr></thead>
+      <tbody>
+        <tr><td><a href="https://retool.com/reports/state-of-engineering-time-2022" target="_blank" rel="noopener">Deep work (Retool)</a></td><td class="n" data-label="Per week">~10 hrs</td><td class="n" data-label="Per workday">~2 hrs</td><td class="w">Survey average, 2022</td></tr>
+        <tr><td><a href="https://research.facebook.com/file/543124997649618/Workgraph--Personal-Focus-vs.-Interruption-for-Engineers-at-Meta.pdf" target="_blank" rel="noopener">Focus sessions over 12 min (Meta)</a></td><td class="n" data-label="Per week">14.25 hrs</td><td class="n" data-label="Per workday">~2.9 hrs</td><td class="w">Median at one company, 2022</td></tr>
+        <tr><td>All personal focus time (Meta)</td><td class="n" data-label="Per week">19.29 hrs</td><td class="n" data-label="Per workday">~3.9 hrs</td><td class="w">Median, and includes short bursts</td></tr>
+        <tr><td><a href="https://www.computerworld.com/article/1612747/for-developers-too-many-meetings-too-little-focus-time.html" target="_blank" rel="noopener">Time free to focus, in 2+ hour blocks (Clockwise)</a></td><td class="n" data-label="Per week">19.6 hrs</td><td class="n" data-label="Per workday">~3.9 hrs</td><td class="w">Time that was free, not necessarily used</td></tr>
+        <tr><td>Meetings (Clockwise)</td><td class="n" data-label="Per week">10.9 hrs</td><td class="n" data-label="Per workday">~2.2 hrs</td><td class="w">Average, about 80,000 developers, 2022</td></tr>
+        <tr><td><a href="https://www.software.com/reports" target="_blank" rel="noopener">Actual coding (Software.com)</a></td><td class="n" data-label="Per week">~4.3 hrs</td><td class="n" data-label="Per workday">52 min</td><td class="w">Median, 250,000+ developers. About 10% code more than 2 hours a day</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Total hours and limits</h3>
+    <ul>
+      <li><b>A normal week.</b> 51.7% of developers worked 40&ndash;44 hours, in older Stack Overflow data <a href="https://insights.dice.com/2019/04/18/developers-working-reasonable-hours/" target="_blank" rel="noopener">reported in 2019</a>.</li>
+      <li><b>The health line.</b> Working 55 or more hours a week carries an estimated 35% higher risk of stroke and 17% higher risk of dying from heart disease, compared with 35&ndash;40 hours (<a href="https://www.who.int/news/item/17-05-2021-long-working-hours-increasing-deaths-from-heart-disease-and-stroke-who-ilo" target="_blank" rel="noopener">WHO and ILO, 2021</a>).</li>
+      <li><b>The focus ceiling.</b> Elite performers reportedly cap hard practice at about 4 hours a day. This comes from <a href="https://notes.andymatuschak.org/zEkCRJXM9NYCXxzFoDaNhL" target="_blank" rel="noopener">summaries of research on expert practice</a>; the original paper was not read for this page.</li>
+      <li><b>Indian IT.</b> In a <a href="https://www.deccanherald.com/india/one-in-every-fourth-it-professional-in-india-clocks-in-70-hours-or-more-per-week-face-burnout-survey-3470880" target="_blank" rel="noopener">2025 Blind survey</a>, 72% regularly exceed 48 hours, nearly 1 in 4 work more than 70, and 83% report burnout. Its 1,450 respondents chose to answer, so it is not a national figure. Common does not mean healthy, and you do not have to match it.</li>
+    </ul>
+    <p class="foot">Most of this data is from 2022 or earlier, before daily AI coding tools, so the coding figure may have changed. Nothing newer turned up when this page was written in November 2026.</p>
+  </section>
+
+  <section id="targets" class="card">
+    <h2>Your daily targets</h2>
+    <p class="sub">These are judgment calls based on the numbers above. No study sets these exact figures.</p>
+    <dl class="targets">
+      <dt>Time at work</dt><dd>8&ndash;9 hours a day, 40&ndash;45 a week.</dd>
+      <dt>Deep focus</dt><dd>2&ndash;3 hours is a good day. 4 is a great day. There is no need to aim higher.</dd>
+      <dt>Coding</dt><dd>1&ndash;2 hours is normal. You are not behind.</dd>
+      <dt>Hard limit</dt><dd>55 hours a week is the line. A rare crunch happens, but it should never become the plan.</dd>
+      <dt>After work</dt><dd>Studying and side projects use the same mental energy, so count them inside your 4 hours.</dd>
+    </dl>
+
+    <h3>A simple shape for the day</h3>
+    <ol>
+      <li>Protect one 90-minute block in your best hours, before messages take over.</li>
+      <li>Put reviews, replies and meetings in the hours when your energy dips.</li>
+      <li>When you have read the same line three times, your focus is spent. Take a walk or switch to something light.</li>
+    </ol>
+
+    <h3>Before you close the laptop</h3>
+    <ul>
+      <li>I moved one important thing forward.</li>
+      <li>Anyone who needs to hear something from me has been told.</li>
+      <li>I wrote down where to start tomorrow.</li>
+    </ul>
+    <p>All three? You are done for today. The rest will still be there tomorrow, and you will be better at it after a real rest.</p>
+    <p class="note">None of this means you should only work or log four hours. Meetings, reviews and reading are real work, and your timesheet should show the hours you actually worked.</p>
+  </section>
+
+  <section id="guilt" class="card">
+    <h2>Guilt check</h2>
+    <p class="sub">When one of these thoughts shows up, here is the other side of it.</p>
+    <div class="pairs" id="pairs"></div>
+    <p class="note"><b>You were hired after someone checked your work and chose you.</b> You do not have to earn the job again every day.</p>
+  </section>
+
+  <section id="say" class="card">
+    <h2>What to say</h2>
+    <p class="sub">Short, honest lines for the moments that make people freeze or over-apologise. Fill in the underlined blanks and tap Copy.</p>
+    <div class="tools">
+      <input id="phraseSearch" type="search" placeholder="Search: deadline, stuck, credit" aria-label="Search situations and phrases">
+      <div class="auds" id="auds" role="group" aria-label="Who are you talking to?"><span id="phraseCount" aria-live="polite"></span></div>
+    </div>
+    <div id="phraseList"></div>
+    <p id="phraseEmpty" hidden>Nothing matches. Try a shorter word, or choose All.</p>
+  </section>
+
+  <section id="protect" class="card">
+    <h2>Protect yourself quietly</h2>
+    <p class="sub">Small habits that mean you rarely need to defend yourself at all.</p>
+    <div class="habits">
+      <div class="habit"><h3>Write it down after you talk</h3><p>After a decision made on a call or at a desk, send two lines confirming it. It is normal, and it protects everyone if memories differ later.</p></div>
+      <div class="habit"><h3>Keep a wins note</h3><p>Every Friday, write three lines: what you shipped, who you helped, what you learned. At appraisal time you will have a year of evidence. Keep confidential company details out of it.</p></div>
+      <div class="habit"><h3>Give status before you are asked</h3><p>One clear line a day means nobody has to wonder. People who are not wondering do not hover.</p></div>
+      <div class="habit"><h3>Raise risks early, in writing</h3><p>If a date looks shaky, say so the day you know. If it goes wrong later, the note shows you flagged it.</p></div>
+      <div class="habit"><h3>Get work into the tracker</h3><p>A ticket beats a chat message, and a chat message beats a hallway ask. Work in the tracker is work people can see you did.</p></div>
+      <div class="habit"><h3>Keep "let me check" ready</h3><p>You never have to answer on the spot. "Let me check and come back by 3" is a complete, professional answer.</p></div>
+    </div>
+    <p class="note">These habits are for being clear, never for blaming people or covering up a mistake. If you got something wrong, say so early. That protects you too.</p>
+  </section>
+
+  <section id="toomuch" class="card">
+    <h2>When it is more than a tough week</h2>
+    <p>Everyone has hard weeks, and a hard week is not burnout. WHO describes burn-out as the result of chronic workplace stress that has not been successfully managed, and lists three signs:</p>
+    <ul>
+      <li><b>Exhaustion.</b> You feel drained, and rest does not bring you back.</li>
+      <li><b>Distance.</b> You feel negative or cynical about your job, or keep pulling away from it.</li>
+      <li><b>Getting less done.</b> You feel less effective at work than you used to be.</li>
+    </ul>
+    <p>WHO classes it as an occupational phenomenon, not a medical condition. That is worth remembering: it comes from the load and the conditions, not from something wrong with you.</p>
+    <h3>What helps</h3>
+    <ol>
+      <li>Use the "overloaded" lines in <a href="#say">What to say</a> to bring the load down.</li>
+      <li>Take real time off, with work notifications silenced.</li>
+      <li>See a doctor if poor sleep, low mood or physical symptoms last more than a couple of weeks.</li>
+      <li>In India, Tele-MANAS is a free, 24/7 government mental health helpline, available in 20 languages: <a href="tel:14416">14416</a> or <a href="tel:18008914416">1800-89-14416</a>.</li>
+    </ol>
+  </section>
+
+  <section id="sources" class="card">
+    <h2>Sources</h2>
+    <ul>
+      <li><a href="https://www.software.com/reports" target="_blank" rel="noopener">Software.com, Global Code Time Report</a> (2022)</li>
+      <li><a href="https://retool.com/reports/state-of-engineering-time-2022" target="_blank" rel="noopener">Retool, State of Engineering Time</a> (2022)</li>
+      <li><a href="https://research.facebook.com/file/543124997649618/Workgraph--Personal-Focus-vs.-Interruption-for-Engineers-at-Meta.pdf" target="_blank" rel="noopener">Chen et al., Workgraph: Personal Focus vs. Interruption for Engineers at Meta</a> (2022)</li>
+      <li><a href="https://www.computerworld.com/article/1612747/for-developers-too-many-meetings-too-little-focus-time.html" target="_blank" rel="noopener">Computerworld, on Clockwise's meeting and focus data</a> (2022)</li>
+      <li><a href="https://insights.dice.com/2019/04/18/developers-working-reasonable-hours/" target="_blank" rel="noopener">Dice, on Stack Overflow's working-hours data</a> (2019)</li>
+      <li><a href="https://www.who.int/news/item/17-05-2021-long-working-hours-increasing-deaths-from-heart-disease-and-stroke-who-ilo" target="_blank" rel="noopener">WHO and ILO, long working hours and heart disease and stroke</a> (2021)</li>
+      <li><a href="https://www.deccanherald.com/india/one-in-every-fourth-it-professional-in-india-clocks-in-70-hours-or-more-per-week-face-burnout-survey-3470880" target="_blank" rel="noopener">Deccan Herald, on the Blind survey of Indian IT professionals</a> (2025)</li>
+      <li><a href="https://notes.andymatuschak.org/zEkCRJXM9NYCXxzFoDaNhL" target="_blank" rel="noopener">Andy Matuschak's notes, quoting Ericsson, Krampe and Tesch-R&ouml;mer</a> (1993 paper)</li>
+      <li><a href="https://www.who.int/standards/classifications/frequently-asked-questions/burn-out-an-occupational-phenomenon" target="_blank" rel="noopener">WHO, Burn-out: an occupational phenomenon</a> (ICD-11, 2019)</li>
+      <li><a href="https://dghs.mohfw.gov.in/national-mental-health-programme.php" target="_blank" rel="noopener">Directorate General of Health Services, India, on Tele-MANAS</a> (checked November 2026)</li>
+    </ul>
+    <p class="foot">Written November 2026.</p>
+  </section>
+</main>
+
+<script>
+(function(){
+  'use strict';
+  var M='manager',L='lead',P='peer',C='client';
+  var LABEL={manager:'Manager',lead:'Lead',peer:'Peer',client:'Client'};
+
+  var DAY=[
+    {n:'Deep focus',h:2.5,c:'--s1',d:"The middle of the measured 2–3 hours.",tip:'Measured: the middle of 2–3 hours.'},
+    {n:'Meetings',h:2.2,c:'--s2',d:"Clockwise's average across about 80,000 developers.",tip:'Measured: Clockwise average.'},
+    {n:'Everything else',h:3.3,c:'--s3',d:"Simply what's left of 8 hours: reviews, messages, reading, helping people, waiting for builds, lunch and breaks. No study measured this as one number.",tip:"What's left of 8 hours."}
+  ];
+
+  var PAIRS=[
+    ["I only coded for an hour today.","That is a typical day. The median engineer codes about 52 minutes."],
+    ["I wasn't focused for eight hours.","Nobody is. Studies of real engineers land near 2–3 hours of deep focus."],
+    ["I got less done on Friday.","So does everyone. Median coding time falls from 55 minutes on Wednesday to 46 on Friday."],
+    ["I was in meetings all day and got nothing done.","You decided things, unblocked people or picked up context. Nobody can code through a full calendar."],
+    ["Someone is online at 11 PM. I should be too.","You don't know their day. Their status is not your standard."],
+    ["I had to search for something basic.","Looking things up is the job. Nobody keeps every API in their head, at any level."],
+    ["I took a break and now I feel lazy.","Focus runs out and comes back with rest. The walk is part of how the next good hour happens."],
+    ["I asked a question and looked stupid.","A good question saves the team hours. Staying silent and stuck is what actually costs trust."],
+    ["Everyone understands this codebase except me.","They have had longer. Being slow in a new codebase is what being new looks like, at every experience level."],
+    ["I made a mistake. They'll think I'm bad at this.","Everyone who ships has broken something. What people remember is how you handled it."],
+    ["My colleague ships more than I do.","You see their output, not their hours, their history or the help they got. Compare yourself with last month's you."],
+    ["I said no to something.","A clear \"not this week\" is more useful than a yes that slips. Good leads prefer it."],
+    ["I stopped on time with work still left.","Work is never finished. Stopping on time is how you are still good at this next year."],
+    ["I don't feel like I deserve this job.","Someone assessed your work and chose you. Feeling unsure is very common, and it says nothing about your ability."]
+  ];
+
+  var GROUPS=[
+    {title:'Time and workload',items:[
+      {t:'Asked for an estimate on the spot',why:'A quick number becomes a promise. Buying an hour protects you and them.',avoid:'"Maybe two days?"',say:[
+        [[M,L,C],"I don't want to give you a number I can't stand behind. I'll check the code and come back by 3 PM."],
+        [[M,L],"My rough guess is 3 to 5 days, but I haven't looked at the code yet. I'll confirm by tomorrow morning."],
+        [[C],"Let me check the impact with the team first, and I'll share a proper estimate by end of day."]]},
+      {t:'A deadline is going to slip',why:'Bad news early is a planning problem. Bad news late is a trust problem.',avoid:'Staying quiet and hoping to catch up.',say:[
+        [[M,L],"Heads-up: X is at risk for Friday because the API took longer than planned. I can finish by Tuesday, or ship part A by Friday. Which works better?"],
+        [[M,L],"I want to flag this early rather than on the last day. I'm about a day behind, and here's my plan to recover."],
+        [[C],"We found an issue that affects the date. The new date is Tuesday. Here's what caused it and what we're doing about it."]]},
+      {t:'Urgent work added on top',why:"You aren't refusing. You're showing the cost, so the right person can decide.",avoid:'"Sure, no problem" when it is a problem.',say:[
+        [[M,L],"Happy to pick this up. I'm on X right now, so which one should move?"],
+        [[M,L],"I can start this today, but X will slip by two days. Are you okay with that?"],
+        [[P],"I can't take this today, I'm on a deadline. I can look at it on Thursday, or check with [lead] if it can't wait."],
+        [[C],"Let me check this against what's already planned, and I'll confirm when we can take it up."]]},
+      {t:'Two people want different things first',why:"Settling priorities between them isn't your job. Put them in the same conversation.",say:[
+        [[M,L],"[Name] has asked for X and [name] has asked for Y, both by Friday. I can only do one properly. Which should come first?"],
+        [[L,P],"I've got two conflicting asks on this. Can the three of us take 5 minutes to agree on the order?"]]},
+      {t:'Asked to work late or on a weekend',why:'A real emergency and a routine habit need different answers.',avoid:'Inventing an excuse. "I have commitments" is enough.',say:[
+        [[M,L],"I can stay today since this is urgent. Can we make sure it doesn't become the normal plan?"],
+        [[M,L],"I can't do this weekend, I have commitments. I'll start first thing Monday, and here's what I can finish before I leave today."],
+        [[M,L],"If this needs weekend work, can we talk about what's driving it? I'd like to fix the cause, and to take the time back next week."]]},
+      {t:'A late-night or after-hours ping',why:"Unless you're on call, you don't owe an instant reply. Replying at 11 PM teaches people to expect it.",say:[
+        [[M,L,P,C],"Saw this now. I'll take it up first thing tomorrow."],
+        [[M,L],"Is this urgent tonight, or is tomorrow morning okay?"],
+        [[P],"Logging off for today. I'll pick this up in the morning."]]},
+      {t:'Taking leave or a sick day',why:"Leave is part of your pay. State it, and you don't need to justify it.",avoid:'Long explanations, or "sorry to bother you".',say:[
+        [[M,L],"I'll be on leave on the 14th. X will be done before I go, and Y is handed over to [name]."],
+        [[M,L],"I'm not well today and will be taking sick leave. [Name] knows where X stands."],
+        [[P,C],"I'm out tomorrow. Please reach [name] for anything urgent. I'll be back on Thursday."]]},
+      {t:'Too many meetings',why:'Asking about purpose is normal, and protected time is how you deliver.',say:[
+        [[M,L],"My calendar has no focus time this week, and X needs it. Can I drop out of Y and catch up from the notes?"],
+        [[M,L,P],"Do you need me in this one, or can I read the notes after?"],
+        [[M,L,P],"I'm blocking 10 to 12 for focused work. I'll check messages after that, so call me if something's on fire."]]}
+    ]},
+    {title:'Looking capable',items:[
+      {t:"You're stuck",why:"Showing what you tried turns \"I'm stuck\" into a clear, easy request.",avoid:'Staying stuck for two days to avoid asking.',say:[
+        [[M,L,P],"I've tried A and B, and I think the issue is in C. Can you spare 10 minutes to look with me?"],
+        [[M,L],"I've been on this for a day without a breakthrough. I'd like a second pair of eyes so we don't lose more time."]]},
+      {t:"You didn't follow something in a meeting",why:'Asking is cheaper than a week of building the wrong thing, and others are often lost too.',say:[
+        [[M,L,P,C],"Sorry, can you walk me through that part once more? I want to be sure I build the right thing."],
+        [[M,L,P,C],"Let me check I've understood. You're saying X, and that means Y. Is that right?"],
+        [[L,P],"I didn't fully follow the part about X. Can I ask you about it after this?"]]},
+      {t:'New to the codebase or the team',why:'Being new is a limited-time pass. Use it freely.',say:[
+        [[M,L],"I'm still learning this area, so I'll take a bit longer on the first one. I'll speed up as I get familiar."],
+        [[L,P],"I'm new to this part. Can you point me to where this is handled?"],
+        [[M,L],"What would a good first month look like from your side?"]]},
+      {t:'A standup with little to show',why:'Progress includes what you ruled out.',avoid:'"Still working on it."',say:[
+        [[M,L,P],"Yesterday I narrowed the bug down to the cache layer and ruled out the database. Today I'm testing a fix."],
+        [[M,L,P],"No code yet on this. I spent the day understanding how X works, and I'll start the change today."],
+        [[M,L,P],"I'm blocked on access to X. I've raised the request, and I'm working on Y in the meantime."]]},
+      {t:'Asked for something outside your skills',why:'Being honest about a gap, with a plan, reads as confidence.',say:[
+        [[M,L,C],"I haven't worked with that before. I can take it on if you're okay with some learning time, or [name] may be quicker."],
+        [[M,L],"I can do this, but it's new to me, so please allow an extra day and a review from someone who knows it."]]}
+    ]},
+    {title:'Mistakes and blame',items:[
+      {t:'You caused a bug',why:'Owning it quickly with a fix ends the conversation. Defending it extends it.',avoid:'A long explanation before the fix.',say:[
+        [[M,L,P,C],"That was my change. I've rolled it back and I'm adding a test so it can't happen again."],
+        [[M,L],"I caused this. The impact was X for 20 minutes, it's fixed now, and I'll share what I'm changing to prevent a repeat."]]},
+      {t:"Blamed for something that wasn't yours",why:'Stick to facts and the timeline. Calm is your strongest position.',avoid:'"That\'s not my fault."',say:[
+        [[M,L,C],"Let me share what I can see. My change went out on Tuesday and this started on Monday, so it may be coming from somewhere else. I'm happy to help trace it."],
+        [[M,L,P],"I don't think that part was mine, but let's look at the logs together so we get to the real cause."]]},
+      {t:'A harsh review comment',why:'Answer the technical point and leave the tone alone. If it becomes a pattern, raise it in private.',say:[
+        [[L,P],"Good catch on X, fixed. On Y, I went this way because of Z. Would you still change it?"],
+        [[L,P],"Can we talk this one through on a quick call? It'll be faster than comments."],
+        [[M,L],"I'd like your advice. Some review comments are landing quite harshly, and here's an example. How would you handle it?"]]},
+      {t:'You missed a requirement',why:"Own the miss, give the new date, and show you've checked the rest.",say:[
+        [[M,L,C],"I missed that point in the requirement. I can add it by Thursday, and I'll check the rest of the doc today so there are no more surprises."],
+        [[L,C],"I read that differently. Let me confirm what you need, then I'll update it."]]}
+    ]},
+    {title:'Peers',items:[
+      {t:'Work being dumped on you',why:'Helping is good. Quietly becoming the default is not.',avoid:'"I\'ll do it" while resenting it.',say:[
+        [[P],"I can show you how to do it once, and then it's yours from there."],
+        [[P],"I can't take this on right now. Have you checked with [lead] about who should pick it up?"]]},
+      {t:'Someone takes credit for your work',why:'Add facts in public, without accusing anyone.',avoid:'Calling them out in the group.',say:[
+        [[M,L,P],"Glad that landed well. To add to that, when I built the retry logic, the key thing was X."],
+        [[P],"In the update you mentioned the migration as yours. I did most of that work, so next time can you include my name?"],
+        [[M,L],"Sharing what I worked on this month, in case it's useful for your reviews: X, Y and Z."]]},
+      {t:'A review or design disagreement',why:'Keep it about the outcome. Then agree how to decide, and move on.',say:[
+        [[L,P],"I see it differently. My concern is X. What would make you comfortable with this approach?"],
+        [[L,P],"We've both made our points. Can we ask [lead] to decide, and go with that?"],
+        [[L,P],"I'd have done it the other way, but I'm fine going with your call."]]},
+      {t:'Blocked by a peer',why:'Give them an easy way to answer, and name the impact if you need to raise it.',say:[
+        [[P],"Any update on X? I'm blocked on it. If this week is tight, let me know and I'll plan around it."],
+        [[M,L],"I'm blocked on X from [team], and it affects Friday. I've asked twice. Can you help me get a date?"]]}
+    ]},
+    {title:'Leads and clients',items:[
+      {t:'A verbal ask that needs confirming',why:"A short written note protects everyone. It's normal, not suspicious.",say:[
+        [[M,L,P,C],"Just confirming what we agreed: I'll do X by Friday, and Y moves to next sprint. Tell me if I've got that wrong."],
+        [[M,L,C],"Putting this in writing so we're aligned: we decided X because of Y."]]},
+      {t:'The requirement changed',why:'Changes are fine. Changes nobody has costed are what hurt you.',say:[
+        [[M,L,C],"That's a change from what we agreed on Monday. It's doable, and it adds two days. Shall I go ahead?"],
+        [[C],"Happy to look at that. Since it's new scope, I'll check the impact on the plan and come back to you."]]},
+      {t:'Blocked by another team',why:'Name the dependency and the date at risk. Then it becomes a shared problem.',say:[
+        [[M,L],"We've been waiting on [team] for X since Tuesday. I've raised ticket [number]. Without it, Friday is at risk."],
+        [[C],"We need X from your side to continue. If we get it by Wednesday, we stay on plan."]]},
+      {t:'A client goes around your lead',why:'Be helpful and keep your lead in the loop. That protects you both.',say:[
+        [[C],"Thanks for reaching out. Let me loop in [lead] so we plan this properly."],
+        [[M,L],"[Client] asked me directly for X. I haven't committed to anything. How would you like to handle it?"],
+        [[C],"I can take a look, but I'll need to confirm priority with [lead] before I commit to a date."]]}
+    ]},
+    {title:'Growth',items:[
+      {t:"Telling someone you're overloaded",why:"It's information, not a complaint. Bring the facts and one option.",avoid:'Waiting until you are at breaking point.',say:[
+        [[M,L],"I've got X, Y and Z this sprint and I can't do all three well. Can we decide what to drop or move?"],
+        [[M],"I've been working late for a few weeks and it isn't sustainable. I'd like to talk about how to rebalance."],
+        [[M,L],"I want to keep doing good work on this, and to do that I need the load to come down a little."]]},
+      {t:'Asking for feedback',why:'Specific questions get specific answers.',say:[
+        [[M,L],"What's one thing I should do more of, and one thing I should change?"],
+        [[M],"Is there anything about my work you'd want me to know before the review?"],
+        [[L,P],"Would you take a look at how I handled this and tell me what you'd have done differently?"]]},
+      {t:'Showing your work at appraisal',why:'Nobody else is keeping this list. Stating what you did is reporting, not bragging.',say:[
+        [[M],"This year I led X, which cut Y by [amount]. I also took on Z when the team was short."],
+        [[M],"I'd like to understand what the next level needs, and where I stand against it."]]}
+    ]}
+  ];
+
+  function $(id){return document.getElementById(id);}
+  function h(tag,props,kids){var e=document.createElement(tag);
+    Object.keys(props||{}).forEach(function(k){if(k==='text')e.textContent=props[k];else if(k==='class')e.className=props[k];else e.setAttribute(k,props[k]);});
+    (kids||[]).forEach(function(c){if(c)e.appendChild(c);});return e;}
+
+  /* ---- the day bar: hours above each segment, a legend below, the detail on hover or focus */
+  var tip=$('vizTip'),viz=$('dayViz');
+  function showTip(seg,x){tip.textContent=seg.dataset.name+', '+seg.dataset.hours+' hrs. '+seg.dataset.note;tip.hidden=false;
+    var b=viz.getBoundingClientRect(),r=seg.getBoundingClientRect(),w=tip.offsetWidth,c=(x==null?r.left+r.width/2:x)-b.left;
+    tip.style.left=Math.max(0,Math.min(b.width-w,c-w/2))+'px';}
+  function hideTip(){tip.hidden=true;}
+  DAY.forEach(function(d){
+    var seg=h('div',{class:'seg',tabindex:'0',role:'img','aria-label':d.n+', '+d.h+' hours. '+d.tip,'data-name':d.n,'data-hours':String(d.h),'data-note':d.tip,style:'background:var('+d.c+')'});
+    seg.addEventListener('pointerenter',function(e){showTip(seg,e.clientX);});
+    seg.addEventListener('pointermove',function(e){showTip(seg,e.clientX);});
+    seg.addEventListener('pointerleave',hideTip);
+    seg.addEventListener('focus',function(){showTip(seg);});
+    seg.addEventListener('blur',hideTip);
+    $('dayBar').appendChild(h('div',{class:'col',style:'flex:'+d.h+' 1 0'},[h('div',{class:'col-l'},[h('b',{text:d.n}),h('span',{text:d.h+' hrs'})]),seg]));
+    $('dayLegend').appendChild(h('li',{},[h('span',{class:'sw',style:'background:var('+d.c+')'}),h('div',{},[h('b',{text:d.n+', '+d.h+' hrs. '}),h('span',{class:'d',text:d.d})])]));
+  });
+
+  /* ---- guilt check */
+  PAIRS.forEach(function(p){$('pairs').appendChild(h('div',{class:'pair'},[h('p',{class:'thought',text:'"'+p[0]+'"'}),h('p',{class:'truth',text:p[1]})]));});
+
+  /* ---- what to say */
+  function fill(el,text){text.split(/(\[[^\]]+\])/).forEach(function(part){if(!part)return;
+    if(part.charAt(0)==='[')el.appendChild(h('span',{class:'ph',text:part}));else el.appendChild(document.createTextNode(part));});}
+  function copied(btn){btn.textContent='Copied';btn.classList.add('done');clearTimeout(btn.undo);
+    btn.undo=setTimeout(function(){btn.textContent='Copy';btn.classList.remove('done');},1600);}
+  function copyOld(text,btn){var ta=h('textarea',{style:'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0'});ta.value=text;document.body.appendChild(ta);ta.select();
+    var ok=false;try{ok=document.execCommand('copy');}catch(e){}ta.remove();if(ok)copied(btn);else btn.textContent='Select it';}
+  function copy(text,btn){if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(text).then(function(){copied(btn);},function(){copyOld(text,btn);});else copyOld(text,btn);}
+
+  var ROWS=[],SITS=[],BLOCKS=[],aud='all',query='';
+  GROUPS.forEach(function(g){
+    var block=h('div',{class:'group'},[h('h3',{text:g.title})]),own=[];
+    g.items.forEach(function(s){
+      var list=h('ul',{class:'phrases'}),kids=[h('p',{class:'sit-title',text:s.t}),h('p',{class:'sit-why',text:s.why})],rows=[];
+      if(s.avoid)kids.push(h('p',{class:'sit-avoid'},[h('b',{text:'Avoid: '}),document.createTextNode(s.avoid)]));
+      s.say.forEach(function(x){
+        var text=h('p',{class:'phrase-text'}),btn=h('button',{class:'copy',type:'button','aria-label':'Copy this phrase',text:'Copy'});
+        fill(text,x[1]);
+        btn.addEventListener('click',function(){copy(x[1],btn);});
+        var li=h('li',{class:'phrase','data-aud':x[0].join(' ')},[h('div',{class:'phrase-body'},[text,h('div',{class:'tags',text:x[0].map(function(a){return LABEL[a];}).join(' · ')})]),btn]);
+        list.appendChild(li);
+        var row={el:li,aud:x[0],text:x[1].toLowerCase()};rows.push(row);ROWS.push(row);
+      });
+      kids.push(list);
+      var el=h('article',{class:'sit'},kids),sit={el:el,rows:rows,hay:(s.t+' '+s.why+' '+(s.avoid||'')).toLowerCase()};
+      SITS.push(sit);own.push(sit);block.appendChild(el);
+    });
+    BLOCKS.push({el:block,sits:own});
+    $('phraseList').appendChild(block);
+  });
+
+  function apply(){var count=0;
+    SITS.forEach(function(s){var whole=query&&s.hay.indexOf(query)>=0,left=0;
+      s.rows.forEach(function(r){var on=(aud==='all'||r.aud.indexOf(aud)>=0)&&(!query||whole||r.text.indexOf(query)>=0);r.el.hidden=!on;if(on)left++;});
+      s.el.hidden=!left;s.left=left;count+=left;});
+    BLOCKS.forEach(function(b){b.el.hidden=!b.sits.some(function(s){return s.left;});});
+    $('phraseCount').textContent=count+(count===1?' phrase':' phrases');
+    $('phraseEmpty').hidden=count>0;}
+
+  var bar=$('auds'),BTNS=[];
+  [['all','All'],[M,'Manager'],[L,'Lead'],[P,'Peer'],[C,'Client']].forEach(function(a){
+    var b=h('button',{class:'audbtn',type:'button','data-aud':a[0],'aria-pressed':a[0]==='all'?'true':'false',text:a[1]});
+    b.addEventListener('click',function(){aud=a[0];BTNS.forEach(function(o){o.setAttribute('aria-pressed',o===b?'true':'false');});apply();});
+    BTNS.push(b);bar.insertBefore(b,$('phraseCount'));});
+  $('phraseSearch').addEventListener('input',function(e){query=e.target.value.trim().toLowerCase();apply();});
+  apply();
+})();
+</script>
+<script>
+/* light/dark switch for this page, this device only (the head script applies the choice before first paint) */
+(function(){var KEY='steadypace.theme',root=document.documentElement,btn=document.getElementById('themeBtn'),q=window.matchMedia?window.matchMedia('(prefers-color-scheme: dark)'):null,NS='http://www.w3.org/2000/svg';
+  var ICON={sun:'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41',moon:'M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z'};
+  function chosen(){try{var t=JSON.parse(localStorage.getItem(KEY));return t==='light'||t==='dark'?t:'auto';}catch(e){return 'auto';}}
+  function device(){return q&&q.matches?'dark':'light';}
+  function shown(){var t=chosen();return t==='auto'?device():t;}
+  function paint(){var t=chosen(),dark=shown()==='dark',svg=document.createElementNS(NS,'svg'),path=document.createElementNS(NS,'path'),label=dark?'Switch to light':'Switch to dark';
+    if(t==='auto')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);
+    [['viewBox','0 0 24 24'],['fill','none'],['stroke','currentColor'],['stroke-width','2'],['stroke-linecap','round'],['stroke-linejoin','round'],['aria-hidden','true']].forEach(function(a){svg.setAttribute(a[0],a[1]);});
+    path.setAttribute('d',dark?ICON.sun:ICON.moon);svg.appendChild(path);while(btn.firstChild)btn.removeChild(btn.firstChild);btn.appendChild(svg);btn.setAttribute('aria-label',label);btn.title=label;}
+  /* choosing the theme the device already uses goes back to Auto, so the page follows the device again */
+  btn.addEventListener('click',function(){var next=shown()==='dark'?'light':'dark';try{localStorage.setItem(KEY,JSON.stringify(next===device()?'auto':next));}catch(e){}paint();});
+  if(q){if(q.addEventListener)q.addEventListener('change',paint);else if(q.addListener)q.addListener(paint);}
+  paint();})();
+</script>
+</body>
+</html>

@@ -181,6 +181,21 @@ Ctrl+click does not ask; Leave anyway goes; and what each says is checked agains
 Finally, with the fake Google Drive from `check-drop-tray.py`, a change made just before tapping Home must be in
 Drive before Home opens. `NAV_SHOTS=<folder>` saves a screenshot of every page.
 
+## Steady Pace: a page to read
+
+`docs/steady-pace.html`, built from `site/steady-pace.html`, is linked from Home's Career list. It shows what an
+engineering day really looks like, with sources, then has daily targets, a guilt check, and 73 copy-ready phrases
+for 28 situations with managers, leads, peers and clients.
+
+It is a page to read, not an app: no sign-in, no Drive file, and nothing stored except its own light/dark choice
+(the switch at the top right, key `steadypace.theme`). It has the strip, but it is not one of Home's cards.
+
+The repo is public and the address carries a real name, so the page has `noindex` and names no person or company.
+`noindex` only keeps it out of search results: anyone with the link can read it.
+
+Phrases and guilt pairs are the `GROUPS` and `PAIRS` arrays at the top of the page's script. To check it:
+`python tools/check-steady-pace.py`. `PACE_SHOTS=<folder>` saves a screenshot of each layout.
+
 ## Light and dark
 
 Every page starts on **Auto** and follows the device. Where to switch:
